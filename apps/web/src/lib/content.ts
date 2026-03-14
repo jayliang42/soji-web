@@ -52,7 +52,11 @@ async function loadSupabaseContent(): Promise<ContentSnapshot | null> {
     .order("published_at", { ascending: false, nullsFirst: false });
 
   if (error || !data) {
-    return null;
+    return {
+      items: [],
+      source: "supabase",
+      error: error?.message ?? "content_query_failed"
+    };
   }
 
   return {
@@ -63,7 +67,7 @@ async function loadSupabaseContent(): Promise<ContentSnapshot | null> {
 
 export async function getContentSnapshot(): Promise<ContentSnapshot> {
   const liveSnapshot = await loadSupabaseContent();
-  if (liveSnapshot && liveSnapshot.items.length > 0) {
+  if (liveSnapshot) {
     return liveSnapshot;
   }
 
@@ -82,7 +86,8 @@ export async function getContentBySlug(slug: string) {
   const snapshot = await getContentSnapshot();
   return {
     item: snapshot.items.find((item) => item.slug === slug) ?? null,
-    source: snapshot.source
+    source: snapshot.source,
+    error: snapshot.error
   };
 }
 

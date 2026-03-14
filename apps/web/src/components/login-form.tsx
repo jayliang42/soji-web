@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { getSafeNextPath } from "@/lib/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type AuthMode = "sign_in" | "sign_up";
@@ -17,6 +18,7 @@ export function LoginForm({
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const safeNextPath = getSafeNextPath(nextPath);
 
   async function bootstrapProfile() {
     const response = await fetch("/api/auth/bootstrap", {
@@ -55,7 +57,7 @@ export function LoginForm({
             throw error;
           }
         } else {
-          const { error } = await supabase.auth.signUp({
+          const { data, error } = await supabase.auth.signUp({
             email,
             password
           });
@@ -63,10 +65,17 @@ export function LoginForm({
           if (error) {
             throw error;
           }
+
+          if (!data.session) {
+            setMessage(
+              "Account created. Check your email to confirm the address before signing in."
+            );
+            return;
+          }
         }
 
         await bootstrapProfile();
-        window.location.assign(nextPath);
+        window.location.assign(safeNextPath);
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Authentication failed.");
       }
@@ -87,7 +96,7 @@ export function LoginForm({
           throw new Error("Supabase browser client is not available.");
         }
 
-        const redirectTarget = encodeURIComponent(nextPath);
+        const redirectTarget = encodeURIComponent(safeNextPath);
         const redirectTo = `${window.location.origin}/auth/callback?next=${redirectTarget}`;
         const { error } = await supabase.auth.signInWithOAuth({
           provider: "google",

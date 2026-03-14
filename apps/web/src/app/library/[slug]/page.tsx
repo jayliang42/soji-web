@@ -18,7 +18,7 @@ export default async function ContentDetailPage({
     notFound();
   }
 
-  const { item, source } = result;
+  const { item, source, error } = result;
   const unlocked = hasEntitlement(entitlements, item.requiredEntitlements);
 
   return (
@@ -31,6 +31,11 @@ export default async function ContentDetailPage({
         <div className="mb-6">
           <ContentSourceBadge source={source} />
         </div>
+        {error ? (
+          <div className="mb-6 rounded-[24px] border border-clay/30 bg-[#fff1ea] px-5 py-4 text-sm text-cocoa">
+            Supabase content query failed: {error}
+          </div>
+        ) : null}
         <div className="rounded-[32px] border border-dune bg-shell p-8">
           {unlocked ? (
             <div className="space-y-4 text-cocoa/80">

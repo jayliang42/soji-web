@@ -7,6 +7,7 @@ export interface SessionSnapshot {
   user: UserProfile | null;
   entitlements: EntitlementKey[];
   source: "supabase" | "demo";
+  error?: string;
 }
 
 const demoUser: UserProfile = {
@@ -55,7 +56,7 @@ async function loadSupabaseSession(): Promise<SessionSnapshot | null> {
     };
   }
 
-  const [{ data: profile }, { data: roles }, { data: grants }] = await Promise.all([
+  const [profileQuery, rolesQuery, grantsQuery] = await Promise.all([
     supabase
       .from("profiles")
       .select("full_name, avatar_url, tier")
@@ -69,11 +70,25 @@ async function loadSupabaseSession(): Promise<SessionSnapshot | null> {
       .or(`ends_at.is.null,ends_at.gt.${new Date().toISOString()}`)
   ]);
 
-  const tier = (profile?.tier ?? "free") as UserProfile["tier"];
+  if (profileQuery.error || rolesQuery.error || grantsQuery.error) {
+    return {
+      user: null,
+      entitlements: [],
+      source: "supabase",
+      error:
+        profileQuery.error?.message ??
+        rolesQuery.error?.message ??
+        grantsQuery.error?.message ??
+        "session_query_failed"
+    };
+  }
+
+  const tier = (profileQuery.data?.tier ?? "free") as UserProfile["tier"];
   const roleList =
-    roles?.map((item) => item.role as UserRole).filter(Boolean) ?? ["member"];
+    rolesQuery.data?.map((item) => item.role as UserRole).filter(Boolean) ?? ["member"];
   const directEntitlements =
-    grants?.map((item) => item.entitlement_id as EntitlementKey).filter(Boolean) ?? [];
+    grantsQuery.data?.map((item) => item.entitlement_id as EntitlementKey).filter(Boolean) ??
+    [];
   const effectiveEntitlements = Array.from(
     new Set([...getDefaultEntitlements(tier), ...directEntitlements])
   );
@@ -82,8 +97,8 @@ async function loadSupabaseSession(): Promise<SessionSnapshot | null> {
     user: {
       id: user.id,
       email: user.email ?? "",
-      fullName: profile?.full_name ?? user.user_metadata?.full_name ?? null,
-      avatarUrl: profile?.avatar_url ?? user.user_metadata?.avatar_url ?? null,
+      fullName: profileQuery.data?.full_name ?? user.user_metadata?.full_name ?? null,
+      avatarUrl: profileQuery.data?.avatar_url ?? user.user_metadata?.avatar_url ?? null,
       tier,
       roles: roleList.length > 0 ? roleList : ["member"],
       providers: mapProviders(user)

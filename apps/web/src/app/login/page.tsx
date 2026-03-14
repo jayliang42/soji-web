@@ -3,6 +3,7 @@ import { AuthStatus } from "@/components/auth-status";
 import { LoginForm } from "@/components/login-form";
 import { SectionShell } from "@/components/section-shell";
 import { hasSupabaseConfig } from "@/lib/env";
+import { getSafeNextPath } from "@/lib/navigation";
 import { getSessionSnapshot } from "@/lib/session";
 
 export default async function LoginPage({
@@ -12,6 +13,7 @@ export default async function LoginPage({
 }) {
   const snapshot = await getSessionSnapshot();
   const params = await searchParams;
+  const nextPath = getSafeNextPath(params.next);
 
   if (snapshot.user && snapshot.source === "supabase") {
     redirect("/account");
@@ -36,7 +38,7 @@ export default async function LoginPage({
             <div className="mt-6">
               <LoginForm
                 enabled={hasSupabaseConfig()}
-                nextPath={params.next ?? "/account"}
+                nextPath={nextPath}
               />
             </div>
           </div>

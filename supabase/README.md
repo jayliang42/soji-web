@@ -15,3 +15,17 @@ Recommended next steps:
 2. Create SQL functions or RPCs to compute effective entitlements
 3. Mirror Stripe and RevenueCat webhook events into a `billing_events` audit table
 4. Add storage buckets for template downloads and content assets
+
+## Local setup order
+
+1. Run `schema.sql`
+2. Run `seed.sql`
+3. Sign up with your main account once through the app
+4. Replace the email in `publisher-setup.sql`
+5. Run `publisher-setup.sql`
+
+After that:
+
+- your main account can access `/admin`
+- the website will read seeded content from Supabase
+- the app can later consume the same published content API/source

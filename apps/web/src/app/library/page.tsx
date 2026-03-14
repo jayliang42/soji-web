@@ -19,6 +19,11 @@ export default async function LibraryPage() {
         <div className="mb-6">
           <ContentSourceBadge source={snapshot.source} />
         </div>
+        {snapshot.error ? (
+          <div className="mb-6 rounded-[24px] border border-clay/30 bg-[#fff1ea] px-5 py-4 text-sm text-cocoa">
+            Supabase content query failed: {snapshot.error}
+          </div>
+        ) : null}
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {snapshot.items.map((item) => (
             <ContentCard
@@ -28,6 +33,11 @@ export default async function LibraryPage() {
             />
           ))}
         </div>
+        {!snapshot.error && snapshot.items.length === 0 ? (
+          <div className="mt-6 rounded-[24px] border border-dune bg-shell px-5 py-4 text-sm text-cocoa/75">
+            No content has been published yet.
+          </div>
+        ) : null}
       </SectionShell>
     </main>
   );

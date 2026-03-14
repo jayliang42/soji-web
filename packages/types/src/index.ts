@@ -66,6 +66,7 @@ export interface ContentItem {
 export interface ContentSnapshot {
   items: ContentItem[];
   source: "supabase" | "demo";
+  error?: string;
 }
 
 export interface OfficeHourSession {

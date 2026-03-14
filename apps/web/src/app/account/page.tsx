@@ -41,6 +41,11 @@ export default async function AccountPage() {
             </div>
           </div>
         </div>
+        {snapshot.error ? (
+          <div className="mt-6 rounded-[24px] border border-clay/30 bg-[#fff1ea] px-5 py-4 text-sm text-cocoa">
+            Supabase session query failed: {snapshot.error}
+          </div>
+        ) : null}
         <div className="mt-6">
           <AuthStatus user={snapshot.user} source={snapshot.source} />
         </div>
