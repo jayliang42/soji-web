@@ -5,13 +5,16 @@
 :root {
   color-scheme: light;
   --bg: #a6ea63;
-  --bg-soft: #acec6f;
-  --paper: #f8f3eb;
-  --ink: #111111;
-  --muted: rgba(17, 17, 17, 0.72);
-  --accent: #efd35a;
-  --accent-soft: rgba(239, 211, 90, 0.42);
-  --border: rgba(17, 17, 17, 0.12);
+  --bg-soft: #b8f078;
+  --paper: #ffffff;
+  --ink: #1a1a1a;
+  --muted: rgba(26, 26, 26, 0.72);
+  --accent: #ffd700;
+  --accent-soft: rgba(255, 215, 0, 0.42);
+  --border: rgba(26, 26, 26, 0.12);
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
 }
 
 * {
@@ -21,11 +24,15 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 50% 34%, rgba(239, 211, 90, 0.5), transparent 15%),
-    linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+  background: 
+    radial-gradient(ellipse 100% 60% at 50% 30%, #d8f895 0%, #c4f280 25%, transparent 65%),
+    radial-gradient(ellipse 80% 40% at 30% 70%, #b8f078 0%, transparent 50%),
+    radial-gradient(ellipse 90% 50% at 70% 20%, #a6ea63 0%, transparent 40%),
+    linear-gradient(135deg, #9ae856 0%, #7bc142 30%, #a6ea63 60%, #88d946 100%);
   color: var(--ink);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
 }
 
 a {
