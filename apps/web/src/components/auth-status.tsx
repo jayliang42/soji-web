@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { UserProfile } from "@soji/types";
+import { hasSupabaseConfig } from "@/lib/env";
+import { LogoutButton } from "@/components/logout-button";
 
 export function AuthStatus({
   user,
@@ -19,9 +21,13 @@ export function AuthStatus({
           : "No active session. Once Supabase env vars are set, this will reflect the real auth state."}
       </p>
       <div className="mt-4 flex gap-4">
-        <Link href="/login" className="font-semibold text-clay">
-          Login
-        </Link>
+        {user ? (
+          <LogoutButton enabled={hasSupabaseConfig() && source === "supabase"} />
+        ) : (
+          <Link href="/login" className="font-semibold text-clay">
+            Login
+          </Link>
+        )}
       </div>
     </div>
   );

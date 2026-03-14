@@ -1,11 +1,21 @@
+import { redirect } from "next/navigation";
 import { AuthStatus } from "@/components/auth-status";
 import { LoginForm } from "@/components/login-form";
 import { SectionShell } from "@/components/section-shell";
 import { hasSupabaseConfig } from "@/lib/env";
 import { getSessionSnapshot } from "@/lib/session";
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
   const snapshot = await getSessionSnapshot();
+  const params = await searchParams;
+
+  if (snapshot.user && snapshot.source === "supabase") {
+    redirect("/account");
+  }
 
   return (
     <main>
@@ -24,7 +34,10 @@ export default async function LoginPage() {
               <li>Set the callback URL to `/auth/callback`.</li>
             </ol>
             <div className="mt-6">
-              <LoginForm enabled={hasSupabaseConfig()} />
+              <LoginForm
+                enabled={hasSupabaseConfig()}
+                nextPath={params.next ?? "/account"}
+              />
             </div>
           </div>
           <div className="grid gap-6">

@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type AuthMode = "sign_in" | "sign_up";
 
-export function LoginForm({ enabled }: { enabled: boolean }) {
-  const router = useRouter();
+export function LoginForm({
+  enabled,
+  nextPath
+}: {
+  enabled: boolean;
+  nextPath: string;
+}) {
   const [mode, setMode] = useState<AuthMode>("sign_in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,8 +66,7 @@ export function LoginForm({ enabled }: { enabled: boolean }) {
         }
 
         await bootstrapProfile();
-        router.push("/account");
-        router.refresh();
+        window.location.assign(nextPath);
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Authentication failed.");
       }
@@ -84,7 +87,8 @@ export function LoginForm({ enabled }: { enabled: boolean }) {
           throw new Error("Supabase browser client is not available.");
         }
 
-        const redirectTo = `${window.location.origin}/auth/callback?next=/account`;
+        const redirectTarget = encodeURIComponent(nextPath);
+        const redirectTo = `${window.location.origin}/auth/callback?next=${redirectTarget}`;
         const { error } = await supabase.auth.signInWithOAuth({
           provider: "google",
           options: { redirectTo }
