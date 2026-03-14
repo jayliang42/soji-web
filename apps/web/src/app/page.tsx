@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { membershipPlans } from "@soji/domain";
 import { PlanCard } from "@/components/plan-card";
@@ -20,26 +21,20 @@ export default function HomePage() {
         </div>
         <div className="mt-16 grid gap-12 lg:grid-cols-2 lg:items-start">
           <div className="mx-auto w-full max-w-[340px] order-2 lg:order-1">
-            <div className="relative rounded-[10px] border border-black/18 bg-[#f7f0e4] p-4 shadow-[16px_16px_0_rgba(17,17,17,0.14)]">
-              <div className="aspect-[0.7] rounded-[4px] bg-[linear-gradient(180deg,#eee6d9_0%,#f7f1e7_100%)] p-5">
-                <p className="text-[0.58rem] font-semibold uppercase leading-4 tracking-[0.14em] text-darktext/75">
-                  The secrets to strategic spending, building a financial foundation
-                  for you and your family, and creating lasting generational wealth
-                </p>
-                <div className="mt-8">
-                  <p className="font-display text-[4rem] leading-[0.9] tracking-[-0.055em] text-[#d2a42f]">
-                    Well
-                  </p>
-                  <p className="font-display text-[4rem] leading-[0.9] tracking-[-0.055em] text-[#d2a42f]">
-                    Endowed
-                  </p>
+            <div className="relative">
+              <div className="absolute inset-4 rounded-[26px] bg-[radial-gradient(circle_at_center,rgba(216,248,149,0.95),rgba(166,234,99,0.55)_48%,transparent_76%)] blur-2xl" />
+              <div className="relative rounded-[10px] border border-black/18 bg-[#f7f0e4] p-4 shadow-[16px_16px_0_rgba(17,17,17,0.14)]">
+                <div className="relative aspect-[0.7] overflow-hidden rounded-[4px] bg-[linear-gradient(180deg,#eef0dc_0%,#e6edd1_100%)]">
+                  <Image
+                    src="/Image_2026-03-14_185549_786.jpg"
+                    alt="Well Endowed cover artwork"
+                    fill
+                    priority
+                    className="object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(166,234,99,0.08),rgba(166,234,99,0.16))] mix-blend-multiply" />
+                  <div className="absolute inset-0 ring-1 ring-black/6" />
                 </div>
-                <div className="mt-10 rounded-[6px] bg-[#ead7b6] px-4 py-12 text-center text-sm uppercase tracking-[0.18em] text-darktext/55">
-                  Cover visual
-                </div>
-                <p className="mt-6 font-display text-[2.1rem] tracking-[-0.03em] text-[#a87512]">
-                  Soji
-                </p>
               </div>
             </div>
           </div>
