@@ -13,7 +13,7 @@
     "@soji/domain": "workspace:*",
     "@soji/types": "workspace:*",
     "@soji/ui": "workspace:*",
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.1",
     "clsx": "^2.1.1",
     "next": "^15.2.1",
