@@ -11,13 +11,13 @@ export function SectionShell({
   description: string;
 }>) {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-10">
-      <div className="max-w-2xl">
-        <p className="text-sm uppercase tracking-[0.35em] text-clay">{eyebrow}</p>
-        <h2 className="mt-4 font-display text-4xl text-cocoa">{title}</h2>
-        <p className="mt-4 text-lg text-cocoa/75">{description}</p>
+    <section className="mx-auto max-w-6xl px-6 py-16">
+      <div className="max-w-3xl">
+        <p className="text-[0.72rem] uppercase tracking-[0.32em] text-cocoa/55">{eyebrow}</p>
+        <h2 className="mt-4 font-display text-5xl leading-[0.95] text-cocoa">{title}</h2>
+        <p className="mt-5 max-w-2xl text-lg leading-8 text-cocoa/72">{description}</p>
       </div>
-      <div className="mt-8">{children}</div>
+      <div className="mt-10">{children}</div>
     </section>
   );
 }

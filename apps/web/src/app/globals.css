@@ -4,19 +4,42 @@
 
 :root {
   color-scheme: light;
+  --bg: #a6ea63;
+  --bg-soft: #acec6f;
+  --paper: #f8f3eb;
+  --ink: #111111;
+  --muted: rgba(17, 17, 17, 0.72);
+  --accent: #efd35a;
+  --accent-soft: rgba(239, 211, 90, 0.42);
+  --border: rgba(17, 17, 17, 0.12);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(216, 107, 61, 0.22), transparent 28%),
-    linear-gradient(180deg, #f6efe6 0%, #efe1d1 100%);
-  color: #20150d;
-  font-family: "Trebuchet MS", sans-serif;
+    radial-gradient(circle at 50% 34%, rgba(239, 211, 90, 0.5), transparent 15%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(242, 207, 90, 0.45);
 }
