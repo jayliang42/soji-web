@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Soji",
+    "slug": "soji",
+    "scheme": "soji",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

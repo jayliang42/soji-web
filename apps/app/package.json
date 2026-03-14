@@ -1,0 +1,27 @@
+{
+  "name": "@soji/app",
+  "version": "0.0.1",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "lint": "expo lint",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@soji/domain": "workspace:*",
+    "@soji/types": "workspace:*",
+    "expo": "^53.0.0",
+    "expo-router": "^5.0.2",
+    "expo-status-bar": "~2.2.3",
+    "react": "^19.0.0",
+    "react-native": "^0.79.0",
+    "react-native-safe-area-context": "^5.4.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.10",
+    "typescript": "^5.8.2"
+  }
+}
