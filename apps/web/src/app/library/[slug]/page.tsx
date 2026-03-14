@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { hasEntitlement } from "@soji/domain";
+import { ContentSourceBadge } from "@/components/content-source-badge";
 import { SectionShell } from "@/components/section-shell";
 import { getContentBySlug } from "@/lib/content";
 import { getCurrentEntitlements } from "@/lib/session";
@@ -10,13 +11,14 @@ export default async function ContentDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const item = getContentBySlug(slug);
+  const result = await getContentBySlug(slug);
   const entitlements = await getCurrentEntitlements();
 
-  if (!item) {
+  if (!result.item) {
     notFound();
   }
 
+  const { item, source } = result;
   const unlocked = hasEntitlement(entitlements, item.requiredEntitlements);
 
   return (
@@ -26,6 +28,9 @@ export default async function ContentDetailPage({
         title={item.title}
         description={item.summary}
       >
+        <div className="mb-6">
+          <ContentSourceBadge source={source} />
+        </div>
         <div className="rounded-[32px] border border-dune bg-shell p-8">
           {unlocked ? (
             <div className="space-y-4 text-cocoa/80">

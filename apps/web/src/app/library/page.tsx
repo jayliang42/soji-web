@@ -1,11 +1,12 @@
 import { hasEntitlement } from "@soji/domain";
 import { ContentCard } from "@/components/content-card";
+import { ContentSourceBadge } from "@/components/content-source-badge";
 import { SectionShell } from "@/components/section-shell";
-import { getAllContent } from "@/lib/content";
+import { getContentSnapshot } from "@/lib/content";
 import { getCurrentEntitlements } from "@/lib/session";
 
 export default async function LibraryPage() {
-  const content = getAllContent();
+  const snapshot = await getContentSnapshot();
   const entitlements = await getCurrentEntitlements();
 
   return (
@@ -15,8 +16,11 @@ export default async function LibraryPage() {
         title="Content, templates, and member-only drops"
         description="Each content item declares the entitlements required to unlock it."
       >
+        <div className="mb-6">
+          <ContentSourceBadge source={snapshot.source} />
+        </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {content.map((item) => (
+          {snapshot.items.map((item) => (
             <ContentCard
               key={item.id}
               item={item}
