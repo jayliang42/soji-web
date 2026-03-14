@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header className="sticky top-0 z-20 bg-gradient-to-r from-richgreen to-darkgreen/90 backdrop-blur-sm">
+        <header className="sticky top-0 z-20 bg-gradient-to-r from-sky-300 to-blue-400/90 backdrop-blur-sm">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
             <Link href="/" className="text-2xl font-black text-darktext">
               Soji
