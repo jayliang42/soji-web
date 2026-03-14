@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { hasEntitlement } from "@soji/domain";
+import { ContentPreviewCta } from "@/components/content-preview-cta";
 import { ContentSourceBadge } from "@/components/content-source-badge";
 import { SectionShell } from "@/components/section-shell";
+import { getContentAccessMode, getPreviewBody } from "@/lib/content-access";
 import { getContentBySlug } from "@/lib/content";
 import { getCurrentEntitlements } from "@/lib/session";
 
@@ -19,7 +20,9 @@ export default async function ContentDetailPage({
   }
 
   const { item, source, error } = result;
-  const unlocked = hasEntitlement(entitlements, item.requiredEntitlements);
+  const accessMode = getContentAccessMode(item, entitlements);
+  const displayBody =
+    accessMode === "preview" ? getPreviewBody(item.body) : item.body;
 
   return (
     <main>
@@ -37,9 +40,9 @@ export default async function ContentDetailPage({
           </div>
         ) : null}
         <div className="rounded-[32px] border border-dune bg-shell p-8">
-          {unlocked ? (
+          {accessMode !== "locked" ? (
             <div className="space-y-4 text-cocoa/80">
-              <p>{item.body}</p>
+              <div className="whitespace-pre-wrap">{displayBody}</div>
               <p className="text-sm text-cocoa/60">
                 Required entitlements: {item.requiredEntitlements.join(", ")}
               </p>
@@ -54,6 +57,9 @@ export default async function ContentDetailPage({
               </p>
             </div>
           )}
+          {accessMode === "preview" || accessMode === "locked" ? (
+            <ContentPreviewCta mode={accessMode} />
+          ) : null}
         </div>
       </SectionShell>
     </main>

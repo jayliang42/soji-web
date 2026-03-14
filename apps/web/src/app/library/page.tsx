@@ -1,7 +1,7 @@
-import { hasEntitlement } from "@soji/domain";
 import { ContentCard } from "@/components/content-card";
 import { ContentSourceBadge } from "@/components/content-source-badge";
 import { SectionShell } from "@/components/section-shell";
+import { getContentAccessMode } from "@/lib/content-access";
 import { getContentSnapshot } from "@/lib/content";
 import { getCurrentEntitlements } from "@/lib/session";
 
@@ -29,7 +29,7 @@ export default async function LibraryPage() {
             <ContentCard
               key={item.id}
               item={item}
-              locked={!hasEntitlement(entitlements, item.requiredEntitlements)}
+              accessMode={getContentAccessMode(item, entitlements)}
             />
           ))}
         </div>

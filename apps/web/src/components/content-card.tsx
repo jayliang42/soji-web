@@ -1,7 +1,13 @@
 import type { ContentItem } from "@soji/types";
 import Link from "next/link";
 
-export function ContentCard({ item, locked }: { item: ContentItem; locked: boolean }) {
+export function ContentCard({
+  item,
+  accessMode
+}: {
+  item: ContentItem;
+  accessMode: "full" | "preview" | "locked";
+}) {
   return (
     <article className="rounded-[28px] border border-dune bg-shell p-6">
       <div className="flex items-center justify-between text-sm text-cocoa/60">
@@ -19,7 +25,11 @@ export function ContentCard({ item, locked }: { item: ContentItem; locked: boole
       </div>
       <div className="mt-6 flex items-center justify-between">
         <span className="text-sm text-clay">
-          {locked ? "Locked by tier" : "Available now"}
+          {accessMode === "full"
+            ? "Available now"
+            : accessMode === "preview"
+              ? "Preview available"
+              : "Locked by tier"}
         </span>
         <Link href={`/library/${item.slug}`} className="text-sm font-semibold text-cocoa">
           View
