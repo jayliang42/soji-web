@@ -24,3 +24,12 @@ Create `apps/web/.env.local` with:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
+
+## Collaboration
+
+See [CONTRIBUTING.md](/Users/liangzhisong/PersonalProject/soji-web/CONTRIBUTING.md) for:
+
+- branch naming
+- PR rules
+- testing expectations
+- Claude vs Codex ownership split
