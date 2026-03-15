@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { membershipPlans } from "@soji/domain";
+import { HeroBook } from "@/components/hero-book";
 import { PlanCard } from "@/components/plan-card";
 import { SectionShell } from "@/components/section-shell";
 
@@ -19,29 +20,8 @@ export default function HomePage() {
           </p>
         </div>
         <div className="mt-16 grid gap-12 lg:grid-cols-2 lg:items-start">
-          <div className="mx-auto w-full max-w-[340px] order-2 lg:order-1">
-            <div className="relative rounded-[10px] border border-black/18 bg-[#f7f0e4] p-4 shadow-[16px_16px_0_rgba(17,17,17,0.14)]">
-              <div className="aspect-[0.7] rounded-[4px] bg-[linear-gradient(180deg,#eee6d9_0%,#f7f1e7_100%)] p-5">
-                <p className="text-[0.58rem] font-semibold uppercase leading-4 tracking-[0.14em] text-darktext/75">
-                  The secrets to strategic spending, building a financial foundation
-                  for you and your family, and creating lasting generational wealth
-                </p>
-                <div className="mt-8">
-                  <p className="font-display text-[4rem] leading-[0.9] tracking-[-0.055em] text-[#d2a42f]">
-                    Well
-                  </p>
-                  <p className="font-display text-[4rem] leading-[0.9] tracking-[-0.055em] text-[#d2a42f]">
-                    Endowed
-                  </p>
-                </div>
-                <div className="mt-10 rounded-[6px] bg-[#ead7b6] px-4 py-12 text-center text-sm uppercase tracking-[0.18em] text-darktext/55">
-                  Cover visual
-                </div>
-                <p className="mt-6 font-display text-[2.1rem] tracking-[-0.03em] text-[#a87512]">
-                  Soji
-                </p>
-              </div>
-            </div>
+          <div className="order-2 lg:order-1">
+            <HeroBook />
           </div>
           <div className="max-w-[680px] order-1 lg:order-2">
             <h2 className="text-4xl font-black leading-[1.1] text-darktext md:text-5xl">
