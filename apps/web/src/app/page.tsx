@@ -22,18 +22,17 @@ export default function HomePage() {
         <div className="mt-16 grid gap-12 lg:grid-cols-2 lg:items-start">
           <div className="mx-auto w-full max-w-[340px] order-2 lg:order-1">
             <div className="relative">
-              <div className="absolute inset-4 rounded-[26px] bg-[radial-gradient(circle_at_center,rgba(216,248,149,0.95),rgba(166,234,99,0.55)_48%,transparent_76%)] blur-2xl" />
-              <div className="relative rounded-[10px] border border-black/18 bg-[#f7f0e4] p-4 shadow-[16px_16px_0_rgba(17,17,17,0.14)]">
-                <div className="relative aspect-[0.7] overflow-hidden rounded-[4px] bg-[linear-gradient(180deg,#eef0dc_0%,#e6edd1_100%)]">
+              <div className="absolute inset-8 rounded-[42px] bg-[radial-gradient(circle_at_center,rgba(214,224,154,0.94),rgba(186,209,120,0.56)_52%,transparent_80%)] blur-3xl" />
+              <div className="absolute inset-x-12 bottom-8 top-14 rounded-[48px] bg-[radial-gradient(circle_at_50%_35%,rgba(239,241,214,0.52),rgba(202,214,145,0.32)_54%,transparent_78%)]" />
+              <div className="relative px-1 py-1">
+                <div className="relative aspect-[0.7] overflow-hidden">
                   <Image
-                    src="/Image_2026-03-14_185549_786.jpg"
+                    src="/well-endowed-cutout.png"
                     alt="Well Endowed cover artwork"
                     fill
                     priority
-                    className="object-cover object-center"
+                    className="object-contain object-center drop-shadow-[18px_20px_0_rgba(17,17,17,0.12)]"
                   />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(166,234,99,0.08),rgba(166,234,99,0.16))] mix-blend-multiply" />
-                  <div className="absolute inset-0 ring-1 ring-black/6" />
                 </div>
               </div>
             </div>
