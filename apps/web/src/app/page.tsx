@@ -4,7 +4,14 @@ import { membershipPlans } from "@soji/domain";
 import { PlanCard } from "@/components/plan-card";
 import { SectionShell } from "@/components/section-shell";
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams
+}: {
+  searchParams: Promise<{ cover?: string }>;
+}) {
+  const params = await searchParams;
+  const coverMode = params.cover === "cutout" ? "cutout" : "original";
+
   return (
     <main>
       <section className="mx-auto max-w-6xl px-6 pb-16 pt-12">
@@ -22,18 +29,60 @@ export default function HomePage() {
         <div className="mt-16 grid gap-12 lg:grid-cols-2 lg:items-start">
           <div className="mx-auto w-full max-w-[340px] order-2 lg:order-1">
             <div className="relative">
-              <div className="absolute inset-8 rounded-[42px] bg-[radial-gradient(circle_at_center,rgba(214,224,154,0.94),rgba(186,209,120,0.56)_52%,transparent_80%)] blur-3xl" />
-              <div className="absolute inset-x-12 bottom-8 top-14 rounded-[48px] bg-[radial-gradient(circle_at_50%_35%,rgba(239,241,214,0.52),rgba(202,214,145,0.32)_54%,transparent_78%)]" />
+              {coverMode === "cutout" ? (
+                <>
+                  <div className="absolute inset-8 rounded-[42px] bg-[radial-gradient(circle_at_center,rgba(214,224,154,0.94),rgba(186,209,120,0.56)_52%,transparent_80%)] blur-3xl" />
+                  <div className="absolute inset-x-12 bottom-8 top-14 rounded-[48px] bg-[radial-gradient(circle_at_50%_35%,rgba(239,241,214,0.52),rgba(202,214,145,0.32)_54%,transparent_78%)]" />
+                </>
+              ) : null}
               <div className="relative px-1 py-1">
-                <div className="relative aspect-[0.7] overflow-hidden">
-                  <Image
-                    src="/well-endowed-cutout.png"
-                    alt="Well Endowed cover artwork"
-                    fill
-                    priority
-                    className="object-contain object-center drop-shadow-[18px_20px_0_rgba(17,17,17,0.12)]"
-                  />
+                <div
+                  className={
+                    coverMode === "cutout"
+                      ? "relative aspect-[0.7] overflow-hidden"
+                      : "relative aspect-[0.7] overflow-hidden rounded-[12px] border border-black/15 bg-[#f4eee3] p-4 shadow-[16px_16px_0_rgba(17,17,17,0.12)]"
+                  }
+                >
+                  <div className={coverMode === "cutout" ? "relative h-full w-full" : "relative h-full w-full overflow-hidden rounded-[6px]"}>
+                    <Image
+                      src={
+                        coverMode === "cutout"
+                          ? "/well-endowed-cutout.png"
+                          : "/Image_2026-03-14_185549_786.jpg"
+                      }
+                      alt="Well Endowed cover artwork"
+                      fill
+                      priority
+                      className={
+                        coverMode === "cutout"
+                          ? "object-contain object-center"
+                          : "object-cover object-center"
+                      }
+                    />
+                  </div>
                 </div>
+              </div>
+              <div className="mt-4 flex justify-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-darktext/70">
+                <Link
+                  href="/"
+                  className={
+                    coverMode === "original"
+                      ? "rounded-full bg-black px-4 py-2 text-white"
+                      : "rounded-full border border-black/20 px-4 py-2"
+                  }
+                >
+                  Original cover
+                </Link>
+                <Link
+                  href="/?cover=cutout"
+                  className={
+                    coverMode === "cutout"
+                      ? "rounded-full bg-black px-4 py-2 text-white"
+                      : "rounded-full border border-black/20 px-4 py-2"
+                  }
+                >
+                  Cutout blend
+                </Link>
               </div>
             </div>
           </div>
