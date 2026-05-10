@@ -12,6 +12,7 @@ export const membershipPlans: MembershipPlan[] = [
     id: "tier_1",
     name: "Tier 1",
     monthlyPrice: 29,
+    stripePriceLookupKey: "tier_1_monthly",
     description: "Monthly articles and the foundational content library.",
     entitlements: ["content.basic"]
   },
@@ -19,6 +20,7 @@ export const membershipPlans: MembershipPlan[] = [
     id: "tier_2",
     name: "Tier 2",
     monthlyPrice: 128,
+    stripePriceLookupKey: "tier_2_monthly",
     description: "Full content, case studies, templates, and monthly update drops.",
     featured: true,
     entitlements: [
@@ -33,6 +35,7 @@ export const membershipPlans: MembershipPlan[] = [
     id: "tier_3",
     name: "Tier 3",
     monthlyPrice: 299,
+    stripePriceLookupKey: "tier_3_monthly",
     description: "Everything in Tier 2 plus office hours and private group access.",
     entitlements: [
       "content.basic",

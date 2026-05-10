@@ -33,3 +33,26 @@ See [CONTRIBUTING.md](/Users/liangzhisong/PersonalProject/soji-web/CONTRIBUTING.
 - PR rules
 - testing expectations
 - Claude vs Codex ownership split
+
+## Resume Deployment
+
+For a portfolio or resume deployment, the fastest path is:
+
+1. Push the repo to GitHub
+2. Import the repo into Vercel
+3. Set the project root to `apps/web`
+4. Add environment variables only if you want live integrations
+
+Minimal showcase deployment:
+
+- No custom domain required
+- Vercel default domain is enough
+- If Supabase or Stripe env vars are missing, the app falls back to demo content and demo session states
+
+Recommended env vars for a fuller demo:
+
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`

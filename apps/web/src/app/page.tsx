@@ -3,8 +3,15 @@ import Link from "next/link";
 import { membershipPlans } from "@soji/domain";
 import { PlanCard } from "@/components/plan-card";
 import { SectionShell } from "@/components/section-shell";
+import { hasStripeConfig } from "@/lib/env";
+import { getSessionSnapshot } from "@/lib/session";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const snapshot = await getSessionSnapshot();
+  const canCheckout =
+    snapshot.source === "supabase" && Boolean(snapshot.user?.email);
+  const loginHref = "/login?next=/pricing";
+
   return (
     <main>
       <section className="mx-auto max-w-6xl px-6 pb-16 pt-12">
@@ -111,7 +118,14 @@ export default function HomePage() {
       >
         <div className="grid gap-6 lg:grid-cols-3">
           {membershipPlans.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} />
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              customerEmail={snapshot.user?.email}
+              loginHref={loginHref}
+              stripeConfigured={hasStripeConfig()}
+              canCheckout={canCheckout}
+            />
           ))}
         </div>
       </SectionShell>

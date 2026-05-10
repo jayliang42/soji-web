@@ -1,8 +1,20 @@
-import Link from "next/link";
 import type { MembershipPlan } from "@soji/types";
+import { CheckoutButton } from "@/components/checkout-button";
 import { cn } from "@/lib/utils";
 
-export function PlanCard({ plan }: { plan: MembershipPlan }) {
+export function PlanCard({
+  plan,
+  customerEmail,
+  loginHref,
+  stripeConfigured,
+  canCheckout
+}: {
+  plan: MembershipPlan;
+  customerEmail?: string;
+  loginHref: string;
+  stripeConfigured: boolean;
+  canCheckout: boolean;
+}) {
   return (
     <div
       className={cn(
@@ -41,12 +53,13 @@ export function PlanCard({ plan }: { plan: MembershipPlan }) {
         ))}
       </ul>
       <div className="mt-10">
-        <Link
-          href="/login"
-          className="block w-full rounded-full bg-black px-6 py-4 text-center text-sm font-bold tracking-wide text-white hover:bg-gray-800 transition-all duration-200 shadow-lg"
-        >
-          Join {plan.name}
-        </Link>
+        <CheckoutButton
+          lookupKey={plan.stripePriceLookupKey}
+          customerEmail={customerEmail}
+          loginHref={loginHref}
+          stripeConfigured={stripeConfigured}
+          canCheckout={canCheckout}
+        />
       </div>
     </div>
   );

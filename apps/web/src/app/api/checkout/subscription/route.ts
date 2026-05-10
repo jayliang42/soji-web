@@ -24,12 +24,30 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const prices = await stripe.prices.list({
+    lookup_keys: [parsed.data.lookupKey],
+    active: true,
+    limit: 1,
+    expand: ["data.product"]
+  });
+  const price = prices.data[0];
+
+  if (!price) {
+    return NextResponse.json(
+      { error: `No active Stripe price found for lookup key "${parsed.data.lookupKey}".` },
+      { status: 404 }
+    );
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer_email: parsed.data.customerEmail,
-    line_items: [{ price: parsed.data.lookupKey, quantity: 1 }],
+    line_items: [{ price: price.id, quantity: 1 }],
     success_url: `${env.SITE_URL}/account?checkout=success`,
-    cancel_url: `${env.SITE_URL}/pricing?checkout=cancelled`
+    cancel_url: `${env.SITE_URL}/pricing?checkout=cancelled`,
+    metadata: {
+      price_lookup_key: parsed.data.lookupKey
+    }
   });
 
   return NextResponse.json({ url: session.url });
