@@ -1,16 +1,40 @@
 {
   "name": "soji-platform",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "packageManager": "pnpm@10.8.1",
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build",
-    "lint": "turbo lint",
-    "typecheck": "turbo typecheck"
+    "build": "corepack pnpm --filter @soji/web build",
+    "db:lint": "corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 db lint --local --level warning",
+    "db:migrations": "corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 migration list --local",
+    "db:reset": "corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 db reset --local --yes",
+    "db:schema:check": "node scripts/check-schema-idempotence.mjs",
+    "db:types": "node scripts/sync-supabase-types.mjs --write",
+    "db:types:check": "node scripts/sync-supabase-types.mjs --check",
+    "deploy:check": "node scripts/check-deploy-artifact.mjs",
+    "docs:check": "node scripts/check-api-docs.mjs && node scripts/check-doc-links.mjs",
+    "lint": "corepack pnpm --filter @soji/web lint",
+    "phase1:uat:check": "node scripts/check-phase1-uat-evidence.mjs",
+    "phase1:uat:ready": "node scripts/check-phase1-uat-evidence.mjs --ready",
+    "test": "corepack pnpm -r --if-present test",
+    "test:db": "corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 test db --local supabase/tests",
+    "test:e2e": "corepack pnpm --filter @soji/web test:e2e",
+    "test:uat": "node --test scripts/check-phase1-uat-evidence.test.mjs",
+    "typecheck": "corepack pnpm -r --if-present typecheck"
   },
   "devDependencies": {
     "sharp": "^0.34.5",
-    "turbo": "^2.5.0",
+    "turbo": "2.9.14",
     "typescript": "^5.8.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "next>postcss": "8.5.19",
+      "shell-quote": "1.8.4",
+      "stripe>qs": "6.15.2"
+    }
   }
 }
