@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-26T08:38:39.851Z"
+last_updated: "2026-07-26T08:55:32Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 5
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-21)
 
 Phase: 01 (Production Identity and Admin) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Production deployment/Auth UAT checkpoint
 Last activity: 2026-07-26
 
 Progress: [███████░░░] 67%
@@ -56,10 +56,11 @@ Progress: [███████░░░] 67%
 - Admin remains part of the Web app and shares Supabase identity.
 - Billing receipt evidence remains durable and separate from processing outcome.
 - Current implementation already includes broad billing, security, Admin, deployment, and UI foundations; this milestone focuses on production proof.
+- Reader-facing content metadata uses stable presentation labels and semantic dates rather than storage enums or raw ISO timestamps.
 
 ### Pending Todos
 
-- Discuss and plan Phase 1 using the production credential checklist.
+- Complete the Phase 1 provider and Admin UAT after the canonical Vercel deployment is restored.
 - Define the membership-subscription dispute policy before Phase 2 planning.
 - Select the production deployment platform before Phase 5 planning.
 
@@ -79,6 +80,6 @@ Progress: [███████░░░] 67%
 
 ## Session Continuity
 
-Last session: 2026-07-26T08:38:25.964Z
-Stopped at: Paused 01-03 at production deployment/Auth checkpoint
+Last session: 2026-07-26T08:55:32Z
+Stopped at: Paused 01-03 at production deployment/Auth checkpoint after public-surface UI follow-up
 Resume file: .planning/phases/01-production-identity-and-admin/01-03-PLAN.md
