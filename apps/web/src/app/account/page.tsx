@@ -253,7 +253,10 @@ export default async function AccountPage({
     user &&
       (user.roles.includes("admin") || user.roles.includes("editor"))
   );
-  const plan = getPlanByTier(user?.tier ?? "free");
+  const accountTruthUnavailable = Boolean(snapshot.error);
+  const plan = accountTruthUnavailable
+    ? null
+    : getPlanByTier(user?.tier ?? "free");
   const entitlements = snapshot.entitlements;
   const [checkoutReturn, purchases, subscriptions] = await Promise.all([
     getCheckoutReturnStatus({
@@ -311,12 +314,16 @@ export default async function AccountPage({
         <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
           <div className="rounded-lg border border-dune bg-shell p-6">
             <p className="text-sm uppercase text-cocoa/70">Current tier</p>
-            <h3 className="mt-3 font-display text-4xl text-cocoa">{plan?.name ?? "Free"}</h3>
+            <h3 className="mt-3 font-display text-4xl text-cocoa">
+              {accountTruthUnavailable
+                ? "Membership unavailable"
+                : plan?.name ?? "Free"}
+            </h3>
             <p className="mt-3 text-cocoa/75">{user?.email ?? "No active session"}</p>
             <p className="mt-2 text-sm text-cocoa/70">
               {user ? `Sign-in methods: ${user.providers.join(", ") || "email"}` : "Create an account to start checkout and save access."}
             </p>
-            {user ? (
+            {user && !accountTruthUnavailable ? (
               <Link
                 href="/account?view=subscriptions#membership-options"
                 className="mt-5 inline-flex min-h-11 items-center rounded-md border border-cocoa px-5 py-3 text-sm font-semibold text-cocoa transition-colors hover:bg-cocoa hover:text-white motion-reduce:transition-none"
@@ -345,7 +352,12 @@ export default async function AccountPage({
             <p className="text-sm uppercase text-cocoa/70">
               Active entitlements
             </p>
-            {entitlements.length > 0 ? (
+            {accountTruthUnavailable ? (
+              <div className="mt-4 border-l-4 border-dune bg-sand px-4 py-3 text-sm text-cocoa/72">
+                Benefits could not be verified. Refresh Account before relying
+                on membership access.
+              </div>
+            ) : entitlements.length > 0 ? (
               <div className="mt-4 flex flex-wrap gap-3">
                 {entitlements.map((entitlement) => (
                   <span

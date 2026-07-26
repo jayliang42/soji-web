@@ -138,6 +138,32 @@ describe("account billing management readiness", () => {
     );
   });
 
+  it("renders neutral placeholders when account truth cannot be verified", async () => {
+    pageMocks.getSessionSnapshot.mockResolvedValue({
+      entitlements: ["content.basic"],
+      error: "session_query_failed",
+      source: "supabase",
+      user: {
+        avatarUrl: null,
+        email: "member@example.com",
+        fullName: "Member",
+        id: "user-id",
+        providers: ["email"],
+        roles: ["member"],
+        tier: "free"
+      }
+    });
+
+    const html = await renderAccount();
+
+    expect(html).toContain("Account services are temporarily unavailable");
+    expect(html).toContain("Membership unavailable");
+    expect(html).toContain("Benefits could not be verified.");
+    expect(html).not.toMatch(/\bFree\b/);
+    expect(html).not.toContain("No paid benefits are active yet.");
+    expect(html).not.toContain("Foundational monthly essays");
+  });
+
   it("keeps membership options collapsed until the member chooses Upgrade", async () => {
     pageMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
 
