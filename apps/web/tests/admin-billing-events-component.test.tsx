@@ -210,6 +210,9 @@ describe("Admin Billing incident ledger", () => {
     expect(getBillingRetryResultMessage("failed")).toContain(
       "could not be retried"
     );
+    expect(getBillingRetryResultMessage("retryable")).toContain(
+      "retryable again"
+    );
   });
 
   it("applies the complete successful retry snapshot and restores focus to the event", async () => {
@@ -339,6 +342,85 @@ describe("Admin Billing incident ledger", () => {
     ]);
     expect(expiredHtml).toContain("Processing · Lease expired");
     expect(expiredHtml).toContain("Retry processing");
+  });
+
+  it("replaces an unclaimed row with its failed retryable snapshot and matching message", async () => {
+    const failedEvent = event("failed", {
+      attemptCount: 2,
+      id: baseEvent.id,
+      lastAttemptedAt: new Date().toISOString(),
+      processingError: "stripe_api_failed",
+      processingStartedAt: null
+    });
+    const onEvent = vi.fn();
+    const onMessage = vi.fn();
+
+    await executeBillingEventRetry({
+      eventId: baseEvent.id,
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            event: failedEvent,
+            ok: false,
+            reason: "event_retryable_state_changed"
+          }),
+          { status: 409 }
+        ),
+      onEvent,
+      onFocus: () => undefined,
+      onMessage,
+      onPendingChange: () => undefined,
+      pendingIds: new Set()
+    });
+
+    expect(onEvent).toHaveBeenCalledWith(failedEvent);
+    expect(onMessage).toHaveBeenLastCalledWith({
+      heading: expect.stringContaining("retryable again"),
+      tone: "status"
+    });
+    const html = render([failedEvent]);
+    expect(html).toContain("Processing · Failed");
+    expect(html).toContain("Retry processing");
+  });
+
+  it("replaces an unclaimed row with its expired lease snapshot and matching message", async () => {
+    const processingStartedAt = new Date(Date.now() - 120_000).toISOString();
+    const expiredEvent = event("processing", {
+      attemptCount: 2,
+      id: baseEvent.id,
+      lastAttemptedAt: processingStartedAt,
+      processingError: null,
+      processingStartedAt
+    });
+    const onEvent = vi.fn();
+    const onMessage = vi.fn();
+
+    await executeBillingEventRetry({
+      eventId: baseEvent.id,
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            event: expiredEvent,
+            ok: false,
+            reason: "event_retryable_state_changed"
+          }),
+          { status: 409 }
+        ),
+      onEvent,
+      onFocus: () => undefined,
+      onMessage,
+      onPendingChange: () => undefined,
+      pendingIds: new Set()
+    });
+
+    expect(onEvent).toHaveBeenCalledWith(expiredEvent);
+    expect(onMessage).toHaveBeenLastCalledWith({
+      heading: expect.stringContaining("retryable again"),
+      tone: "status"
+    });
+    const html = render([expiredEvent]);
+    expect(html).toContain("Processing · Lease expired");
+    expect(html).toContain("Retry processing");
   });
 
   it("allows concurrent retries for different records while rejecting a duplicate record retry", async () => {

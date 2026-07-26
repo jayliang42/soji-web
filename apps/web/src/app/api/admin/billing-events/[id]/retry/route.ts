@@ -5,6 +5,7 @@ import {
   mapBillingEventRow,
   type BillingEventRow
 } from "@/lib/billing";
+import { isBillingProcessingLeaseActive } from "@/lib/billing-processing";
 import { getAdminContext } from "@/lib/publisher";
 import { reportOperationalError } from "@/lib/observability";
 import { getStripeClient } from "@/lib/stripe";
@@ -26,6 +27,21 @@ function getStableProcessingError(value: unknown) {
   return typeof value === "string" && /^[a-z][a-z0-9_]{0,119}$/.test(value)
     ? value
     : "billing_event_processing_failed";
+}
+
+function getUnclaimedRetryReason(event: ReturnType<typeof mapBillingEventRow>) {
+  if (event.status === "processed" || event.status === "ignored") {
+    return "event_already_settled";
+  }
+  if (
+    isBillingProcessingLeaseActive(
+      event.status,
+      event.processingStartedAt
+    )
+  ) {
+    return "event_processing_in_progress";
+  }
+  return "event_retryable_state_changed";
 }
 
 export async function POST(
@@ -126,10 +142,7 @@ export async function POST(
         {
           event,
           ok: false,
-          reason:
-            event.status === "processed" || event.status === "ignored"
-              ? "event_already_settled"
-              : "event_processing_in_progress"
+          reason: getUnclaimedRetryReason(event)
         },
         { status: 409 }
       );

@@ -174,7 +174,7 @@ describe("admin billing retry authorization", () => {
   });
 
   it("rejects a retry while another worker owns an active lease", async () => {
-    const processingStartedAt = "2026-07-14T12:00:00.000Z";
+    const processingStartedAt = new Date().toISOString();
     retryMocks.beginBillingEventAttempt.mockResolvedValue({
       claimed: false,
       status: "processing"
@@ -210,6 +210,76 @@ describe("admin billing retry authorization", () => {
       reason: "event_processing_in_progress"
     });
     expect(retryMocks.maybeSingle).toHaveBeenCalledTimes(2);
+    expect(retryMocks.retrieve).not.toHaveBeenCalled();
+  });
+
+  it("returns a retryable state-changed reason when the unclaimed attempt has failed", async () => {
+    retryMocks.beginBillingEventAttempt.mockResolvedValue({
+      claimed: false,
+      status: "processing"
+    });
+    retryMocks.maybeSingle
+      .mockResolvedValueOnce({ data: billingEventRow, error: null })
+      .mockResolvedValueOnce({
+        data: {
+          ...billingEventRow,
+          attempt_count: 2,
+          last_attempted_at: "2026-07-14T12:00:00.000Z",
+          processing_error: "stripe_api_failed",
+          processing_started_at: null,
+          status: "failed"
+        },
+        error: null
+      });
+
+    const response = await POST(new Request("http://localhost:3000"), params);
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({
+      event: {
+        attemptCount: 2,
+        processingError: "stripe_api_failed",
+        processingStartedAt: null,
+        status: "failed"
+      },
+      ok: false,
+      reason: "event_retryable_state_changed"
+    });
+    expect(retryMocks.retrieve).not.toHaveBeenCalled();
+  });
+
+  it("returns a retryable state-changed reason when the refreshed processing lease has expired", async () => {
+    const processingStartedAt = new Date(Date.now() - 120_000).toISOString();
+    retryMocks.beginBillingEventAttempt.mockResolvedValue({
+      claimed: false,
+      status: "processing"
+    });
+    retryMocks.maybeSingle
+      .mockResolvedValueOnce({ data: billingEventRow, error: null })
+      .mockResolvedValueOnce({
+        data: {
+          ...billingEventRow,
+          attempt_count: 2,
+          last_attempted_at: processingStartedAt,
+          processing_error: null,
+          processing_started_at: processingStartedAt,
+          status: "processing"
+        },
+        error: null
+      });
+
+    const response = await POST(new Request("http://localhost:3000"), params);
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({
+      event: {
+        attemptCount: 2,
+        processingStartedAt,
+        status: "processing"
+      },
+      ok: false,
+      reason: "event_retryable_state_changed"
+    });
     expect(retryMocks.retrieve).not.toHaveBeenCalled();
   });
 

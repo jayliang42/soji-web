@@ -71,7 +71,13 @@ export function getBillingEventHeadingId(eventId: string) {
 }
 
 export function getBillingRetryResultMessage(
-  result: "active" | "failed" | "ignored" | "processed"
+  result:
+    | "active"
+    | "failed"
+    | "ignored"
+    | "processed"
+    | "retryable"
+    | "settled"
 ) {
   if (result === "processed") {
     return "Billing event processed successfully.";
@@ -82,7 +88,44 @@ export function getBillingRetryResultMessage(
   if (result === "active") {
     return "This event is already being processed. Retry becomes available if its lease expires.";
   }
+  if (result === "retryable") {
+    return "This event is retryable again. Its latest processing state is shown.";
+  }
+  if (result === "settled") {
+    return "This event has already settled. Its latest processing state is shown.";
+  }
   return "This event could not be retried. Review its latest processing state, then try again or reconcile from Stripe.";
+}
+
+function getBillingRetryConflictResult(
+  event: BillingEventLog | null,
+  reason: string | undefined
+) {
+  if (event?.status === "processed" || event?.status === "ignored") {
+    return "settled" as const;
+  }
+  if (
+    event?.status === "processing" &&
+    isBillingProcessingLeaseActive(
+      event.status,
+      event.processingStartedAt
+    )
+  ) {
+    return "active" as const;
+  }
+  if (
+    reason === "event_retryable_state_changed" &&
+    (
+      event?.status === "received" ||
+      event?.status === "failed" ||
+      event?.status === "processing"
+    )
+  ) {
+    return "retryable" as const;
+  }
+  return reason === "event_processing_in_progress"
+    ? ("active" as const)
+    : ("failed" as const);
 }
 
 export function getBillingReconciliationValidationMessage(identifier: string) {
@@ -144,15 +187,19 @@ export async function executeBillingEventRetry({
     const settled =
       event?.status === "processed" || event?.status === "ignored";
     if (!response.ok || !result?.ok || !settled || !event.processedAt) {
+      const conflictResult = getBillingRetryConflictResult(
+        event,
+        result?.reason
+      );
       onMessage(
-        result?.reason === "event_processing_in_progress"
+        conflictResult === "failed"
           ? {
-              heading: getBillingRetryResultMessage("active"),
-              tone: "status"
-            }
-          : {
               heading: getBillingRetryResultMessage("failed"),
               tone: "error"
+            }
+          : {
+              heading: getBillingRetryResultMessage(conflictResult),
+              tone: "status"
             }
       );
       onFocus(MESSAGE_TARGET_ID);
