@@ -39,8 +39,12 @@ function normalizeStatus(value: string | null) {
 }
 
 function normalizeSearch(value: string | null) {
-  if (value?.includes("@")) {
-    return null;
+  if (value === null || value.trim() === "") {
+    return { kind: "empty" } as const;
+  }
+
+  if (value.includes("@")) {
+    return { kind: "invalid" } as const;
   }
 
   const safeValue = value
@@ -48,12 +52,15 @@ function normalizeSearch(value: string | null) {
     .slice(0, 200)
     .replace(/[^A-Za-z0-9._:-]+/g, "");
   if (!safeValue) {
-    return null;
+    return { kind: "invalid" } as const;
   }
 
-  return safeValue
-    .replaceAll("%", "\\%")
-    .replaceAll("_", "\\_");
+  return {
+    kind: "value",
+    value: safeValue
+      .replaceAll("%", "\\%")
+      .replaceAll("_", "\\_")
+  } as const;
 }
 
 export async function GET(request: NextRequest) {
@@ -66,7 +73,15 @@ export async function GET(request: NextRequest) {
   const limit = clampLimit(searchParams.get("limit"));
   const page = clampPage(searchParams.get("page"));
   const status = normalizeStatus(searchParams.get("status"));
-  const search = normalizeSearch(searchParams.get("q"));
+  const normalizedSearch = normalizeSearch(searchParams.get("q"));
+  if (normalizedSearch.kind === "invalid") {
+    return NextResponse.json(
+      { ok: false, reason: "invalid_billing_event_search" },
+      { status: 400 }
+    );
+  }
+  const search =
+    normalizedSearch.kind === "value" ? normalizedSearch.value : null;
 
   let query = context.supabase
     .from("billing_events")

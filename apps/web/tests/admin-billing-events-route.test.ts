@@ -176,14 +176,44 @@ describe("admin billing event query", () => {
     expect(filter).toContain("evt\\_teststatus.eq.processed");
   });
 
-  it("does not send email-shaped searches to PostgREST", async () => {
-    await GET(
+  it("rejects email-shaped searches before querying the billing ledger", async () => {
+    const response = await GET(
       new NextRequest(
         "http://localhost:3000/api/admin/billing-events?q=owner%40example.com"
       )
     );
 
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      ok: false,
+      reason: "invalid_billing_event_search"
+    });
+    expect(routeMocks.from).not.toHaveBeenCalled();
     expect(routeMocks.or).not.toHaveBeenCalled();
+  });
+
+  it("distinguishes blank searches from values that sanitize to empty", async () => {
+    const blankResponse = await GET(
+      new NextRequest(
+        "http://localhost:3000/api/admin/billing-events?q=%20%20"
+      )
+    );
+
+    expect(blankResponse.status).toBe(200);
+    expect(routeMocks.from).toHaveBeenCalledOnce();
+    expect(routeMocks.or).not.toHaveBeenCalled();
+
+    routeMocks.from.mockClear();
+    const invalidResponse = await GET(
+      new NextRequest("http://localhost:3000/api/admin/billing-events?q=%21%21")
+    );
+
+    expect(invalidResponse.status).toBe(400);
+    expect(await invalidResponse.json()).toEqual({
+      ok: false,
+      reason: "invalid_billing_event_search"
+    });
+    expect(routeMocks.from).not.toHaveBeenCalled();
   });
 
   it("maps malformed minimized payloads to null bounded references", async () => {
