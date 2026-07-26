@@ -614,6 +614,33 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_customer_reconciliation_tokens: {
+        Row: {
+          consumed_at: string | null
+          expires_at: string
+          provider: Database["public"]["Enums"]["billing_provider"]
+          provider_customer_id: string
+          reconciliation_token: string
+          started_at: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          expires_at: string
+          provider?: Database["public"]["Enums"]["billing_provider"]
+          provider_customer_id: string
+          reconciliation_token?: string
+          started_at: string
+        }
+        Update: {
+          consumed_at?: string | null
+          expires_at?: string
+          provider?: Database["public"]["Enums"]["billing_provider"]
+          provider_customer_id?: string
+          reconciliation_token?: string
+          started_at?: string
+        }
+        Relationships: []
+      }
       subscription_billing_adjustments: {
         Row: {
           amount: number
@@ -862,6 +889,14 @@ export type Database = {
         Args: { p_billing_event_id: string }
         Returns: Json
       }
+      begin_stripe_customer_reconciliation: {
+        Args: { p_provider_customer_id: string }
+        Returns: {
+          expires_at: string
+          reconciliation_token: string
+          started_at: string
+        }[]
+      }
       bootstrap_first_admin: {
         Args: { p_target_email: string }
         Returns: {
@@ -898,7 +933,7 @@ export type Database = {
       close_missing_stripe_customer_subscriptions: {
         Args: {
           p_provider_customer_id: string
-          p_reconciliation_started_at: string
+          p_reconciliation_token: string
           p_remote_subscription_ids: string[]
         }
         Returns: number

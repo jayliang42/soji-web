@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
 import {
+  beginStripeCustomerReconciliation,
   closeMissingCustomerSubscriptions,
   syncSubscriptionEntitlements
 } from "@/lib/stripe-webhook";
@@ -138,7 +139,8 @@ export async function reconcileStripeBilling(
     } as const;
   }
 
-  const reconciliationStartedAt = new Date().toISOString();
+  const reconciliation =
+    await beginStripeCustomerReconciliation(identifier);
   const remoteSubscriptionIds = new Set<string>();
   let subscriptionsSynced = 0;
   for await (const subscription of stripe.subscriptions.list({
@@ -156,7 +158,7 @@ export async function reconcileStripeBilling(
   const staleSubscriptionsClosed = await closeMissingCustomerSubscriptions(
     identifier,
     remoteSubscriptionIds,
-    reconciliationStartedAt
+    reconciliation.token
   );
   return {
     identifier,

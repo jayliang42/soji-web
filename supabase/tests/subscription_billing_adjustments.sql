@@ -18,7 +18,7 @@ select
 \warn not ok 2 - phase2 RED missing adjustment RPC
 \endif
 
-select plan(85);
+select plan(97);
 
 select ok(
   to_regclass('public.subscription_billing_adjustments') is not null,
@@ -36,6 +36,10 @@ returns setof text
 language plpgsql
 as $phase2$
 declare
+  expired_reconciliation_token uuid;
+  reconciliation_expires_at timestamptz;
+  reconciliation_started_at timestamptz;
+  issued_reconciliation_token uuid;
   visible_count bigint;
   readiness_ok boolean;
   write_denied boolean := false;
@@ -47,7 +51,7 @@ begin
   then
     return next skip(
       'phase2 subscription billing implementation not present during RED',
-      83
+      95
     );
     return;
   end if;
@@ -112,6 +116,24 @@ begin
         and contype = 'c'
     ),
     'synthetic reconciliation closure is constrained to canceled rows'
+  );
+  return next ok(
+    to_regclass(
+      'public.stripe_customer_reconciliation_tokens'
+    ) is not null,
+    'customer reconciliation watermarks use an opaque token table'
+  );
+  return next ok(
+    exists (
+      select 1
+      from pg_constraint
+      where conrelid =
+          'public.stripe_customer_reconciliation_tokens'::regclass
+        and conname =
+          'stripe_customer_reconciliation_tokens_lifetime_check'
+        and contype = 'c'
+    ),
+    'reconciliation token use is bounded to fifteen minutes'
   );
 
   return next lives_ok(
@@ -224,10 +246,26 @@ begin
   return next ok(
     not has_function_privilege(
       'authenticated',
-      'public.close_missing_stripe_customer_subscriptions(text,text[],timestamptz)',
+      'public.close_missing_stripe_customer_subscriptions(text,text[],uuid)',
       'execute'
     ),
     'authenticated clients cannot close missing customer subscriptions'
+  );
+  return next ok(
+    not has_function_privilege(
+      'authenticated',
+      'public.begin_stripe_customer_reconciliation(text)',
+      'execute'
+    ),
+    'authenticated clients cannot issue reconciliation tokens'
+  );
+  return next ok(
+    not has_table_privilege(
+      'authenticated',
+      'public.stripe_customer_reconciliation_tokens',
+      'select'
+    ),
+    'authenticated clients cannot inspect opaque reconciliation tokens'
   );
   return next ok(
     not has_function_privilege(
@@ -256,10 +294,26 @@ begin
   return next ok(
     has_function_privilege(
       'service_role',
-      'public.close_missing_stripe_customer_subscriptions(text,text[],timestamptz)',
+      'public.close_missing_stripe_customer_subscriptions(text,text[],uuid)',
       'execute'
     ),
     'service role can close race-safe missing customer subscriptions'
+  );
+  return next ok(
+    has_function_privilege(
+      'service_role',
+      'public.begin_stripe_customer_reconciliation(text)',
+      'execute'
+    ),
+    'service role can issue database reconciliation tokens'
+  );
+  return next ok(
+    not has_table_privilege(
+      'service_role',
+      'public.stripe_customer_reconciliation_tokens',
+      'select'
+    ),
+    'service role must use token RPCs instead of direct table access'
   );
   return next ok(
     has_function_privilege(
@@ -837,28 +891,83 @@ begin
     null,
     '2026-07-26T12:30:30Z'
   );
+
+  select
+    watermark.reconciliation_token,
+    watermark.started_at,
+    watermark.expires_at
+  into
+    issued_reconciliation_token,
+    reconciliation_started_at,
+    reconciliation_expires_at
+  from public.begin_stripe_customer_reconciliation(
+    'cus_phase2_reconciliation'
+  ) as watermark;
+
   update public.subscriptions
   set
     created_at = case provider_subscription_id
       when 'sub_phase2_reconciliation_stale'
-        then '2026-07-26T12:28:00Z'::timestamptz
-      else '2026-07-26T12:31:15Z'::timestamptz
+        then reconciliation_started_at - interval '2 minutes'
+      else reconciliation_started_at - interval '1 minute'
     end,
     provider_synced_at = case provider_subscription_id
       when 'sub_phase2_reconciliation_stale'
-        then '2026-07-26T12:29:30Z'::timestamptz
-      else '2026-07-26T12:31:30Z'::timestamptz
+        then reconciliation_started_at - interval '1 minute'
+      else reconciliation_started_at
     end
   where provider_subscription_id in (
     'sub_phase2_reconciliation_stale',
     'sub_phase2_reconciliation_concurrent'
   );
 
+  perform public.sync_stripe_subscription_state(
+    '00000000-0000-4000-8000-000000000125',
+    'sub_phase2_reconciliation_concurrent',
+    'cus_phase2_reconciliation',
+    'tier_2',
+    'active',
+    '2026-09-05T12:00:00Z',
+    null,
+    '2026-07-26T12:30:30Z'
+  );
+
+  return next ok(
+    issued_reconciliation_token is not null
+      and reconciliation_expires_at =
+        reconciliation_started_at + interval '15 minutes'
+      and reconciliation_started_at <= clock_timestamp(),
+    'begin reconciliation returns a database-clock token with bounded use'
+  );
+  return next throws_like(
+    format(
+      $misuse$
+        select public.close_missing_stripe_customer_subscriptions(
+          'cus_phase2_wrong_customer',
+          array[]::text[],
+          %L::uuid
+        )
+      $misuse$,
+      issued_reconciliation_token
+    ),
+    '%reconciliation_token_customer_mismatch%',
+    'a token cannot be used for another provider customer'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.stripe_customer_reconciliation_tokens as token
+      where token.reconciliation_token = issued_reconciliation_token
+        and token.consumed_at is null
+    ),
+    'customer mismatch fails before consuming the valid token'
+  );
+
   return next is(
     public.close_missing_stripe_customer_subscriptions(
       'cus_phase2_reconciliation',
       array[]::text[],
-      '2026-07-26T12:31:00Z'
+      issued_reconciliation_token
     ),
     1,
     'customer reconciliation closes only pre-watermark missing rows'
@@ -869,7 +978,7 @@ begin
       from public.subscriptions
       where provider_subscription_id = 'sub_phase2_reconciliation_stale'
         and status = 'canceled'
-        and reconciliation_closed_at = '2026-07-26T12:31:00Z'
+        and reconciliation_closed_at = reconciliation_started_at
     ),
     'a stale missing row records its synthetic reconciliation closure'
   );
@@ -883,6 +992,54 @@ begin
         and reconciliation_closed_at is null
     ),
     'a provider sync after enumeration start cannot be closed as stale'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.stripe_customer_reconciliation_tokens as token
+      where token.reconciliation_token = issued_reconciliation_token
+        and token.consumed_at is not null
+    ),
+    'successful closure consumes its opaque token exactly once'
+  );
+  return next throws_like(
+    format(
+      $replay$
+        select public.close_missing_stripe_customer_subscriptions(
+          'cus_phase2_reconciliation',
+          array[]::text[],
+          %L::uuid
+        )
+      $replay$,
+      issued_reconciliation_token
+    ),
+    '%reconciliation_token_consumed%',
+    'a consumed reconciliation token cannot be replayed'
+  );
+
+  select watermark.reconciliation_token
+  into expired_reconciliation_token
+  from public.begin_stripe_customer_reconciliation(
+    'cus_phase2_reconciliation'
+  ) as watermark;
+  update public.stripe_customer_reconciliation_tokens as token
+  set
+    started_at = clock_timestamp() - interval '20 minutes',
+    expires_at = clock_timestamp() - interval '5 minutes'
+  where token.reconciliation_token = expired_reconciliation_token;
+  return next throws_like(
+    format(
+      $expired$
+        select public.close_missing_stripe_customer_subscriptions(
+          'cus_phase2_reconciliation',
+          array[]::text[],
+          %L::uuid
+        )
+      $expired$,
+      expired_reconciliation_token
+    ),
+    '%reconciliation_token_expired%',
+    'an expired reconciliation token fails closed'
   );
   return next is(
     public.sync_stripe_subscription_state(

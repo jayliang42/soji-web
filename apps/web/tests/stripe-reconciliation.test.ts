@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const reconciliationMocks = vi.hoisted(() => ({
+  beginStripeCustomerReconciliation: vi.fn(),
   closeMissingCustomerSubscriptions: vi.fn(),
   createSupabaseAdminClient: vi.fn(),
   rpc: vi.fn(),
@@ -93,12 +94,18 @@ function createPaidEvidenceStripe({
 
 describe("Stripe billing reconciliation", () => {
   beforeEach(() => {
+    reconciliationMocks.beginStripeCustomerReconciliation.mockReset();
     reconciliationMocks.closeMissingCustomerSubscriptions.mockReset();
     reconciliationMocks.createSupabaseAdminClient.mockReset();
     reconciliationMocks.rpc.mockReset();
     reconciliationMocks.syncSubscriptionEntitlements.mockReset();
     reconciliationMocks.createSupabaseAdminClient.mockReturnValue({
       rpc: reconciliationMocks.rpc
+    });
+    reconciliationMocks.beginStripeCustomerReconciliation.mockResolvedValue({
+      expiresAt: "2026-07-26T12:45:00.000Z",
+      startedAt: "2026-07-26T12:30:00.000Z",
+      token: "00000000-0000-4000-8000-000000000901"
     });
     reconciliationMocks.closeMissingCustomerSubscriptions.mockResolvedValue(0);
     reconciliationMocks.rpc.mockResolvedValue({
@@ -309,14 +316,14 @@ describe("Stripe billing reconciliation", () => {
       ).toHaveBeenCalledWith(
         "cus_123",
         new Set(["sub_one", "sub_two"]),
-        "2026-07-26T12:30:00.000Z"
+        "00000000-0000-4000-8000-000000000901"
       );
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it("captures the closure watermark before remote enumeration can interleave", async () => {
+  it("uses the database token even when the application clock moves five minutes ahead during enumeration", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-07-26T12:30:00.000Z"));
     const subscription = { id: "sub_after_watermark" } as Stripe.Subscription;
@@ -324,7 +331,7 @@ describe("Stripe billing reconciliation", () => {
       subscriptions: {
         list: vi.fn(() => ({
           async *[Symbol.asyncIterator]() {
-            vi.setSystemTime(new Date("2026-07-26T12:31:00.000Z"));
+            vi.setSystemTime(new Date("2026-07-26T12:35:00.000Z"));
             yield subscription;
           }
         }))
@@ -337,11 +344,19 @@ describe("Stripe billing reconciliation", () => {
         subscriptionsSynced: 1
       });
       expect(
+        reconciliationMocks.beginStripeCustomerReconciliation
+      ).toHaveBeenCalledWith("cus_123");
+      expect(
+        reconciliationMocks.beginStripeCustomerReconciliation
+      ).toHaveBeenCalledBefore(
+        stripe.subscriptions.list as ReturnType<typeof vi.fn>
+      );
+      expect(
         reconciliationMocks.closeMissingCustomerSubscriptions
       ).toHaveBeenCalledWith(
         "cus_123",
         new Set(["sub_after_watermark"]),
-        "2026-07-26T12:30:00.000Z"
+        "00000000-0000-4000-8000-000000000901"
       );
     } finally {
       vi.useRealTimers();
@@ -356,5 +371,8 @@ describe("Stripe billing reconciliation", () => {
     );
     expect(stripe.subscriptions.list).not.toHaveBeenCalled();
     expect(stripe.subscriptions.retrieve).not.toHaveBeenCalled();
+    expect(
+      reconciliationMocks.beginStripeCustomerReconciliation
+    ).not.toHaveBeenCalled();
   });
 });

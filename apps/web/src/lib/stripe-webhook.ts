@@ -206,14 +206,14 @@ export async function syncSubscriptionEntitlements({
 export async function closeMissingCustomerSubscriptions(
   customerId: string,
   remoteSubscriptionIds: ReadonlySet<string>,
-  reconciliationStartedAt: string
+  reconciliationToken: string
 ) {
   const supabase = requireAdminClient();
   const { data, error } = await supabase.rpc(
     "close_missing_stripe_customer_subscriptions",
     {
       p_provider_customer_id: customerId,
-      p_reconciliation_started_at: reconciliationStartedAt,
+      p_reconciliation_token: reconciliationToken,
       p_remote_subscription_ids: [...remoteSubscriptionIds].sort()
     }
   );
@@ -222,6 +222,36 @@ export async function closeMissingCustomerSubscriptions(
   }
 
   return data;
+}
+
+export async function beginStripeCustomerReconciliation(customerId: string) {
+  const supabase = requireAdminClient();
+  const { data, error } = await supabase.rpc(
+    "begin_stripe_customer_reconciliation",
+    {
+      p_provider_customer_id: customerId
+    }
+  );
+  const watermark = data?.[0];
+  if (
+    error ||
+    data?.length !== 1 ||
+    !watermark ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      watermark.reconciliation_token
+    ) ||
+    !Number.isFinite(Date.parse(watermark.started_at)) ||
+    !Number.isFinite(Date.parse(watermark.expires_at)) ||
+    Date.parse(watermark.expires_at) <= Date.parse(watermark.started_at)
+  ) {
+    throw new Error(error?.message ?? "customer_reconciliation_begin_invalid");
+  }
+
+  return {
+    expiresAt: watermark.expires_at,
+    startedAt: watermark.started_at,
+    token: watermark.reconciliation_token
+  } as const;
 }
 
 async function syncProductPurchase(

@@ -241,6 +241,34 @@ create table if not exists public.subscription_billing_adjustments (
   )
 );
 
+create table if not exists public.stripe_customer_reconciliation_tokens (
+  reconciliation_token uuid primary key default gen_random_uuid(),
+  provider billing_provider not null default 'stripe',
+  provider_customer_id text not null,
+  started_at timestamptz not null,
+  expires_at timestamptz not null,
+  consumed_at timestamptz,
+  constraint stripe_customer_reconciliation_tokens_provider_check check (
+    provider = 'stripe'::billing_provider
+  ),
+  constraint stripe_customer_reconciliation_tokens_customer_check check (
+    provider_customer_id = btrim(provider_customer_id)
+    and provider_customer_id <> ''
+    and length(provider_customer_id) <= 255
+  ),
+  constraint stripe_customer_reconciliation_tokens_lifetime_check check (
+    expires_at > started_at
+    and expires_at <= started_at + interval '15 minutes'
+    and (
+      consumed_at is null
+      or (
+        consumed_at >= started_at
+        and consumed_at <= expires_at
+      )
+    )
+  )
+);
+
 create index if not exists
 subscription_billing_adjustments_subscription_observed_idx
 on public.subscription_billing_adjustments (
@@ -538,10 +566,73 @@ begin
 end;
 $$;
 
+drop function if exists
+public.close_missing_stripe_customer_subscriptions(
+  text,
+  text[],
+  timestamptz
+);
+
+create or replace function public.begin_stripe_customer_reconciliation(
+  p_provider_customer_id text
+)
+returns table (
+  reconciliation_token uuid,
+  started_at timestamptz,
+  expires_at timestamptz
+)
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  database_started_at timestamptz := clock_timestamp();
+  issued_token uuid;
+begin
+  if coalesce(auth.role(), '') <> 'service_role' then
+    raise exception 'service_role_required' using errcode = '42501';
+  end if;
+  if p_provider_customer_id is null
+    or btrim(p_provider_customer_id) = ''
+    or length(btrim(p_provider_customer_id)) > 255
+  then
+    raise exception 'provider_customer_id_required' using errcode = '22023';
+  end if;
+
+  delete from public.stripe_customer_reconciliation_tokens as token
+  where token.expires_at <
+      database_started_at - interval '1 hour'
+    or token.consumed_at <
+      database_started_at - interval '1 hour';
+
+  insert into public.stripe_customer_reconciliation_tokens (
+    provider,
+    provider_customer_id,
+    started_at,
+    expires_at
+  ) values (
+    'stripe'::billing_provider,
+    p_provider_customer_id,
+    database_started_at,
+    database_started_at + interval '15 minutes'
+  )
+  returning
+    stripe_customer_reconciliation_tokens.reconciliation_token
+  into issued_token;
+
+  return query
+  select
+    issued_token,
+    database_started_at,
+    database_started_at + interval '15 minutes';
+end;
+$$;
+
 create or replace function public.close_missing_stripe_customer_subscriptions(
   p_provider_customer_id text,
   p_remote_subscription_ids text[],
-  p_reconciliation_started_at timestamptz
+  p_reconciliation_token uuid
 )
 returns integer
 language plpgsql
@@ -552,6 +643,11 @@ as $$
 declare
   closed_count integer := 0;
   closed_subscription record;
+  database_now timestamptz := clock_timestamp();
+  reconciliation_consumed_at timestamptz;
+  reconciliation_customer_id text;
+  reconciliation_expires_at timestamptz;
+  reconciliation_started_at timestamptz;
   subscription_user_id uuid;
 begin
   if coalesce(auth.role(), '') <> 'service_role' then
@@ -575,10 +671,42 @@ begin
   then
     raise exception 'remote_subscription_ids_invalid' using errcode = '22023';
   end if;
-  if p_reconciliation_started_at is null then
-    raise exception 'reconciliation_started_at_required'
+  if p_reconciliation_token is null then
+    raise exception 'reconciliation_token_required' using errcode = '22023';
+  end if;
+
+  select
+    token.provider_customer_id,
+    token.started_at,
+    token.expires_at,
+    token.consumed_at
+  into
+    reconciliation_customer_id,
+    reconciliation_started_at,
+    reconciliation_expires_at,
+    reconciliation_consumed_at
+  from public.stripe_customer_reconciliation_tokens as token
+  where token.reconciliation_token = p_reconciliation_token
+    and token.provider = 'stripe'::billing_provider
+  for update;
+
+  if not found then
+    raise exception 'reconciliation_token_invalid' using errcode = '22023';
+  end if;
+  if reconciliation_customer_id <> p_provider_customer_id then
+    raise exception 'reconciliation_token_customer_mismatch'
       using errcode = '22023';
   end if;
+  if reconciliation_consumed_at is not null then
+    raise exception 'reconciliation_token_consumed' using errcode = '55000';
+  end if;
+  if database_now > reconciliation_expires_at then
+    raise exception 'reconciliation_token_expired' using errcode = '55000';
+  end if;
+
+  update public.stripe_customer_reconciliation_tokens as token
+  set consumed_at = database_now
+  where token.reconciliation_token = p_reconciliation_token;
 
   perform pg_advisory_xact_lock(
     hashtextextended(
@@ -597,9 +725,8 @@ begin
           any(p_remote_subscription_ids)
       )
       and subscription.status not in ('canceled', 'incomplete_expired')
-      and subscription.created_at <= p_reconciliation_started_at
-      and subscription.provider_synced_at <=
-        p_reconciliation_started_at
+      and subscription.created_at <= reconciliation_started_at
+      and subscription.provider_synced_at <= reconciliation_started_at
     order by subscription.user_id
   loop
     perform pg_advisory_xact_lock(
@@ -613,13 +740,13 @@ begin
       status = 'canceled',
       cancelled_at = coalesce(
         subscription.cancelled_at,
-        p_reconciliation_started_at
+        reconciliation_started_at
       ),
       cancel_at_period_end = false,
-      reconciliation_closed_at = p_reconciliation_started_at,
+      reconciliation_closed_at = reconciliation_started_at,
       status_observed_at = greatest(
         subscription.status_observed_at,
-        p_reconciliation_started_at
+        reconciliation_started_at
       )
     where subscription.provider = 'stripe'::billing_provider
       and subscription.provider_customer_id = p_provider_customer_id
@@ -628,9 +755,8 @@ begin
           any(p_remote_subscription_ids)
       )
       and subscription.status not in ('canceled', 'incomplete_expired')
-      and subscription.created_at <= p_reconciliation_started_at
-      and subscription.provider_synced_at <=
-        p_reconciliation_started_at
+      and subscription.created_at <= reconciliation_started_at
+      and subscription.provider_synced_at <= reconciliation_started_at
     returning subscription.id, subscription.status_observed_at
   loop
     perform public.recompute_stripe_subscription_access(
@@ -1082,8 +1208,18 @@ begin
     )
     and pg_catalog.has_function_privilege(
       'service_role',
-      'public.close_missing_stripe_customer_subscriptions(text,text[],timestamptz)',
+      'public.begin_stripe_customer_reconciliation(text)',
       'execute'
+    )
+    and pg_catalog.has_function_privilege(
+      'service_role',
+      'public.close_missing_stripe_customer_subscriptions(text,text[],uuid)',
+      'execute'
+    )
+    and not pg_catalog.has_table_privilege(
+      'service_role',
+      'public.stripe_customer_reconciliation_tokens',
+      'select,insert,update,delete'
     )
     and pg_catalog.has_function_privilege(
       'service_role',
@@ -1112,8 +1248,18 @@ begin
     )
     and not pg_catalog.has_function_privilege(
       'authenticated',
-      'public.close_missing_stripe_customer_subscriptions(text,text[],timestamptz)',
+      'public.begin_stripe_customer_reconciliation(text)',
       'execute'
+    )
+    and not pg_catalog.has_function_privilege(
+      'authenticated',
+      'public.close_missing_stripe_customer_subscriptions(text,text[],uuid)',
+      'execute'
+    )
+    and not pg_catalog.has_table_privilege(
+      'authenticated',
+      'public.stripe_customer_reconciliation_tokens',
+      'select,insert,update,delete'
     )
     and not pg_catalog.has_function_privilege(
       'authenticated',
@@ -1135,6 +1281,8 @@ end;
 $$;
 
 alter table public.subscription_billing_adjustments enable row level security;
+alter table public.stripe_customer_reconciliation_tokens
+enable row level security;
 
 drop policy if exists
 "subscription_billing_adjustments_select_own_or_admin"
@@ -1158,6 +1306,9 @@ grant select on table
 public.subscription_billing_adjustments to authenticated;
 revoke insert, update, delete on table
 public.subscription_billing_adjustments from authenticated;
+revoke all privileges on table
+public.stripe_customer_reconciliation_tokens
+from public, anon, authenticated, service_role;
 
 revoke all on function public.recompute_stripe_subscription_access(
   uuid, timestamptz
@@ -1174,11 +1325,15 @@ revoke all on function public.reconcile_stripe_subscription_paid_payment(
 grant execute on function public.reconcile_stripe_subscription_paid_payment(
   text, text, timestamptz
 ) to service_role;
+revoke all on function public.begin_stripe_customer_reconciliation(text)
+from public, anon, authenticated;
+grant execute on function public.begin_stripe_customer_reconciliation(text)
+to service_role;
 revoke all on function public.close_missing_stripe_customer_subscriptions(
-  text, text[], timestamptz
+  text, text[], uuid
 ) from public, anon, authenticated;
 grant execute on function public.close_missing_stripe_customer_subscriptions(
-  text, text[], timestamptz
+  text, text[], uuid
 ) to service_role;
 revoke all on function public.get_phase2_billing_schema_readiness()
 from public, anon, authenticated;

@@ -15,6 +15,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 
 import {
   beginBillingEventAttempt,
+  beginStripeCustomerReconciliation,
   closeMissingCustomerSubscriptions,
   markBillingEventFailed,
   markBillingEventIgnored,
@@ -1159,7 +1160,7 @@ describe("Stripe webhook state synchronization", () => {
       closeMissingCustomerSubscriptions(
         "cus_test",
         new Set(["sub_remote", "sub_also_remote"]),
-        "2026-07-26T12:30:00.000Z"
+        "00000000-0000-4000-8000-000000000901"
       )
     ).resolves.toBe(1);
 
@@ -1168,24 +1169,50 @@ describe("Stripe webhook state synchronization", () => {
       "close_missing_stripe_customer_subscriptions",
       {
         p_provider_customer_id: "cus_test",
-        p_reconciliation_started_at: "2026-07-26T12:30:00.000Z",
+        p_reconciliation_token: "00000000-0000-4000-8000-000000000901",
         p_remote_subscription_ids: ["sub_also_remote", "sub_remote"]
       }
     );
   });
 
-  it("surfaces stale-close RPC failures so customer reconciliation stays retryable", async () => {
+  it("accepts only one valid database-issued reconciliation watermark", async () => {
+    syncMocks.rpc.mockResolvedValue({
+      data: [
+        {
+          expires_at: "2026-07-26T12:45:00.000Z",
+          reconciliation_token: "00000000-0000-4000-8000-000000000901",
+          started_at: "2026-07-26T12:30:00.000Z"
+        }
+      ],
+      error: null
+    });
+
+    await expect(
+      beginStripeCustomerReconciliation("cus_test")
+    ).resolves.toEqual({
+      expiresAt: "2026-07-26T12:45:00.000Z",
+      startedAt: "2026-07-26T12:30:00.000Z",
+      token: "00000000-0000-4000-8000-000000000901"
+    });
+    expect(syncMocks.rpc).toHaveBeenCalledWith(
+      "begin_stripe_customer_reconciliation",
+      { p_provider_customer_id: "cus_test" }
+    );
+  });
+
+  it("fails closed when a reconciliation token is rejected as customer-mismatched", async () => {
     syncMocks.rpc.mockResolvedValue({
       data: null,
-      error: { message: "atomic_close_failed" }
+      error: { message: "reconciliation_token_customer_mismatch" }
     });
 
     await expect(
       closeMissingCustomerSubscriptions(
         "cus_test",
         new Set(),
-        "2026-07-26T12:30:00.000Z"
+        "00000000-0000-4000-8000-000000000901"
       )
-    ).rejects.toThrow("atomic_close_failed");
+    ).rejects.toThrow("reconciliation_token_customer_mismatch");
+    expect(syncMocks.rpc).toHaveBeenCalledOnce();
   });
 });
