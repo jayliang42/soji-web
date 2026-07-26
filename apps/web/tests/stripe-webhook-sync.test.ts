@@ -209,10 +209,11 @@ describe("Stripe webhook state synchronization", () => {
       provider_event_id: "evt_direct_references",
       status: "received"
     });
-    expect(JSON.stringify(insert.mock.calls[0]?.[0])).not.toContain(
+    const insertedReceipt = (insert.mock.calls as unknown[][])[0]?.[0];
+    expect(JSON.stringify(insertedReceipt)).not.toContain(
       "private@example.com"
     );
-    expect(JSON.stringify(insert.mock.calls[0]?.[0])).not.toContain("secret");
+    expect(JSON.stringify(insertedReceipt)).not.toContain("secret");
   });
 
   it("reports an active billing claim without inventing attempt metadata", async () => {
