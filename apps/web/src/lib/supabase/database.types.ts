@@ -721,6 +721,8 @@ export type Database = {
           provider: Database["public"]["Enums"]["billing_provider"]
           provider_customer_id: string | null
           provider_subscription_id: string
+          provider_synced_at: string
+          reconciliation_closed_at: string | null
           status: string
           status_observed_at: string
           user_id: string
@@ -737,6 +739,8 @@ export type Database = {
           provider: Database["public"]["Enums"]["billing_provider"]
           provider_customer_id?: string | null
           provider_subscription_id: string
+          provider_synced_at?: string
+          reconciliation_closed_at?: string | null
           status: string
           status_observed_at?: string
           user_id: string
@@ -753,6 +757,8 @@ export type Database = {
           provider?: Database["public"]["Enums"]["billing_provider"]
           provider_customer_id?: string | null
           provider_subscription_id?: string
+          provider_synced_at?: string
+          reconciliation_closed_at?: string | null
           status?: string
           status_observed_at?: string
           user_id?: string
@@ -888,6 +894,14 @@ export type Database = {
           expires_at: string
           outcome: string
         }[]
+      }
+      close_missing_stripe_customer_subscriptions: {
+        Args: {
+          p_provider_customer_id: string
+          p_reconciliation_started_at: string
+          p_remote_subscription_ids: string[]
+        }
+        Returns: number
       }
       consume_checkout_rate_limit: {
         Args: { p_action: string }

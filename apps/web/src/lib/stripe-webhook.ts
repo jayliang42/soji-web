@@ -205,47 +205,23 @@ export async function syncSubscriptionEntitlements({
 
 export async function closeMissingCustomerSubscriptions(
   customerId: string,
-  remoteSubscriptionIds: ReadonlySet<string>
+  remoteSubscriptionIds: ReadonlySet<string>,
+  reconciliationStartedAt: string
 ) {
   const supabase = requireAdminClient();
-  const { data, error } = await supabase
-    .from("subscriptions")
-    .select("provider_subscription_id, user_id, plan_id, current_period_ends_at")
-    .eq("provider", "stripe")
-    .eq("provider_customer_id", customerId);
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const staleSubscriptions = (data ?? []).filter(
-    (row) => !remoteSubscriptionIds.has(row.provider_subscription_id as string)
-  );
-  const now = new Date().toISOString();
-
-  for (const subscription of staleSubscriptions) {
-    const subscriptionId = subscription.provider_subscription_id as string;
-    const userId = subscription.user_id as string;
-    const { error: syncError } = await supabase.rpc(
-      "sync_stripe_subscription_state",
-      {
-        p_cancel_at_period_end: false,
-        p_cancelled_at: now,
-        p_current_period_ends_at:
-          (subscription.current_period_ends_at as string | null) ?? undefined,
-        p_observed_at: now,
-        p_plan_id: subscription.plan_id as MembershipTier,
-        p_provider_customer_id: customerId,
-        p_provider_subscription_id: subscriptionId,
-        p_status: "canceled",
-        p_user_id: userId
-      }
-    );
-    if (syncError) {
-      throw new Error(syncError.message);
+  const { data, error } = await supabase.rpc(
+    "close_missing_stripe_customer_subscriptions",
+    {
+      p_provider_customer_id: customerId,
+      p_reconciliation_started_at: reconciliationStartedAt,
+      p_remote_subscription_ids: [...remoteSubscriptionIds].sort()
     }
+  );
+  if (error || typeof data !== "number") {
+    throw new Error(error?.message ?? "customer_reconciliation_close_invalid");
   }
 
-  return staleSubscriptions.length;
+  return data;
 }
 
 async function syncProductPurchase(

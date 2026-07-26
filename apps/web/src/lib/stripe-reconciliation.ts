@@ -138,6 +138,7 @@ export async function reconcileStripeBilling(
     } as const;
   }
 
+  const reconciliationStartedAt = new Date().toISOString();
   const remoteSubscriptionIds = new Set<string>();
   let subscriptionsSynced = 0;
   for await (const subscription of stripe.subscriptions.list({
@@ -154,7 +155,8 @@ export async function reconcileStripeBilling(
 
   const staleSubscriptionsClosed = await closeMissingCustomerSubscriptions(
     identifier,
-    remoteSubscriptionIds
+    remoteSubscriptionIds,
+    reconciliationStartedAt
   );
   return {
     identifier,

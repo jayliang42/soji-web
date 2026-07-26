@@ -11,14 +11,14 @@ select
 \gset
 
 \if :phase2_missing_adjustment_table
-\warn 1..75
+\warn 1..85
 \warn not ok 1 - phase2 RED missing adjustment table
 \endif
 \if :phase2_missing_adjustment_rpc
 \warn not ok 2 - phase2 RED missing adjustment RPC
 \endif
 
-select plan(75);
+select plan(85);
 
 select ok(
   to_regclass('public.subscription_billing_adjustments') is not null,
@@ -47,7 +47,7 @@ begin
   then
     return next skip(
       'phase2 subscription billing implementation not present during RED',
-      73
+      83
     );
     return;
   end if;
@@ -102,6 +102,16 @@ begin
         and contype = 'c'
     ),
     'subscription paid-payment watermarks use a complete constrained state'
+  );
+  return next ok(
+    exists (
+      select 1
+      from pg_constraint
+      where conrelid = 'public.subscriptions'::regclass
+        and conname = 'subscriptions_reconciliation_closure_check'
+        and contype = 'c'
+    ),
+    'synthetic reconciliation closure is constrained to canceled rows'
   );
 
   return next lives_ok(
@@ -214,6 +224,14 @@ begin
   return next ok(
     not has_function_privilege(
       'authenticated',
+      'public.close_missing_stripe_customer_subscriptions(text,text[],timestamptz)',
+      'execute'
+    ),
+    'authenticated clients cannot close missing customer subscriptions'
+  );
+  return next ok(
+    not has_function_privilege(
+      'authenticated',
       'public.get_phase2_billing_schema_readiness()',
       'execute'
     ),
@@ -234,6 +252,14 @@ begin
       'execute'
     ),
     'service role can reconcile a later verified paid payment'
+  );
+  return next ok(
+    has_function_privilege(
+      'service_role',
+      'public.close_missing_stripe_customer_subscriptions(text,text[],timestamptz)',
+      'execute'
+    ),
+    'service role can close race-safe missing customer subscriptions'
   );
   return next ok(
     has_function_privilege(
@@ -293,6 +319,10 @@ begin
     (
       '00000000-0000-4000-8000-000000000124',
       'phase2-paid-first-owner@soji.local'
+    ),
+    (
+      '00000000-0000-4000-8000-000000000125',
+      'phase2-reconciliation-owner@soji.local'
     );
 
   insert into public.profiles (id, email, full_name)
@@ -316,6 +346,11 @@ begin
       '00000000-0000-4000-8000-000000000124',
       'phase2-paid-first-owner@soji.local',
       'Phase 2 Paid First Owner'
+    ),
+    (
+      '00000000-0000-4000-8000-000000000125',
+      'phase2-reconciliation-owner@soji.local',
+      'Phase 2 Reconciliation Owner'
     );
 
   insert into public.user_roles (user_id, role)
@@ -324,7 +359,8 @@ begin
     ('00000000-0000-4000-8000-000000000122', 'member'),
     ('00000000-0000-4000-8000-000000000123', 'member'),
     ('00000000-0000-4000-8000-000000000123', 'admin'),
-    ('00000000-0000-4000-8000-000000000124', 'member');
+    ('00000000-0000-4000-8000-000000000124', 'member'),
+    ('00000000-0000-4000-8000-000000000125', 'member');
 
   return next is(
     public.sync_stripe_subscription_state(
@@ -779,6 +815,133 @@ begin
         and superseded_at = '2026-07-26T12:21:00Z'
     ),
     'strictly later paid evidence records monotonic supersession'
+  );
+
+  perform public.sync_stripe_subscription_state(
+    '00000000-0000-4000-8000-000000000125',
+    'sub_phase2_reconciliation_stale',
+    'cus_phase2_reconciliation',
+    'tier_2',
+    'active',
+    '2026-09-05T12:00:00Z',
+    null,
+    '2026-07-26T12:29:00Z'
+  );
+  perform public.sync_stripe_subscription_state(
+    '00000000-0000-4000-8000-000000000125',
+    'sub_phase2_reconciliation_concurrent',
+    'cus_phase2_reconciliation',
+    'tier_2',
+    'active',
+    '2026-09-05T12:00:00Z',
+    null,
+    '2026-07-26T12:30:30Z'
+  );
+  update public.subscriptions
+  set
+    created_at = case provider_subscription_id
+      when 'sub_phase2_reconciliation_stale'
+        then '2026-07-26T12:28:00Z'::timestamptz
+      else '2026-07-26T12:31:15Z'::timestamptz
+    end,
+    provider_synced_at = case provider_subscription_id
+      when 'sub_phase2_reconciliation_stale'
+        then '2026-07-26T12:29:30Z'::timestamptz
+      else '2026-07-26T12:31:30Z'::timestamptz
+    end
+  where provider_subscription_id in (
+    'sub_phase2_reconciliation_stale',
+    'sub_phase2_reconciliation_concurrent'
+  );
+
+  return next is(
+    public.close_missing_stripe_customer_subscriptions(
+      'cus_phase2_reconciliation',
+      array[]::text[],
+      '2026-07-26T12:31:00Z'
+    ),
+    1,
+    'customer reconciliation closes only pre-watermark missing rows'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscriptions
+      where provider_subscription_id = 'sub_phase2_reconciliation_stale'
+        and status = 'canceled'
+        and reconciliation_closed_at = '2026-07-26T12:31:00Z'
+    ),
+    'a stale missing row records its synthetic reconciliation closure'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscriptions
+      where provider_subscription_id =
+          'sub_phase2_reconciliation_concurrent'
+        and status = 'active'
+        and reconciliation_closed_at is null
+    ),
+    'a provider sync after enumeration start cannot be closed as stale'
+  );
+  return next is(
+    public.sync_stripe_subscription_state(
+      '00000000-0000-4000-8000-000000000125',
+      'sub_phase2_reconciliation_stale',
+      'cus_phase2_reconciliation',
+      'tier_2',
+      'active',
+      '2026-09-05T12:00:00Z',
+      null,
+      '2026-07-26T12:29:00Z'
+    ),
+    'tier_2'::membership_tier,
+    'an authoritative current-provider observation repairs synthetic closure'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscriptions
+      where provider_subscription_id = 'sub_phase2_reconciliation_stale'
+        and status = 'active'
+        and reconciliation_closed_at is null
+    ),
+    'repair clears the synthetic closure marker without weakening status truth'
+  );
+  perform public.sync_stripe_subscription_state(
+    '00000000-0000-4000-8000-000000000125',
+    'sub_phase2_reconciliation_concurrent',
+    'cus_phase2_reconciliation',
+    'tier_2',
+    'canceled',
+    '2026-09-05T12:00:00Z',
+    '2026-07-26T12:33:00Z',
+    '2026-07-26T12:33:00Z'
+  );
+  return next is(
+    public.sync_stripe_subscription_state(
+      '00000000-0000-4000-8000-000000000125',
+      'sub_phase2_reconciliation_concurrent',
+      'cus_phase2_reconciliation',
+      'tier_2',
+      'active',
+      '2026-09-05T12:00:00Z',
+      null,
+      '2026-07-26T12:34:00Z'
+    ),
+    'tier_2'::membership_tier,
+    'provider-terminal closure remains monotonic while another plan is active'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscriptions
+      where provider_subscription_id =
+          'sub_phase2_reconciliation_concurrent'
+        and status = 'canceled'
+        and reconciliation_closed_at is null
+    ),
+    'repairability applies only to synthetic reconciliation closure'
   );
 
   return next is(

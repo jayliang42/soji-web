@@ -1153,71 +1153,39 @@ describe("Stripe webhook state synchronization", () => {
   });
 
   it("closes stale customer subscriptions through the atomic synchronization RPC", async () => {
-    const query = { eq: syncMocks.customerEq };
-    syncMocks.providerEq.mockReturnValue(query);
-    syncMocks.customerEq.mockResolvedValue({
-      data: [
-        {
-          current_period_ends_at: "2026-08-14T12:00:00Z",
-          plan_id: "tier_2",
-          provider_subscription_id: "sub_stale",
-          user_id: userId
-        },
-        {
-          current_period_ends_at: "2026-09-14T12:00:00Z",
-          plan_id: "tier_3",
-          provider_subscription_id: "sub_remote",
-          user_id: userId
-        }
-      ],
-      error: null
-    });
-    syncMocks.from.mockReturnValue({
-      select: vi.fn(() => ({ eq: syncMocks.providerEq }))
-    });
-    syncMocks.rpc.mockResolvedValue({ data: "tier_3", error: null });
+    syncMocks.rpc.mockResolvedValue({ data: 1, error: null });
 
     await expect(
-      closeMissingCustomerSubscriptions("cus_test", new Set(["sub_remote"]))
+      closeMissingCustomerSubscriptions(
+        "cus_test",
+        new Set(["sub_remote", "sub_also_remote"]),
+        "2026-07-26T12:30:00.000Z"
+      )
     ).resolves.toBe(1);
 
     expect(syncMocks.rpc).toHaveBeenCalledOnce();
     expect(syncMocks.rpc).toHaveBeenCalledWith(
-      "sync_stripe_subscription_state",
-      expect.objectContaining({
-        p_current_period_ends_at: "2026-08-14T12:00:00Z",
-        p_plan_id: "tier_2",
+      "close_missing_stripe_customer_subscriptions",
+      {
         p_provider_customer_id: "cus_test",
-        p_provider_subscription_id: "sub_stale",
-        p_status: "canceled",
-        p_user_id: userId
-      })
+        p_reconciliation_started_at: "2026-07-26T12:30:00.000Z",
+        p_remote_subscription_ids: ["sub_also_remote", "sub_remote"]
+      }
     );
   });
 
   it("surfaces stale-close RPC failures so customer reconciliation stays retryable", async () => {
-    syncMocks.providerEq.mockReturnValue({ eq: syncMocks.customerEq });
-    syncMocks.customerEq.mockResolvedValue({
-      data: [
-        {
-          current_period_ends_at: null,
-          plan_id: "tier_1",
-          provider_subscription_id: "sub_stale",
-          user_id: userId
-        }
-      ],
-      error: null
-    });
-    syncMocks.from.mockReturnValue({
-      select: vi.fn(() => ({ eq: syncMocks.providerEq }))
-    });
     syncMocks.rpc.mockResolvedValue({
       data: null,
       error: { message: "atomic_close_failed" }
     });
 
     await expect(
-      closeMissingCustomerSubscriptions("cus_test", new Set())
+      closeMissingCustomerSubscriptions(
+        "cus_test",
+        new Set(),
+        "2026-07-26T12:30:00.000Z"
+      )
     ).rejects.toThrow("atomic_close_failed");
   });
 });

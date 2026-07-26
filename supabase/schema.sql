@@ -62,6 +62,8 @@ create table if not exists subscriptions (
   cancelled_at timestamptz,
   latest_paid_provider_payment_id text,
   latest_paid_observed_at timestamptz,
+  provider_synced_at timestamptz not null default now(),
+  reconciliation_closed_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -69,6 +71,10 @@ alter table subscriptions
 add column if not exists latest_paid_provider_payment_id text;
 alter table subscriptions
 add column if not exists latest_paid_observed_at timestamptz;
+alter table subscriptions
+add column if not exists provider_synced_at timestamptz not null default now();
+alter table subscriptions
+add column if not exists reconciliation_closed_at timestamptz;
 alter table subscriptions
 drop constraint if exists subscriptions_latest_paid_payment_check;
 alter table subscriptions
@@ -85,6 +91,13 @@ add constraint subscriptions_latest_paid_payment_check check (
     and length(latest_paid_provider_payment_id) <= 255
     and latest_paid_observed_at is not null
   )
+);
+alter table subscriptions
+drop constraint if exists subscriptions_reconciliation_closure_check;
+alter table subscriptions
+add constraint subscriptions_reconciliation_closure_check check (
+  reconciliation_closed_at is null
+  or status = 'canceled'
 );
 
 create table if not exists user_entitlements (
@@ -472,6 +485,8 @@ begin
     current_period_ends_at,
     cancelled_at,
     cancel_at_period_end,
+    provider_synced_at,
+    reconciliation_closed_at,
     status_observed_at
   ) values (
     p_user_id,
@@ -483,6 +498,8 @@ begin
     p_current_period_ends_at,
     p_cancelled_at,
     p_cancel_at_period_end,
+    clock_timestamp(),
+    null,
     p_observed_at
   )
   on conflict (provider_subscription_id) do update
@@ -494,11 +511,17 @@ begin
     current_period_ends_at = excluded.current_period_ends_at,
     cancelled_at = excluded.cancelled_at,
     cancel_at_period_end = excluded.cancel_at_period_end,
+    provider_synced_at = clock_timestamp(),
+    reconciliation_closed_at = null,
     status_observed_at = excluded.status_observed_at
-  where excluded.status_observed_at >= subscriptions.status_observed_at
+  where (
+      excluded.status_observed_at >= subscriptions.status_observed_at
+      or subscriptions.reconciliation_closed_at is not null
+    )
     and not (
       subscriptions.status in ('canceled', 'incomplete_expired')
       and excluded.status not in ('canceled', 'incomplete_expired')
+      and subscriptions.reconciliation_closed_at is null
     );
 
   select subscription.id, subscription.status_observed_at
@@ -510,6 +533,112 @@ begin
     saved_subscription_id,
     effective_observed_at
   );
+end;
+$$;
+
+create or replace function public.close_missing_stripe_customer_subscriptions(
+  p_provider_customer_id text,
+  p_remote_subscription_ids text[],
+  p_reconciliation_started_at timestamptz
+)
+returns integer
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  closed_count integer := 0;
+  closed_subscription record;
+  subscription_user_id uuid;
+begin
+  if coalesce(auth.role(), '') <> 'service_role' then
+    raise exception 'service_role_required' using errcode = '42501';
+  end if;
+  if p_provider_customer_id is null
+    or btrim(p_provider_customer_id) = ''
+    or length(btrim(p_provider_customer_id)) > 255
+  then
+    raise exception 'provider_customer_id_required' using errcode = '22023';
+  end if;
+  if p_remote_subscription_ids is null
+    or exists (
+      select 1
+      from unnest(p_remote_subscription_ids) as remote_id
+      where remote_id is null
+        or remote_id <> btrim(remote_id)
+        or remote_id = ''
+        or length(remote_id) > 255
+    )
+  then
+    raise exception 'remote_subscription_ids_invalid' using errcode = '22023';
+  end if;
+  if p_reconciliation_started_at is null then
+    raise exception 'reconciliation_started_at_required'
+      using errcode = '22023';
+  end if;
+
+  perform pg_advisory_xact_lock(
+    hashtextextended(
+      'soji.stripe-customer:' || p_provider_customer_id,
+      0
+    )
+  );
+
+  for subscription_user_id in
+    select distinct subscription.user_id
+    from public.subscriptions as subscription
+    where subscription.provider = 'stripe'::billing_provider
+      and subscription.provider_customer_id = p_provider_customer_id
+      and not (
+        subscription.provider_subscription_id =
+          any(p_remote_subscription_ids)
+      )
+      and subscription.status not in ('canceled', 'incomplete_expired')
+      and subscription.created_at <= p_reconciliation_started_at
+      and subscription.provider_synced_at <=
+        p_reconciliation_started_at
+    order by subscription.user_id
+  loop
+    perform pg_advisory_xact_lock(
+      hashtextextended(subscription_user_id::text, 0)
+    );
+  end loop;
+
+  for closed_subscription in
+    update public.subscriptions as subscription
+    set
+      status = 'canceled',
+      cancelled_at = coalesce(
+        subscription.cancelled_at,
+        p_reconciliation_started_at
+      ),
+      cancel_at_period_end = false,
+      reconciliation_closed_at = p_reconciliation_started_at,
+      status_observed_at = greatest(
+        subscription.status_observed_at,
+        p_reconciliation_started_at
+      )
+    where subscription.provider = 'stripe'::billing_provider
+      and subscription.provider_customer_id = p_provider_customer_id
+      and not (
+        subscription.provider_subscription_id =
+          any(p_remote_subscription_ids)
+      )
+      and subscription.status not in ('canceled', 'incomplete_expired')
+      and subscription.created_at <= p_reconciliation_started_at
+      and subscription.provider_synced_at <=
+        p_reconciliation_started_at
+    returning subscription.id, subscription.status_observed_at
+  loop
+    perform public.recompute_stripe_subscription_access(
+      closed_subscription.id,
+      closed_subscription.status_observed_at
+    );
+    closed_count := closed_count + 1;
+  end loop;
+
+  return closed_count;
 end;
 $$;
 
@@ -951,6 +1080,11 @@ begin
     )
     and pg_catalog.has_function_privilege(
       'service_role',
+      'public.close_missing_stripe_customer_subscriptions(text,text[],timestamptz)',
+      'execute'
+    )
+    and pg_catalog.has_function_privilege(
+      'service_role',
       'public.get_phase2_billing_schema_readiness()',
       'execute'
     )
@@ -972,6 +1106,11 @@ begin
     and not pg_catalog.has_function_privilege(
       'authenticated',
       'public.reconcile_stripe_subscription_paid_payment(text,text,timestamptz)',
+      'execute'
+    )
+    and not pg_catalog.has_function_privilege(
+      'authenticated',
+      'public.close_missing_stripe_customer_subscriptions(text,text[],timestamptz)',
       'execute'
     )
     and not pg_catalog.has_function_privilege(
@@ -1032,6 +1171,12 @@ revoke all on function public.reconcile_stripe_subscription_paid_payment(
 ) from public, anon, authenticated;
 grant execute on function public.reconcile_stripe_subscription_paid_payment(
   text, text, timestamptz
+) to service_role;
+revoke all on function public.close_missing_stripe_customer_subscriptions(
+  text, text[], timestamptz
+) from public, anon, authenticated;
+grant execute on function public.close_missing_stripe_customer_subscriptions(
+  text, text[], timestamptz
 ) to service_role;
 revoke all on function public.get_phase2_billing_schema_readiness()
 from public, anon, authenticated;

@@ -283,6 +283,8 @@ describe("Stripe billing reconciliation", () => {
   });
 
   it("syncs every customer subscription and closes stale local records", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-26T12:30:00.000Z"));
     const subscriptions = [
       { id: "sub_one" } as Stripe.Subscription,
       { id: "sub_two" } as Stripe.Subscription
@@ -290,20 +292,60 @@ describe("Stripe billing reconciliation", () => {
     const stripe = createStripeMock(subscriptions);
     reconciliationMocks.closeMissingCustomerSubscriptions.mockResolvedValue(2);
 
-    await expect(reconcileStripeBilling(stripe, "cus_123")).resolves.toEqual({
-      identifier: "cus_123",
-      kind: "customer",
-      staleSubscriptionsClosed: 2,
-      subscriptionsSynced: 2
-    });
-    expect(stripe.subscriptions.list).toHaveBeenCalledWith({
-      customer: "cus_123",
-      limit: 100,
-      status: "all"
-    });
-    expect(
-      reconciliationMocks.closeMissingCustomerSubscriptions
-    ).toHaveBeenCalledWith("cus_123", new Set(["sub_one", "sub_two"]));
+    try {
+      await expect(reconcileStripeBilling(stripe, "cus_123")).resolves.toEqual({
+        identifier: "cus_123",
+        kind: "customer",
+        staleSubscriptionsClosed: 2,
+        subscriptionsSynced: 2
+      });
+      expect(stripe.subscriptions.list).toHaveBeenCalledWith({
+        customer: "cus_123",
+        limit: 100,
+        status: "all"
+      });
+      expect(
+        reconciliationMocks.closeMissingCustomerSubscriptions
+      ).toHaveBeenCalledWith(
+        "cus_123",
+        new Set(["sub_one", "sub_two"]),
+        "2026-07-26T12:30:00.000Z"
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("captures the closure watermark before remote enumeration can interleave", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-26T12:30:00.000Z"));
+    const subscription = { id: "sub_after_watermark" } as Stripe.Subscription;
+    const stripe = {
+      subscriptions: {
+        list: vi.fn(() => ({
+          async *[Symbol.asyncIterator]() {
+            vi.setSystemTime(new Date("2026-07-26T12:31:00.000Z"));
+            yield subscription;
+          }
+        }))
+      }
+    } as unknown as Stripe;
+
+    try {
+      await expect(reconcileStripeBilling(stripe, "cus_123")).resolves.toMatchObject({
+        staleSubscriptionsClosed: 0,
+        subscriptionsSynced: 1
+      });
+      expect(
+        reconciliationMocks.closeMissingCustomerSubscriptions
+      ).toHaveBeenCalledWith(
+        "cus_123",
+        new Set(["sub_after_watermark"]),
+        "2026-07-26T12:30:00.000Z"
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("fails before calling Stripe for unsupported identifiers", async () => {
