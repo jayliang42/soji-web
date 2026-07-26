@@ -958,8 +958,15 @@ export function parseDeploymentInspection(source) {
     rawDeploymentUrl,
     "deployment URL"
   );
-  if (!deploymentUrl.endsWith(".vercel.app")) {
-    throw new Error("deployment URL must be a Vercel HTTPS URL");
+  const deployment = new URL(deploymentUrl);
+  if (
+    !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.vercel\.app$/i.test(
+      deployment.hostname
+    ) ||
+    deployment.port ||
+    deployment.pathname !== "/"
+  ) {
+    throw new Error("deployment URL must be a root Vercel HTTPS URL");
   }
   if (!commit) {
     throw new Error("deployment inspection is missing a full commit SHA");

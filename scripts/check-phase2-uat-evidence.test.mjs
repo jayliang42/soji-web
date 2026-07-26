@@ -624,6 +624,26 @@ test("deployment inspection requires the exact commit, project, production targe
   }
 });
 
+test("deployment inspection validates the parsed Vercel hostname and root path", () => {
+  for (const url of [
+    "https://attacker.example",
+    "https://attacker.example/foo.vercel.app",
+    "https://soji-web.vercel.app.attacker.example",
+    "https://soji-web-release.vercel.app/not-root",
+    "https://soji-web-release.vercel.app:444",
+    "https://user@soji-web-release.vercel.app",
+    "https://nested.soji-web-release.vercel.app"
+  ]) {
+    assert.throws(
+      () =>
+        parseDeploymentInspection(
+          JSON.stringify({ ...deploymentInspection, url })
+        ),
+      /deployment URL/
+    );
+  }
+});
+
 test("deployment CLI validates captured JSON against separate commit metadata", () => {
   const directory = mkdtempSync(path.join(tmpdir(), "soji-phase2-deploy-"));
   const inspectionPath = path.join(directory, "inspect.json");
