@@ -27,6 +27,13 @@ export type BillingProvider = "stripe" | "app_store" | "play_store";
 
 export type UserRole = "member" | "editor" | "admin";
 
+export type BillingEventStatus =
+  | "received"
+  | "processing"
+  | "processed"
+  | "failed"
+  | "ignored";
+
 export interface MembershipPlan {
   id: MembershipTier;
   name: string;
@@ -82,4 +89,34 @@ export interface AdminMetric {
   label: string;
   value: string;
   detail: string;
+}
+
+export interface BillingEventLog {
+  attemptCount: number;
+  customerId?: string | null;
+  disputeId?: string | null;
+  lastAttemptedAt: string | null;
+  id: string;
+  objectId?: string | null;
+  objectType?: string | null;
+  paymentId?: string | null;
+  provider: BillingProvider;
+  providerEventId: string;
+  eventType: string;
+  status: BillingEventStatus;
+  processedAt: string | null;
+  processingError: string | null;
+  processingStartedAt: string | null;
+  subscriptionId?: string | null;
+  createdAt: string;
+}
+
+export interface BillingEventSnapshot {
+  error?: string;
+  items: BillingEventLog[];
+  page: number;
+  pageSize: number;
+  source: "supabase" | "demo";
+  totalItems: number;
+  totalPages: number;
 }
