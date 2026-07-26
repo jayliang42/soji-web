@@ -486,44 +486,88 @@ test("prepush and postpush CLI modes require their exact parser inputs", () => {
 });
 
 test("production schema probe requires an exact all-true boolean response and never returns the key", async () => {
+  const projectRef = "abcdefghijklmnopqrst";
+  const supabaseUrl = `https://${projectRef}.supabase.co`;
   const checks = Object.fromEntries(
     REQUIRED_SCHEMA_CHECKS.map((name) => [name, true])
   );
   let request;
   const result = await probeProductionSchema({
+    expectedProjectRef: projectRef,
     fetchImpl: async (url, options) => {
       request = { options, url };
       return jsonResponse([checks]);
     },
     serviceRoleKey: "service-key-must-not-be-returned",
-    supabaseUrl: "https://project.supabase.co"
+    supabaseUrl
   });
 
   assert.deepEqual(result, checks);
   assert.equal(
     request.url,
-    "https://project.supabase.co/rest/v1/rpc/get_phase2_billing_schema_readiness"
+    `${supabaseUrl}/rest/v1/rpc/get_phase2_billing_schema_readiness`
   );
   assert.match(request.options.headers.Authorization, /^Bearer /);
+  assert.equal(request.options.redirect, "error");
   assert.doesNotMatch(JSON.stringify(result), /service-key/);
 
   await assert.rejects(
     probeProductionSchema({
+      expectedProjectRef: projectRef,
       fetchImpl: async () =>
         jsonResponse([{ ...checks, receiptAllowlist: false }]),
       serviceRoleKey: "hidden",
-      supabaseUrl: "https://project.supabase.co"
+      supabaseUrl
     }),
     /receiptAllowlist/
   );
   await assert.rejects(
     probeProductionSchema({
+      expectedProjectRef: projectRef,
       fetchImpl: async () => jsonResponse([{ ...checks, catalog: ["private"] }]),
       serviceRoleKey: "hidden",
-      supabaseUrl: "https://project.supabase.co"
+      supabaseUrl
     }),
     /unexpected schema readiness field/
   );
+});
+
+test("production schema probe never sends secrets before exact project-origin validation", async () => {
+  const projectRef = "abcdefghijklmnopqrst";
+  let fetchCalls = 0;
+  const fetchImpl = async () => {
+    fetchCalls += 1;
+    throw new Error("fetch must not be called");
+  };
+
+  for (const supabaseUrl of [
+    "https://attacker.example",
+    `https://${projectRef}.supabase.co.attacker.example`,
+    `https://${projectRef}.supabase.co/redirect`,
+    `https://${projectRef}.supabase.co:444`,
+    `https://user@${projectRef}.supabase.co`
+  ]) {
+    await assert.rejects(
+      probeProductionSchema({
+        expectedProjectRef: projectRef,
+        fetchImpl,
+        serviceRoleKey: "must-never-leave-process",
+        supabaseUrl
+      }),
+      /Supabase URL|verified Supabase project/
+    );
+  }
+
+  await assert.rejects(
+    probeProductionSchema({
+      expectedProjectRef: "attacker.example",
+      fetchImpl,
+      serviceRoleKey: "must-never-leave-process",
+      supabaseUrl: `https://${projectRef}.supabase.co`
+    }),
+    /independently verified Supabase project ref/
+  );
+  assert.equal(fetchCalls, 0);
 });
 
 const deploymentInspection = {

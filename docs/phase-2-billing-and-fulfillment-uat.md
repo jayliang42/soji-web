@@ -65,9 +65,12 @@ node scripts/check-phase2-uat-evidence.mjs --postpush --migration-list /tmp/soji
 node scripts/check-phase2-uat-evidence.mjs --production-schema
 ```
 
-`--production-schema` reads `NEXT_PUBLIC_SUPABASE_URL` and
-`SUPABASE_SERVICE_ROLE_KEY` from the secure environment. Its public output is limited to
-boolean schema checks; it must never print the service-role key or raw database responses.
+`--production-schema` reads `NEXT_PUBLIC_SUPABASE_URL`, the independently verified
+`SUPABASE_PROJECT_REF`, and `SUPABASE_SERVICE_ROLE_KEY` from the secure environment. It
+refuses to send secret-bearing headers unless the URL origin exactly matches
+`https://{SUPABASE_PROJECT_REF}.supabase.co`, and rejects redirects. Its public output is
+limited to boolean schema checks; it must never print the service-role key or raw database
+responses.
 After the check succeeds, change only `BILL-DB-SCHEMA-PARITY` using the observed boolean
 result, then run:
 

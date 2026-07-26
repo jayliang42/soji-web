@@ -787,6 +787,7 @@ function normalizeSchemaReadiness(raw) {
 }
 
 export async function probeProductionSchema({
+  expectedProjectRef = process.env.SUPABASE_PROJECT_REF,
   fetchImpl = globalThis.fetch,
   serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY,
   supabaseUrl =
@@ -795,12 +796,21 @@ export async function probeProductionSchema({
   if (typeof fetchImpl !== "function") {
     throw new Error("production schema probe requires fetch");
   }
+  if (
+    typeof expectedProjectRef !== "string" ||
+    !/^[a-z0-9]{20}$/.test(expectedProjectRef)
+  ) {
+    throw new Error(
+      "production schema probe requires the independently verified Supabase project ref"
+    );
+  }
   if (!serviceRoleKey || /\s/.test(serviceRoleKey)) {
     throw new Error(
       "production schema probe requires a secure service-role key"
     );
   }
 
+  const expectedOrigin = `https://${expectedProjectRef}.supabase.co`;
   let origin;
   try {
     const url = new URL(supabaseUrl);
@@ -820,6 +830,11 @@ export async function probeProductionSchema({
       "production schema probe requires a credential-free HTTPS Supabase URL"
     );
   }
+  if (origin !== expectedOrigin) {
+    throw new Error(
+      "production schema probe URL does not match the verified Supabase project"
+    );
+  }
 
   const endpoint =
     `${origin}/rest/v1/rpc/get_phase2_billing_schema_readiness`;
@@ -830,7 +845,8 @@ export async function probeProductionSchema({
       Authorization: `Bearer ${serviceRoleKey}`,
       "content-type": "application/json"
     },
-    method: "POST"
+    method: "POST",
+    redirect: "error"
   });
   if (!response || response.status !== 200) {
     throw new Error("production schema readiness RPC must return HTTP 200");
