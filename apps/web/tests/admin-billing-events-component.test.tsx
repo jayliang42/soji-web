@@ -289,7 +289,15 @@ describe("Admin Billing incident ledger", () => {
     expect(focusTargets).toEqual(["billing-event-action-message"]);
   });
 
-  it("announces an active lease without replacing the current row", async () => {
+  it("replaces a stale retryable row with the active lease snapshot", async () => {
+    const processingStartedAt = new Date().toISOString();
+    const activeLeaseEvent = event("processing", {
+      attemptCount: 2,
+      id: baseEvent.id,
+      lastAttemptedAt: processingStartedAt,
+      processingError: null,
+      processingStartedAt
+    });
     const onEvent = vi.fn();
     const onFocus = vi.fn();
     const onMessage = vi.fn();
@@ -299,6 +307,7 @@ describe("Admin Billing incident ledger", () => {
       fetchImpl: async () =>
         new Response(
           JSON.stringify({
+            event: activeLeaseEvent,
             ok: false,
             reason: "event_processing_in_progress"
           }),
@@ -311,12 +320,25 @@ describe("Admin Billing incident ledger", () => {
       pendingIds: new Set()
     });
 
-    expect(onEvent).not.toHaveBeenCalled();
+    expect(onEvent).toHaveBeenCalledWith(activeLeaseEvent);
     expect(onMessage).toHaveBeenLastCalledWith({
       heading: expect.stringContaining("already being processed"),
       tone: "status"
     });
     expect(onFocus).toHaveBeenCalledWith("billing-event-action-message");
+
+    const activeHtml = render([activeLeaseEvent]);
+    expect(activeHtml).toContain("Processing · In progress");
+    expect(activeHtml).not.toContain("Retry processing");
+
+    const expiredHtml = render([
+      {
+        ...activeLeaseEvent,
+        processingStartedAt: new Date(Date.now() - 130_000).toISOString()
+      }
+    ]);
+    expect(expiredHtml).toContain("Processing · Lease expired");
+    expect(expiredHtml).toContain("Retry processing");
   });
 
   it("allows concurrent retries for different records while rejecting a duplicate record retry", async () => {

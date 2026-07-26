@@ -174,18 +174,42 @@ describe("admin billing retry authorization", () => {
   });
 
   it("rejects a retry while another worker owns an active lease", async () => {
+    const processingStartedAt = "2026-07-14T12:00:00.000Z";
     retryMocks.beginBillingEventAttempt.mockResolvedValue({
       claimed: false,
       status: "processing"
     });
+    retryMocks.maybeSingle
+      .mockResolvedValueOnce({ data: billingEventRow, error: null })
+      .mockResolvedValueOnce({
+        data: {
+          ...billingEventRow,
+          attempt_count: 2,
+          last_attempted_at: processingStartedAt,
+          processing_error: null,
+          processing_started_at: processingStartedAt,
+          status: "processing"
+        },
+        error: null
+      });
 
     const response = await POST(new Request("http://localhost:3000"), params);
 
     expect(response.status).toBe(409);
-    expect(await response.json()).toEqual({
+    expect(await response.json()).toMatchObject({
+      event: {
+        attemptCount: 2,
+        id: billingEventRow.id,
+        lastAttemptedAt: processingStartedAt,
+        processedAt: null,
+        processingError: null,
+        processingStartedAt,
+        status: "processing"
+      },
       ok: false,
       reason: "event_processing_in_progress"
     });
+    expect(retryMocks.maybeSingle).toHaveBeenCalledTimes(2);
     expect(retryMocks.retrieve).not.toHaveBeenCalled();
   });
 

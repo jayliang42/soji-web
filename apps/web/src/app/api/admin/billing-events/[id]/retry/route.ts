@@ -101,11 +101,33 @@ export async function POST(
   try {
     attempt = await beginBillingEventAttempt(billingEvent.id);
     if (!attempt.claimed) {
+      const { data: currentBillingEvent, error: refreshError } =
+        await context.supabase
+          .from("billing_events")
+          .select(billingEventSelect)
+          .eq("id", billingEvent.id)
+          .maybeSingle();
+      if (refreshError || !currentBillingEvent) {
+        await reportOperationalError(
+          "stripe.webhook.retry_refresh_failed",
+          refreshError ?? new Error("billing_event_not_found_after_attempt"),
+          { billingEventId: billingEvent.id }
+        );
+        return NextResponse.json(
+          { ok: false, reason: "billing_event_lookup_failed" },
+          { status: 500 }
+        );
+      }
+
+      const event = mapBillingEventRow(
+        currentBillingEvent as BillingEventRow
+      );
       return NextResponse.json(
         {
+          event,
           ok: false,
           reason:
-            attempt.status === "processed" || attempt.status === "ignored"
+            event.status === "processed" || event.status === "ignored"
               ? "event_already_settled"
               : "event_processing_in_progress"
         },
