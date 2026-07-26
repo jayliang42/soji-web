@@ -3,6 +3,7 @@ import { ContentPreviewCta } from "@/components/content-preview-cta";
 import { ContentSourceBadge } from "@/components/content-source-badge";
 import { SectionShell } from "@/components/section-shell";
 import { getContentAccessMode, getPreviewBody } from "@/lib/content-access";
+import { formatContentType } from "@/lib/content-presentation";
 import { getContentBySlug } from "@/lib/content";
 import { getCurrentEntitlements } from "@/lib/session";
 
@@ -27,7 +28,7 @@ export default async function ContentDetailPage({
   return (
     <main>
       <SectionShell
-        eyebrow={item.type}
+        eyebrow={formatContentType(item.type)}
         title={item.title}
         description={item.summary}
       >

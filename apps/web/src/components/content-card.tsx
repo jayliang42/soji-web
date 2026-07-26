@@ -1,5 +1,6 @@
 import type { ContentItem } from "@soji/types";
 import Link from "next/link";
+import { formatContentType, formatPublishedDate } from "@/lib/content-presentation";
 
 export function ContentCard({
   item,
@@ -8,11 +9,13 @@ export function ContentCard({
   item: ContentItem;
   accessMode: "full" | "preview" | "locked";
 }) {
+  const publishedDate = formatPublishedDate(item.publishedAt);
+
   return (
     <article className="rounded-[28px] border border-dune bg-shell p-6">
       <div className="flex items-center justify-between text-sm text-cocoa/60">
-        <span>{item.type.replace("_", " ")}</span>
-        <span>{item.publishedAt}</span>
+        <span>{formatContentType(item.type)}</span>
+        {publishedDate ? <time dateTime={item.publishedAt}>{publishedDate}</time> : null}
       </div>
       <h3 className="mt-4 font-display text-3xl text-cocoa">{item.title}</h3>
       <p className="mt-3 text-cocoa/75">{item.summary}</p>
