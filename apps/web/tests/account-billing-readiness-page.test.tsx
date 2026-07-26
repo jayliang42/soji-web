@@ -145,7 +145,7 @@ describe("account billing management readiness", () => {
       await AccountPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain(">Upgrade<");
+    expect(html).toContain(">Upgrade membership<");
     expect(html).toContain("/account?view=subscriptions#membership-options");
     expect(html).not.toContain("Upgrade your membership");
   });
@@ -361,8 +361,8 @@ describe("account billing management readiness", () => {
     expect(html).toContain("Access through");
     expect(html).toContain("Trial ends");
     expect(html).toContain("Ended");
-    expect(html).toContain('datetime="2026-08-01T12:00:00Z"');
-    expect(html).toContain('datetime="2026-07-20T12:00:00Z"');
+    expect(html).toContain('dateTime="2026-08-01T12:00:00Z"');
+    expect(html).toContain('dateTime="2026-07-20T12:00:00Z"');
   });
 
   it("does not let a confirmed return query render active access", async () => {
@@ -411,7 +411,11 @@ describe("account billing management readiness", () => {
     pageMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
     pageMocks.getAccountPurchases.mockResolvedValue({
       items: [
-        purchase({ status: "refunded" })
+        purchase({
+          disputeStatus: "won",
+          downloadReady: true,
+          status: "refunded"
+        })
       ]
     });
 
@@ -483,9 +487,26 @@ describe("account billing management readiness", () => {
   it.each([
     {
       disputeStatus: null,
+      downloadReady: true,
+      expectedAccess: "Download available",
+      expectedPrimary: "Payment confirmed",
+      shouldDownload: true,
+      status: "paid"
+    },
+    {
+      disputeStatus: null,
+      downloadReady: true,
+      expectedAccess: "Download available",
+      expectedPrimary: "Payment confirmed",
+      shouldDownload: true,
+      status: "no_payment_required"
+    },
+    {
+      disputeStatus: null,
       downloadReady: false,
       expectedAccess: "Download available after Stripe confirms payment.",
       expectedPrimary: "Payment pending",
+      shouldDownload: false,
       status: "pending"
     },
     {
@@ -493,6 +514,7 @@ describe("account billing management readiness", () => {
       downloadReady: false,
       expectedAccess: "Delivery unavailable",
       expectedPrimary: "Payment confirmed",
+      shouldDownload: false,
       status: "paid"
     },
     {
@@ -500,6 +522,7 @@ describe("account billing management readiness", () => {
       downloadReady: true,
       expectedAccess: "Access ended",
       expectedPrimary: "Dispute lost",
+      shouldDownload: false,
       status: "paid"
     },
     {
@@ -507,7 +530,16 @@ describe("account billing management readiness", () => {
       downloadReady: true,
       expectedAccess: "Download available",
       expectedPrimary: "Payment confirmed · Inquiry closed",
+      shouldDownload: true,
       status: "paid"
+    },
+    {
+      disputeStatus: null,
+      downloadReady: true,
+      expectedAccess: "Delivery unavailable",
+      expectedPrimary: "Status unavailable",
+      shouldDownload: false,
+      status: "future_payment_state"
     }
   ])(
     "renders product $expectedPrimary truth and authorizes only eligible downloads",
@@ -516,6 +548,7 @@ describe("account billing management readiness", () => {
       downloadReady,
       expectedAccess,
       expectedPrimary,
+      shouldDownload,
       status
     }) => {
       pageMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
@@ -527,12 +560,8 @@ describe("account billing management readiness", () => {
 
       expect(html).toContain(expectedPrimary);
       expect(html).toContain(expectedAccess);
-      const shouldDownload =
-        downloadReady &&
-        !["lost", "needs_response", "under_review"].includes(
-          disputeStatus ?? ""
-        );
       expect(html.includes(">Download file<")).toBe(shouldDownload);
+      expect(html).not.toContain("future_payment_state");
     }
   );
 });
