@@ -1,56 +1,97 @@
 import { redirect } from "next/navigation";
+import type { Metadata, Route } from "next";
 import { AuthStatus } from "@/components/auth-status";
 import { LoginForm } from "@/components/login-form";
+import { LegacyRecoveryHandler } from "@/components/legacy-recovery-handler";
 import { SectionShell } from "@/components/section-shell";
 import { hasSupabaseConfig } from "@/lib/env";
+import { getLoginPageCopy } from "@/lib/login-copy";
 import { getSafeNextPath } from "@/lib/navigation";
 import { getSessionSnapshot } from "@/lib/session";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  robots: { follow: false, index: false }
+};
 
 export default async function LoginPage({
   searchParams
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
   const snapshot = await getSessionSnapshot();
   const params = await searchParams;
   const nextPath = getSafeNextPath(params.next);
+  const copy = getLoginPageCopy(params.next ? nextPath : "/");
+  const authEnabled = hasSupabaseConfig();
 
   if (snapshot.user && snapshot.source === "supabase") {
-    redirect("/account");
+    redirect(nextPath as Route);
   }
 
   return (
     <main>
       <SectionShell
-        eyebrow="Auth"
-        title="Email and Google sign-in"
-        description="The page now supports password auth and Google OAuth. After sign-in, the server bootstraps `profiles` and a default `member` role."
+        eyebrow="Member access"
+        headingLevel={1}
+        title={copy.title}
+        description={copy.description}
       >
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[28px] border border-dune bg-shell p-6">
-            <h3 className="font-display text-3xl text-cocoa">What to configure</h3>
-            <ol className="mt-4 list-decimal space-y-3 pl-5 text-cocoa/80">
-              <li>Create a Supabase project and apply the SQL schema.</li>
-              <li>Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.</li>
-              <li>Enable Google under Supabase Auth providers.</li>
-              <li>Set the callback URL to `/auth/callback`.</li>
-            </ol>
-            <div className="mt-6">
-              <LoginForm
-                enabled={hasSupabaseConfig()}
-                nextPath={nextPath}
-              />
-            </div>
+        {params.error === "password_reset_callback_failed" ? (
+          <LegacyRecoveryHandler />
+        ) : null}
+        {params.error === "oauth_callback_failed" ||
+        params.error === "password_reset_callback_failed" ? (
+          <div
+            className="mb-6 border-l-4 border-clay bg-accent-muted px-5 py-4 text-sm text-cocoa"
+            role="alert"
+          >
+            <p className="font-semibold">
+              {params.error === "password_reset_callback_failed"
+                ? "The password reset link could not be completed."
+                : "Google sign-in could not be completed."}
+            </p>
+            <p className="mt-1 text-cocoa/75">
+              {params.error === "password_reset_callback_failed"
+                ? "No password was changed. Request a new reset link below."
+                : "No account access was assumed. Try signing in again."}
+            </p>
           </div>
-          <div className="grid gap-6">
-            <AuthStatus user={snapshot.user} source={snapshot.source} />
-            <div className="rounded-[28px] border border-dune bg-shell p-6 text-sm text-cocoa/80">
-              <p className="font-semibold text-cocoa">Bootstrap behavior</p>
-              <p className="mt-3">
-                After authentication, the app calls `/api/auth/bootstrap` to upsert
-                `profiles` and seed a default `member` role.
-              </p>
-            </div>
+        ) : null}
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+          <LoginForm
+            description={copy.panelDescription}
+            enabled={authEnabled}
+            heading={copy.panelTitle}
+            nextPath={nextPath}
+          />
+          <div className="grid content-start gap-6">
+            {snapshot.user ? (
+              <AuthStatus user={snapshot.user} source={snapshot.source} />
+            ) : (
+              <aside className="rounded-lg border border-dune bg-cream px-6 py-6 text-cocoa">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-clay">
+                  One trusted identity
+                </p>
+                <h2 className="mt-3 font-display text-2xl leading-tight">
+                  Your access stays with your account.
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-cocoa/75">
+                  Memberships, purchases, downloads, and saved access use the
+                  same private profile. Soji never asks for payment details on
+                  this page.
+                </p>
+              </aside>
+            )}
+            {!authEnabled ? (
+              <div className="border-l-4 border-clay bg-accent-muted px-5 py-4 text-sm text-cocoa/80">
+                <p className="font-semibold text-cocoa">Local setup needed</p>
+                <p className="mt-3">
+                  Add the Supabase public URL and anon key before real users can
+                  sign in.
+                </p>
+              </div>
+            ) : null}
           </div>
         </div>
       </SectionShell>
