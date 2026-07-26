@@ -10,7 +10,9 @@ export function getStripeClient() {
 
   if (!stripeClient) {
     stripeClient = new Stripe(env.STRIPE_SECRET_KEY, {
-      apiVersion: "2025-08-27.basil"
+      apiVersion: "2025-08-27.basil",
+      maxNetworkRetries: 1,
+      timeout: 10_000
     });
   }
 

@@ -10,15 +10,17 @@ export function AuthStatus({
   user: UserProfile | null;
   source: "supabase" | "demo";
 }) {
+  const isDemo = source === "demo";
+
   return (
-    <div className="rounded-[24px] border border-dune bg-shell p-5 text-sm text-cocoa/80">
+    <div className="rounded-lg border border-dune bg-shell p-5 text-sm text-cocoa/80">
       <p className="font-semibold text-cocoa">
-        Session source: {source === "supabase" ? "Supabase" : "Demo fallback"}
+        {user ? "Signed in" : "Not signed in"}
       </p>
       <p className="mt-2">
         {user
-          ? `Signed in as ${user.email}`
-          : "No active session. Once Supabase env vars are set, this will reflect the real auth state."}
+          ? `${user.email}${isDemo ? " is using demo access for local preview." : ""}`
+          : "Create an account to save purchases and unlock member-only content."}
       </p>
       <div className="mt-4 flex gap-4">
         {user ? (

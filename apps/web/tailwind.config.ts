@@ -1,30 +1,44 @@
 import type { Config } from "tailwindcss";
+import { brandTheme } from "@soji/ui";
+
+const { colors, radii, typography } = brandTheme;
 
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        sand: "#f6efe6",
-        cocoa: "#20150d",
-        clay: "#d86b3d",
-        shell: "#fffaf4",
-        dune: "#d6c2ac",
-        sage: "#9cb896",
-        cream: "#faf7f0",
-        charcoal: "#2d2d2d",
-        gold: "#d4af37",
-        blush: "#f4e4d6",
-        richgreen: "#a6ea63",
-        darkgreen: "#7bc142",
-        brightwhite: "#ffffff",
-        darktext: "#1a1a1a",
-        checkgreen: "#22c55e"
+        sand: colors.background,
+        cocoa: colors.foreground,
+        clay: colors.accent,
+        shell: colors.surface,
+        dune: colors.border,
+        sage: colors.success,
+        cream: colors.surfaceMuted,
+        charcoal: colors.foreground,
+        gold: colors.gold,
+        blush: colors.accentMuted,
+        richgreen: colors.highlight,
+        darkgreen: colors.success,
+        brightwhite: colors.surface,
+        darktext: colors.foreground,
+        checkgreen: colors.success,
+        muted: colors.textMuted,
+        success: colors.success,
+        "success-muted": colors.successMuted,
+        warning: colors.warning,
+        error: colors.error,
+        "accent-muted": colors.accentMuted
       },
       fontFamily: {
-        display: ["Georgia", "'Times New Roman'", "serif"],
-        body: ["'Inter'", "'Helvetica Neue'", "sans-serif"],
-        mono: ["'JetBrains Mono'", "'Fira Code'", "monospace"]
+        display: [...typography.display],
+        body: [...typography.body],
+        mono: [...typography.mono]
+      },
+      borderRadius: {
+        sm: `${radii.sm}px`,
+        md: `${radii.md}px`,
+        lg: `${radii.lg}px`
       },
       fontSize: {
         'xs': '0.75rem',

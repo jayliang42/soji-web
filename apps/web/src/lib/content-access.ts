@@ -1,36 +1,64 @@
 import { hasEntitlement } from "@soji/domain";
 import type { ContentItem, EntitlementKey } from "@soji/types";
 
-export type ContentAccessMode = "full" | "preview" | "locked";
+export type ContentAccessMode = "full" | "preview" | "locked" | "unavailable";
 
 export function getContentAccessMode(
   item: ContentItem,
-  entitlements: EntitlementKey[]
+  {
+    entitlements,
+    accessUnavailable = false,
+    isAuthenticated
+  }: {
+    accessUnavailable?: boolean;
+    entitlements: EntitlementKey[];
+    isAuthenticated: boolean;
+  }
 ) {
   if (item.visibility === "public") {
     return "full" satisfies ContentAccessMode;
   }
 
-  if (hasEntitlement(entitlements, item.requiredEntitlements)) {
-    return "full" satisfies ContentAccessMode;
+  if (accessUnavailable) {
+    return "unavailable" satisfies ContentAccessMode;
   }
 
   if (item.visibility === "members_only") {
+    if (!isAuthenticated) {
+      return "preview" satisfies ContentAccessMode;
+    }
+
+    if (
+      item.requiredEntitlements.length === 0 ||
+      hasEntitlement(entitlements, item.requiredEntitlements)
+    ) {
+      return "full" satisfies ContentAccessMode;
+    }
+
     return "preview" satisfies ContentAccessMode;
+  }
+
+  if (
+    item.requiredEntitlements.length > 0 &&
+    hasEntitlement(entitlements, item.requiredEntitlements)
+  ) {
+    return "full" satisfies ContentAccessMode;
   }
 
   return "locked" satisfies ContentAccessMode;
 }
 
-export function getPreviewBody(body: string) {
-  const paragraphs = body
-    .split(/\n\s*\n/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  if (paragraphs.length <= 2) {
-    return body;
+export function getVisibleContentBody(
+  item: ContentItem,
+  accessMode: ContentAccessMode
+) {
+  if (accessMode === "full") {
+    return item.body;
   }
 
-  return `${paragraphs.slice(0, 2).join("\n\n")}\n\n...`;
+  if (accessMode === "preview" || accessMode === "unavailable") {
+    return item.summary;
+  }
+
+  return null;
 }

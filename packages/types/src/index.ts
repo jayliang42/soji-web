@@ -56,6 +56,27 @@ export interface UserProfile {
   providers: AuthProvider[];
 }
 
+export interface ManagedUser {
+  accessRole: UserRole;
+  createdAt: string;
+  email: string;
+  fullName: string | null;
+  id: string;
+  roles: UserRole[];
+  tier: MembershipTier;
+}
+
+export interface ManagedUserSnapshot {
+  error?: string;
+  items: ManagedUser[];
+  page: number;
+  pageSize: number;
+  query: string;
+  source: "supabase" | "demo";
+  totalItems: number;
+  totalPages: number;
+}
+
 export interface ContentItem {
   id: string;
   slug: string;
@@ -65,6 +86,8 @@ export interface ContentItem {
   visibility: Visibility;
   requiredEntitlements: EntitlementKey[];
   publishedAt: string;
+  revision?: number;
+  updatedAt?: string;
   coverImage?: string;
   tags: string[];
   body: string;
@@ -76,6 +99,52 @@ export interface ContentSnapshot {
   error?: string;
 }
 
+export interface ProductOffer {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  price: number;
+  priceLabel: string;
+  entitlement: EntitlementKey;
+  stripePriceId?: string;
+  isActive?: boolean;
+  revision?: number;
+  updatedAt?: string;
+  bullets: string[];
+  deliveryAsset?: {
+    fileName: string;
+    revision: number;
+    sizeBytes: number;
+  };
+}
+
+export interface ProductSnapshot {
+  items: ProductOffer[];
+  source: "supabase" | "demo";
+  error?: string;
+}
+
+export interface ProductAssetCleanupJob {
+  attemptCount: number;
+  claimedAt: string | null;
+  createdAt: string;
+  id: string;
+  lastAttemptedAt: string | null;
+  lastError: string | null;
+  notBefore: string;
+  productId: string | null;
+  reason: "abandoned_upload" | "deleted_asset" | "replaced_asset";
+  status: "failed" | "pending" | "processing";
+  storagePath: string;
+}
+
+export interface ProductAssetCleanupSnapshot {
+  error?: string;
+  items: ProductAssetCleanupJob[];
+  source: "supabase" | "unavailable";
+}
+
 export interface OfficeHourSession {
   id: string;
   title: string;
@@ -83,6 +152,14 @@ export interface OfficeHourSession {
   replayUrl?: string;
   signupUrl: string;
   requiredEntitlements: EntitlementKey[];
+  revision?: number;
+  updatedAt?: string;
+}
+
+export interface OfficeHourSnapshot {
+  items: OfficeHourSession[];
+  source: "supabase" | "demo";
+  error?: string;
 }
 
 export interface AdminMetric {

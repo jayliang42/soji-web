@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import type { EntitlementKey } from "@soji/types";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { reportOperationalError } from "@/lib/observability";
+import { getPublisherContext } from "@/lib/publisher";
+import type { Database } from "@/lib/supabase/database.types";
+
+type UpsertContentArgs =
+  Database["public"]["Functions"]["upsert_content_item"]["Args"];
 
 const entitlementKeys = [
   "content.basic",
@@ -18,10 +23,12 @@ const entitlementKeys = [
 const payloadSchema = z.object({
   slug: z
     .string()
+    .trim()
     .min(3)
+    .max(120)
     .regex(/^[a-z0-9-]+$/, "Slug must use lowercase letters, numbers, and hyphens."),
-  title: z.string().min(3),
-  summary: z.string().min(10),
+  title: z.string().trim().min(3).max(200),
+  summary: z.string().trim().min(10).max(2000),
   type: z.enum([
     "article",
     "case_study",
@@ -31,49 +38,86 @@ const payloadSchema = z.object({
     "office_hour_session"
   ]),
   visibility: z.enum(["public", "members_only", "purchase_required"]),
-  body: z.string().min(20),
+  body: z.string().min(20).max(100_000),
   coverImage: z.string().url().optional().or(z.literal("")),
-  requiredEntitlements: z.array(z.enum(entitlementKeys))
+  requiredEntitlements: z.array(z.enum(entitlementKeys)).max(entitlementKeys.length)
+}).strict();
+
+const updatePayloadSchema = payloadSchema.extend({
+  expectedRevision: z.number().int().positive(),
+  id: z.string().uuid(),
+  published: z.boolean()
 });
 
-export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseServerClient();
-  if (!supabase) {
-    return NextResponse.json(
-      { ok: false, reason: "supabase_not_configured" },
-      { status: 501 }
-    );
+const deletePayloadSchema = z.object({
+  expectedRevision: z.number().int().positive(),
+  id: z.string().uuid()
+}).strict();
+
+function toContentRpcPayload(
+  payload: z.infer<typeof payloadSchema>,
+  options: { expectedRevision: number | null; id: string | null; published: boolean }
+): UpsertContentArgs {
+  // Generated RPC types do not encode nullable PostgreSQL function arguments.
+  return {
+    p_body_markdown: payload.body,
+    p_content_id: options.id,
+    p_cover_image_url: payload.coverImage || null,
+    p_expected_revision: options.expectedRevision,
+    p_published: options.published,
+    p_required_entitlements: payload.requiredEntitlements,
+    p_slug: payload.slug,
+    p_summary: payload.summary,
+    p_title: payload.title,
+    p_type: payload.type,
+    p_visibility: payload.visibility
+  } as unknown as UpsertContentArgs;
+}
+
+function contentConflictResponse(
+  error: { code?: string } | null,
+  operation: "delete" | "write"
+) {
+  const reason =
+    error?.code === "23505"
+      ? "content_slug_conflict"
+      : error?.code === "40001"
+        ? operation === "delete"
+          ? "content_delete_conflict"
+          : "content_update_conflict"
+        : error?.code === "P0002"
+          ? "content_not_found"
+          : null;
+
+  if (!reason) {
+    return null;
   }
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ ok: false, reason: "not_authenticated" }, { status: 401 });
-  }
-
-  const { data: roles, error: rolesError } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", user.id);
-
-  if (rolesError) {
-    return NextResponse.json(
-      { ok: false, reason: rolesError.message },
-      { status: 500 }
-    );
-  }
-
-  const allowed = (roles ?? []).some(
-    (entry) => entry.role === "admin" || entry.role === "editor"
+  return NextResponse.json(
+    { ok: false, reason },
+    { status: reason === "content_not_found" ? 404 : 409 }
   );
+}
 
-  if (!allowed) {
-    return NextResponse.json({ ok: false, reason: "forbidden" }, { status: 403 });
+async function contentWriteFailed(
+  event: string,
+  error: unknown,
+  context: Record<string, boolean | number | string | null | undefined>
+) {
+  await reportOperationalError(event, error, context);
+  return NextResponse.json(
+    { ok: false, reason: "content_write_failed" },
+    { status: 500 }
+  );
+}
+
+export async function POST(request: NextRequest) {
+  const context = await getPublisherContext();
+  if ("error" in context) {
+    return context.error;
   }
 
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
   const parsed = payloadSchema.safeParse(body);
 
   if (!parsed.success) {
@@ -83,50 +127,105 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const payload = parsed.data;
-
-  const { data: insertedItem, error: insertError } = await supabase
-    .from("content_items")
-    .insert({
-      slug: payload.slug,
-      title: payload.title,
-      summary: payload.summary,
-      type: payload.type,
-      visibility: payload.visibility,
-      body_markdown: payload.body,
-      cover_image_url: payload.coverImage || null,
-      published_at: new Date().toISOString(),
-      created_by: user.id
-    })
-    .select("id, slug")
+  const { data, error } = await context.supabase
+    .rpc(
+      "upsert_content_item",
+      toContentRpcPayload(parsed.data, {
+        expectedRevision: null,
+        id: null,
+        published: true
+      })
+    )
     .single();
 
-  if (insertError || !insertedItem) {
-    return NextResponse.json(
-      { ok: false, reason: insertError?.message ?? "content_insert_failed" },
-      { status: 500 }
-    );
-  }
-
-  if (payload.requiredEntitlements.length > 0) {
-    const { error: ruleError } = await supabase.from("content_access_rules").insert(
-      payload.requiredEntitlements.map((entitlementId) => ({
-        content_id: insertedItem.id,
-        entitlement_id: entitlementId
-      }))
-    );
-
-    if (ruleError) {
-      await supabase.from("content_items").delete().eq("id", insertedItem.id);
-      return NextResponse.json(
-        { ok: false, reason: ruleError.message },
-        { status: 500 }
-      );
+  if (error || !data) {
+    const conflict = contentConflictResponse(error, "write");
+    if (conflict) {
+      return conflict;
     }
+    return contentWriteFailed("admin.content.create_failed", error, {
+      slug: parsed.data.slug
+    });
   }
 
   return NextResponse.json({
     ok: true,
-    item: insertedItem
+    item: data
   });
+}
+
+export async function PATCH(request: NextRequest) {
+  const context = await getPublisherContext();
+  if ("error" in context) {
+    return context.error;
+  }
+
+  const body = await request.json().catch(() => null);
+  const parsed = updatePayloadSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, reason: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const { expectedRevision, id, published, ...payload } = parsed.data;
+  const { data, error } = await context.supabase
+    .rpc(
+      "upsert_content_item",
+      toContentRpcPayload(payload, { expectedRevision, id, published })
+    )
+    .single();
+
+  if (error || !data) {
+    const conflict = contentConflictResponse(error, "write");
+    if (conflict) {
+      return conflict;
+    }
+    return contentWriteFailed("admin.content.update_failed", error, {
+      contentId: id,
+      slug: payload.slug
+    });
+  }
+
+  return NextResponse.json({
+    ok: true,
+    item: data
+  });
+}
+
+export async function DELETE(request: NextRequest) {
+  const context = await getPublisherContext();
+  if ("error" in context) {
+    return context.error;
+  }
+
+  const body = await request.json().catch(() => null);
+  const parsed = deletePayloadSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, reason: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const { data, error } = await context.supabase.rpc("delete_content_item", {
+    p_content_id: parsed.data.id,
+    p_expected_revision: parsed.data.expectedRevision
+  });
+
+  if (error || data !== true) {
+    const conflict = contentConflictResponse(error, "delete");
+    if (conflict) {
+      return conflict;
+    }
+    return contentWriteFailed("admin.content.delete_failed", error, {
+      contentId: parsed.data.id,
+      expectedRevision: parsed.data.expectedRevision
+    });
+  }
+
+  return NextResponse.json({ ok: true });
 }

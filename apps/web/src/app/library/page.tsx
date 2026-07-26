@@ -1,18 +1,30 @@
+import type { Metadata } from "next";
 import { ContentCard } from "@/components/content-card";
 import { ContentSourceBadge } from "@/components/content-source-badge";
+import { DataEmpty, DataUnavailable } from "@/components/data-state";
 import { SectionShell } from "@/components/section-shell";
 import { getContentAccessMode } from "@/lib/content-access";
 import { getContentSnapshot } from "@/lib/content";
-import { getCurrentEntitlements } from "@/lib/session";
+import { getSessionSnapshot } from "@/lib/session";
+
+export const metadata: Metadata = {
+  title: "Library",
+  description:
+    "Read public previews and explore member essays, templates, and practical money decision tools.",
+  alternates: { canonical: "/library" }
+};
 
 export default async function LibraryPage() {
-  const snapshot = await getContentSnapshot();
-  const entitlements = await getCurrentEntitlements();
+  const [snapshot, session] = await Promise.all([
+    getContentSnapshot(),
+    getSessionSnapshot()
+  ]);
 
   return (
     <main>
       <SectionShell
         eyebrow="Library"
+        headingLevel={1}
         title="Content, templates, and member-only drops"
         description="Each content item declares the entitlements required to unlock it."
       >
@@ -20,8 +32,19 @@ export default async function LibraryPage() {
           <ContentSourceBadge source={snapshot.source} />
         </div>
         {snapshot.error ? (
-          <div className="mb-6 rounded-[24px] border border-clay/30 bg-[#fff1ea] px-5 py-4 text-sm text-cocoa">
-            Supabase content query failed: {snapshot.error}
+          <div className="mb-6">
+            <DataUnavailable
+              title="The library could not be loaded"
+              description="No restricted content has been shown. Please try again shortly."
+            />
+          </div>
+        ) : null}
+        {session.error ? (
+          <div className="mb-6">
+            <DataUnavailable
+              title="Membership access is temporarily unavailable"
+              description="Public pieces remain available, but we could not verify access to restricted content. Your membership has not been changed. Please try again shortly."
+            />
           </div>
         ) : null}
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -29,13 +52,20 @@ export default async function LibraryPage() {
             <ContentCard
               key={item.id}
               item={item}
-              accessMode={getContentAccessMode(item, entitlements)}
+              accessMode={getContentAccessMode(item, {
+                accessUnavailable: Boolean(session.error),
+                entitlements: session.entitlements,
+                isAuthenticated: Boolean(session.user)
+              })}
             />
           ))}
         </div>
         {!snapshot.error && snapshot.items.length === 0 ? (
-          <div className="mt-6 rounded-[24px] border border-dune bg-shell px-5 py-4 text-sm text-cocoa/75">
-            No content has been published yet.
+          <div className="mt-6">
+            <DataEmpty
+              title="No published content yet"
+              description="New essays, templates, and member drops will appear here."
+            />
           </div>
         ) : null}
       </SectionShell>

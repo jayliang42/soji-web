@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import type { ContentType, EntitlementKey, Visibility } from "@soji/types";
+import { CoverImageField } from "@/components/cover-image-field";
+import { MarkdownEditor } from "@/components/markdown-editor";
 
 const contentTypeOptions: Array<{ value: ContentType; label: string }> = [
   { value: "article", label: "Article" },
@@ -116,7 +118,7 @@ export function AdminContentForm({
   }
 
   return (
-    <div className="rounded-[28px] border border-dune bg-shell p-6">
+    <div className="rounded-lg border border-dune bg-shell p-6">
       <h3 className="font-display text-3xl text-cocoa">Create Content</h3>
       <p className="mt-3 text-sm text-cocoa/75">
         This form writes to `content_items` and `content_access_rules`.
@@ -133,7 +135,7 @@ export function AdminContentForm({
                 setSlug(slugify(nextTitle));
               }
             }}
-            className="rounded-2xl border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+            className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
           />
         </label>
         <label className="grid gap-2 text-sm text-cocoa/75">
@@ -141,7 +143,7 @@ export function AdminContentForm({
           <input
             value={slug}
             onChange={(event) => setSlug(slugify(event.target.value))}
-            className="rounded-2xl border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+            className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
           />
         </label>
         <label className="grid gap-2 text-sm text-cocoa/75">
@@ -150,7 +152,7 @@ export function AdminContentForm({
             value={summary}
             onChange={(event) => setSummary(event.target.value)}
             rows={3}
-            className="rounded-2xl border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+            className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
           />
         </label>
         <div className="grid gap-4 md:grid-cols-2">
@@ -159,7 +161,7 @@ export function AdminContentForm({
             <select
               value={type}
               onChange={(event) => setType(event.target.value as ContentType)}
-              className="rounded-2xl border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+              className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
             >
               {contentTypeOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -173,7 +175,7 @@ export function AdminContentForm({
             <select
               value={visibility}
               onChange={(event) => setVisibility(event.target.value as Visibility)}
-              className="rounded-2xl border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+              className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
             >
               {visibilityOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -183,23 +185,13 @@ export function AdminContentForm({
             </select>
           </label>
         </div>
-        <label className="grid gap-2 text-sm text-cocoa/75">
-          Cover image URL
-          <input
-            value={coverImage}
-            onChange={(event) => setCoverImage(event.target.value)}
-            className="rounded-2xl border border-dune bg-white px-4 py-3 text-cocoa outline-none"
-          />
-        </label>
-        <label className="grid gap-2 text-sm text-cocoa/75">
-          Body (Markdown)
-          <textarea
-            value={body}
-            onChange={(event) => setBody(event.target.value)}
-            rows={10}
-            className="rounded-2xl border border-dune bg-white px-4 py-3 text-cocoa outline-none"
-          />
-        </label>
+        <CoverImageField
+          disabled={isPending}
+          enabled={enabled}
+          value={coverImage}
+          onChange={setCoverImage}
+        />
+        <MarkdownEditor value={body} onChange={setBody} rows={10} />
         <div className="grid gap-3">
           <p className="text-sm text-cocoa/75">Required entitlements</p>
           <div className="flex flex-wrap gap-3">
@@ -210,7 +202,7 @@ export function AdminContentForm({
                   key={option.value}
                   type="button"
                   onClick={() => toggleEntitlement(option.value)}
-                  className={`rounded-full px-4 py-2 text-sm ${
+                  className={`rounded-md px-4 py-2 text-sm ${
                     active ? "bg-cocoa text-white" : "bg-sand text-cocoa"
                   }`}
                 >
@@ -226,7 +218,7 @@ export function AdminContentForm({
           type="button"
           onClick={submit}
           disabled={isPending}
-          className="rounded-full bg-cocoa px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+          className="rounded-md bg-cocoa px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
         >
           {isPending ? "Publishing..." : "Publish content"}
         </button>

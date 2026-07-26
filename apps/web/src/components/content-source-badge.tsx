@@ -3,9 +3,13 @@ export function ContentSourceBadge({
 }: {
   source: "supabase" | "demo";
 }) {
+  if (source !== "demo") {
+    return null;
+  }
+
   return (
-    <div className="rounded-full border border-dune bg-shell px-4 py-2 text-sm text-cocoa/70">
-      Content source: {source === "supabase" ? "Supabase" : "Demo fallback"}
+    <div className="inline-flex rounded-full border border-dune bg-shell px-4 py-2 text-sm text-cocoa/70">
+      Preview catalog
     </div>
   );
 }

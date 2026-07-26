@@ -42,7 +42,7 @@ export function LogoutButton({ enabled }: { enabled: boolean }) {
         type="button"
         onClick={handleLogout}
         disabled={isPending}
-        className="rounded-full border border-cocoa px-5 py-3 text-sm font-semibold text-cocoa disabled:opacity-50"
+        className="rounded-md border border-cocoa px-5 py-3 text-sm font-semibold text-cocoa disabled:opacity-50"
       >
         {isPending ? "Signing out..." : "Sign out"}
       </button>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentEntitlements, getCurrentUser, getSessionSnapshot } from "@/lib/session";
+import { getSessionSnapshot } from "@/lib/session";
 
 export async function GET() {
   const snapshot = await getSessionSnapshot();

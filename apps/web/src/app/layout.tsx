@@ -1,48 +1,86 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { PublicNavigation } from "@/components/public-navigation";
+import { getSiteUrl } from "@/lib/env";
+import { getSessionSnapshot } from "@/lib/session";
 import "./globals.css";
 
-export const metadata = {
-  title: "Soji",
-  description: "Membership content platform for web and app."
+const siteUrl = getSiteUrl() ?? "http://localhost:3000";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  applicationName: "Soji",
+  title: {
+    default: "Well Endowed by Soji",
+    template: "%s | Soji"
+  },
+  description:
+    "Practical guidance for strategic spending, family financial foundations, and wealth that lasts beyond one generation.",
+  openGraph: {
+    type: "website",
+    siteName: "Soji",
+    title: "Well Endowed by Soji",
+    description:
+      "Practical guidance for strategic spending, family financial foundations, and lasting wealth.",
+    images: [
+      {
+        alt: "Well Endowed hardcover book in a bright reading room",
+        height: 941,
+        url: "/well-endowed-hero.png",
+        width: 1672
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Well Endowed by Soji",
+    description:
+      "Practical guidance for strategic spending, family financial foundations, and lasting wealth.",
+    images: ["/well-endowed-hero.png"]
+  }
 };
 
-const navigation = [
-  { href: "/", label: "Home" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/library", label: "Library" },
-  { href: "/account", label: "Account" },
-  { href: "/admin", label: "Admin" }
-] as const;
-
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
+  const snapshot = await getSessionSnapshot();
+
   return (
     <html lang="en">
       <body>
-        <header className="sticky top-0 z-20 bg-gradient-to-r from-sky-300 to-blue-400/90 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+        <header className="sticky top-0 z-20 border-b border-dune/70 bg-shell">
+          <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-6 py-4 md:flex-row md:items-center md:justify-between">
             <Link href="/" className="text-2xl font-black text-darktext">
               Soji
             </Link>
-            <nav className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 text-sm font-semibold uppercase tracking-[0.16em] text-darktext md:text-base md:tracking-normal">
-              {navigation.map((item) => (
-                <Link key={item.href} href={item.href} className="hover:opacity-70 transition-opacity">
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            <PublicNavigation signedIn={Boolean(snapshot.user)} />
           </div>
         </header>
-        {children}
-        <footer className="border-t border-darktext/15 bg-brightwhite px-6 py-12">
-          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-5 text-sm text-darktext/70 md:flex-row md:items-center">
+        <div id="main-content" tabIndex={-1}>
+          {children}
+        </div>
+        <footer className="border-t border-dune bg-shell px-6 py-12">
+          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-5 text-sm text-cocoa/70 md:flex-row md:items-center">
             <p className="font-semibold">
               Soji presents Well Endowed, an editorial money membership with public previews and paid depth.
             </p>
             <div className="flex gap-6 font-semibold">
-              <Link href="/pricing" className="hover:text-darktext transition-colors">Join</Link>
-              <Link href="/library" className="hover:text-darktext transition-colors">Preview</Link>
+              <Link
+                href={
+                  snapshot.user
+                    ? "/account?view=subscriptions"
+                    : "/pricing"
+                }
+                className="hover:text-cocoa transition-colors"
+              >
+                {snapshot.user ? "Subscriptions" : "Join"}
+              </Link>
+              <Link href="/products" className="hover:text-cocoa transition-colors">Shop</Link>
+              <Link href="/office-hours" className="hover:text-cocoa transition-colors">Office hours</Link>
+              <Link href="/library" className="hover:text-cocoa transition-colors">Preview</Link>
             </div>
           </div>
         </footer>

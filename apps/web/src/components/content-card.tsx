@@ -1,19 +1,34 @@
 import type { ContentItem } from "@soji/types";
 import Link from "next/link";
+import type { ContentAccessMode } from "@/lib/content-access";
 import { formatContentType, formatPublishedDate } from "@/lib/content-presentation";
+
+const accessLabels = {
+  full: "Available now",
+  locked: "Locked by tier",
+  preview: "Preview available",
+  unavailable: "Access unavailable"
+} as const;
+
+const accessClasses = {
+  full: "bg-success-muted text-success",
+  locked: "bg-sand text-cocoa/70",
+  preview: "bg-accent-muted text-clay",
+  unavailable: "bg-accent-muted text-cocoa/70"
+} as const;
 
 export function ContentCard({
   item,
   accessMode
 }: {
   item: ContentItem;
-  accessMode: "full" | "preview" | "locked";
+  accessMode: ContentAccessMode;
 }) {
   const publishedDate = formatPublishedDate(item.publishedAt);
 
   return (
-    <article className="rounded-[28px] border border-dune bg-shell p-6">
-      <div className="flex items-center justify-between text-sm text-cocoa/60">
+    <article className="flex h-full flex-col rounded-lg border border-dune bg-shell p-6">
+      <div className="flex items-center justify-between text-sm text-cocoa/70">
         <span>{formatContentType(item.type)}</span>
         {publishedDate ? <time dateTime={item.publishedAt}>{publishedDate}</time> : null}
       </div>
@@ -26,16 +41,15 @@ export function ContentCard({
           </span>
         ))}
       </div>
-      <div className="mt-6 flex items-center justify-between">
-        <span className="text-sm text-clay">
-          {accessMode === "full"
-            ? "Available now"
-            : accessMode === "preview"
-              ? "Preview available"
-              : "Locked by tier"}
+      <div className="mt-auto flex items-center justify-between gap-4 pt-6">
+        <span className={`rounded-full px-3 py-1 text-sm font-semibold ${accessClasses[accessMode]}`}>
+          {accessLabels[accessMode]}
         </span>
-        <Link href={`/library/${item.slug}`} className="text-sm font-semibold text-cocoa">
-          View
+        <Link
+          href={`/library/${item.slug}`}
+          className="rounded-md border border-cocoa px-4 py-2 text-sm font-semibold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
+        >
+          Read
         </Link>
       </div>
     </article>

@@ -1,7 +1,11 @@
 import type { User } from "@supabase/supabase-js";
+import { cache } from "react";
 import { getDefaultEntitlements } from "@soji/domain";
 import type { EntitlementKey, UserProfile, UserRole } from "@soji/types";
+import { isDemoModeEnabled } from "@/lib/env";
+import { reportOperationalError } from "@/lib/observability";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isMissingAuthSession } from "@/lib/supabase/auth-errors";
 
 export interface SessionSnapshot {
   user: UserProfile | null;
@@ -15,7 +19,7 @@ const demoUser: UserProfile = {
   email: "member@soji.club",
   fullName: "Soji Demo Member",
   avatarUrl: null,
-  tier: "tier_2",
+  tier: "free",
   roles: ["admin"],
   providers: ["email", "google"]
 };
@@ -38,6 +42,24 @@ function mapProviders(user: User) {
   return Array.from(providers) as UserProfile["providers"];
 }
 
+function restrictedUserProfile(user: User): UserProfile {
+  return {
+    avatarUrl:
+      typeof user.user_metadata?.avatar_url === "string"
+        ? user.user_metadata.avatar_url
+        : null,
+    email: user.email ?? "",
+    fullName:
+      typeof user.user_metadata?.full_name === "string"
+        ? user.user_metadata.full_name
+        : null,
+    id: user.id,
+    providers: mapProviders(user),
+    roles: ["member"],
+    tier: "free"
+  };
+}
+
 async function loadSupabaseSession(): Promise<SessionSnapshot | null> {
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
@@ -45,8 +67,19 @@ async function loadSupabaseSession(): Promise<SessionSnapshot | null> {
   }
 
   const {
-    data: { user }
+    data: { user },
+    error: authError
   } = await supabase.auth.getUser();
+
+  if (authError && !isMissingAuthSession(authError)) {
+    await reportOperationalError("session.auth_lookup_failed", authError);
+    return {
+      user: null,
+      entitlements: [],
+      source: "supabase",
+      error: "session_auth_failed"
+    };
+  }
 
   if (!user) {
     return {
@@ -71,15 +104,21 @@ async function loadSupabaseSession(): Promise<SessionSnapshot | null> {
   ]);
 
   if (profileQuery.error || rolesQuery.error || grantsQuery.error) {
+    await reportOperationalError(
+      "session.data_query_failed",
+      profileQuery.error ?? rolesQuery.error ?? grantsQuery.error,
+      {
+        entitlementsFailed: Boolean(grantsQuery.error),
+        profileFailed: Boolean(profileQuery.error),
+        rolesFailed: Boolean(rolesQuery.error),
+        userId: user.id
+      }
+    );
     return {
-      user: null,
+      user: restrictedUserProfile(user),
       entitlements: [],
       source: "supabase",
-      error:
-        profileQuery.error?.message ??
-        rolesQuery.error?.message ??
-        grantsQuery.error?.message ??
-        "session_query_failed"
+      error: "session_query_failed"
     };
   }
 
@@ -108,18 +147,30 @@ async function loadSupabaseSession(): Promise<SessionSnapshot | null> {
   };
 }
 
-export async function getSessionSnapshot(): Promise<SessionSnapshot> {
+async function loadSessionSnapshot(): Promise<SessionSnapshot> {
   const liveSnapshot = await loadSupabaseSession();
   if (liveSnapshot) {
     return liveSnapshot;
   }
 
+  if (isDemoModeEnabled()) {
+    return {
+      user: demoUser,
+      entitlements: getDefaultEntitlements(demoUser.tier),
+      source: "demo"
+    };
+  }
+
   return {
-    user: demoUser,
-    entitlements: getDefaultEntitlements(demoUser.tier),
-    source: "demo"
+    entitlements: [],
+    error: "authentication_service_not_configured",
+    source: "supabase",
+    user: null
   };
 }
+
+// A layout and its page share this result during one React server render.
+export const getSessionSnapshot = cache(loadSessionSnapshot);
 
 export async function getCurrentUser() {
   const snapshot = await getSessionSnapshot();
