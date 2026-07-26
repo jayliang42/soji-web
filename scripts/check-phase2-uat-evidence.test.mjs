@@ -432,6 +432,59 @@ test("migration and dry-run parsers fail closed on malformed, duplicate, missing
   assert.throws(() => parseDryRun("Would push these migrations:\nunknown.sql"), /dry-run/i);
 });
 
+test("prepush and postpush CLI modes require their exact parser inputs", () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "soji-phase2-migrations-"));
+  const migrationBeforePath = path.join(directory, "before-list.txt");
+  const migrationAfterPath = path.join(directory, "after-list.txt");
+  const dryRunBeforePath = path.join(directory, "before-dry-run.txt");
+  const dryRunAfterPath = path.join(directory, "after-dry-run.txt");
+  writeFileSync(migrationBeforePath, migrationBefore, "utf8");
+  writeFileSync(migrationAfterPath, migrationAfter, "utf8");
+  writeFileSync(dryRunBeforePath, dryRunBefore, "utf8");
+  writeFileSync(dryRunAfterPath, dryRunAfter, "utf8");
+
+  const prepush = runCli([
+    "--prepush",
+    "--migration-list",
+    migrationBeforePath,
+    "--dry-run",
+    dryRunBeforePath,
+    "--expected-pending",
+    "20260726000000"
+  ]);
+  assert.equal(prepush.status, 0, prepush.stderr);
+
+  const postpush = runCli([
+    "--postpush",
+    "--migration-list",
+    migrationAfterPath,
+    "--dry-run",
+    dryRunAfterPath
+  ]);
+  assert.equal(postpush.status, 0, postpush.stderr);
+
+  const missingExpected = runCli([
+    "--prepush",
+    "--migration-list",
+    migrationBeforePath,
+    "--dry-run",
+    dryRunBeforePath
+  ]);
+  assert.notEqual(missingExpected.status, 0);
+
+  const unexpectedScope = runCli([
+    "--prepush",
+    "--migration-list",
+    migrationBeforePath,
+    "--dry-run",
+    dryRunBeforePath,
+    "--expected-pending",
+    "20260726000000",
+    "--include-seed"
+  ]);
+  assert.notEqual(unexpectedScope.status, 0);
+});
+
 test("production schema probe requires an exact all-true boolean response and never returns the key", async () => {
   const checks = Object.fromEntries(
     REQUIRED_SCHEMA_CHECKS.map((name) => [name, true])
@@ -527,6 +580,43 @@ test("deployment inspection requires the exact commit, project, production targe
   }
 });
 
+test("deployment CLI validates captured JSON against separate commit metadata", () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "soji-phase2-deploy-"));
+  const inspectionPath = path.join(directory, "inspect.json");
+  const commitPath = path.join(directory, "commit.txt");
+  writeFileSync(
+    inspectionPath,
+    JSON.stringify(deploymentInspection),
+    "utf8"
+  );
+  writeFileSync(
+    commitPath,
+    `${deploymentInspection.meta.githubCommitSha}\n`,
+    "utf8"
+  );
+
+  const result = runCli([
+    "--deployment",
+    inspectionPath,
+    "--expected-commit-file",
+    commitPath,
+    "--expected-alias",
+    CANONICAL_ORIGIN
+  ]);
+  assert.equal(result.status, 0, result.stderr);
+
+  writeFileSync(commitPath, `${"f".repeat(40)}\n`, "utf8");
+  const mismatch = runCli([
+    "--deployment",
+    inspectionPath,
+    "--expected-commit-file",
+    commitPath,
+    "--expected-alias",
+    CANONICAL_ORIGIN
+  ]);
+  assert.notEqual(mismatch.status, 0);
+});
+
 test("canonical readiness requires 200 health, Supabase source, all named booleans, and a test Stripe key", async () => {
   const checks = Object.fromEntries(
     REQUIRED_READINESS_CHECKS.map((name) => [name, true])
@@ -580,6 +670,24 @@ test("canonical readiness requires 200 health, Supabase source, all named boolea
     }),
     /source must be supabase/
   );
+});
+
+test("remote CLI modes fail before network access when secure inputs are missing or live", () => {
+  const noSchemaEnv = { ...process.env };
+  delete noSchemaEnv.NEXT_PUBLIC_SUPABASE_URL;
+  delete noSchemaEnv.SUPABASE_URL;
+  delete noSchemaEnv.SUPABASE_SERVICE_ROLE_KEY;
+  const schema = runCli(["--production-schema"], { env: noSchemaEnv });
+  assert.notEqual(schema.status, 0);
+  assert.doesNotMatch(schema.stderr, /service-key-must-not-be-returned/);
+
+  const readiness = runCli(
+    ["--canonical-readiness", CANONICAL_ORIGIN],
+    { env: { ...process.env, STRIPE_SECRET_KEY: "sk_live_hidden" } }
+  );
+  assert.notEqual(readiness.status, 0);
+  assert.match(readiness.stderr, /Stripe test-mode/);
+  assert.doesNotMatch(readiness.stderr, /sk_live_hidden/);
 });
 
 function createReleaseRepository({ dirty = false, secret = false } = {}) {
@@ -662,4 +770,22 @@ test("release-input validation proves detached exact commit, tracked config, cle
       }),
     /secret-like tracked value/
   );
+});
+
+test("release-input CLI reads only the permission-restricted path and public commit files", () => {
+  const clean = createReleaseRepository();
+  const directory = mkdtempSync(path.join(tmpdir(), "soji-phase2-release-meta-"));
+  const worktreeFile = path.join(directory, "worktree.txt");
+  const commitFile = path.join(directory, "commit.txt");
+  writeFileSync(worktreeFile, `${clean.directory}\n`, "utf8");
+  writeFileSync(commitFile, `${clean.commit}\n`, "utf8");
+
+  const result = runCli([
+    "--release-inputs",
+    "--worktree-file",
+    worktreeFile,
+    "--commit-file",
+    commitFile
+  ]);
+  assert.equal(result.status, 0, result.stderr);
 });
