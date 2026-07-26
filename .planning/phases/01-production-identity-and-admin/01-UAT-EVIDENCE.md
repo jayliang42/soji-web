@@ -5,8 +5,8 @@ Evidence policy: redacted labels and boolean/version outcomes only.
 
 | Scenario ID | Status | UTC date | Environment | Subject | Expected | Observed | Notes |
 |---|---|---|---|---|---|---|---|
-| INFRA-01-MIGRATIONS | PENDING | — | production | migration-history | local/remote versions match; no seed | not run | Follow the focused runbook. |
-| INFRA-01-READINESS | PENDING | — | production | identity-readiness | six named checks true; source is Supabase | not run | Overall Stripe-dependent readiness is out of scope. |
+| INFRA-01-MIGRATIONS | PASS | 2026-07-26 | production | migration-history | local/remote versions match; no seed | 21 local and 21 production versions matched from 20260714000000 through 20260715070000 | Production versions were read with a read-only Dashboard query after CLI authentication had expired; no push or seed was run. |
+| INFRA-01-READINESS | BLOCKED | 2026-07-26 | production | identity-readiness | six named checks true; source is Supabase | declared production alias returned 404; Auth Site URL remained local-only with no redirect allow-list entry | A working canonical deployment and production Auth URLs are required before boolean/session checks. |
 | AUTH-01-SIGNUP | PENDING | — | production | mailbox-a + mailbox-b | two-provider delivery and canonical confirmation | not run | Store provider categories, never addresses. |
 | AUTH-01-RECOVERY | PENDING | — | production | recovery-uat | canonical reset and new-password sign-in | not run | Use only the newest recovery message. |
 | AUTH-02-GOOGLE | PENDING | — | production | google-uat | canonical callback and intended safe destination | not run | Record no provider codes. |
