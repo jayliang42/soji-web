@@ -250,7 +250,8 @@ export default async function AccountPage({
   ]);
   const user = snapshot.user;
   const canManage = Boolean(
-    user &&
+    !snapshot.error &&
+      user &&
       (user.roles.includes("admin") || user.roles.includes("editor"))
   );
   const accountTruthUnavailable = Boolean(snapshot.error);
@@ -268,9 +269,12 @@ export default async function AccountPage({
     getAccountSubscriptions(user?.id, snapshot.source)
   ]);
   const hasManageableSubscription = subscriptions.items.some(
-    (subscription) => subscription.canManage
+    (subscription) =>
+      !accountTruthUnavailable && subscription.canManage
   );
-  const hasExistingMembership = hasOpenStripeMembership(subscriptions.items);
+  const hasExistingMembership =
+    !accountTruthUnavailable &&
+    hasOpenStripeMembership(subscriptions.items);
   const showMembershipOptions = params.view === "subscriptions";
   const shouldCheckBillingReadiness =
     !snapshot.error &&
@@ -284,8 +288,11 @@ export default async function AccountPage({
     );
   }
   const billingManagementAvailable =
-    hasManageableSubscription && billingDeliveryReady;
+    !accountTruthUnavailable &&
+    hasManageableSubscription &&
+    billingDeliveryReady;
   const checkoutEnabled =
+    !accountTruthUnavailable &&
     Boolean(user) &&
     showMembershipOptions &&
     !hasExistingMembership &&
@@ -375,7 +382,9 @@ export default async function AccountPage({
             )}
           </div>
         </div>
-        <CheckoutBanner status={checkoutReturn} />
+        {!accountTruthUnavailable ? (
+          <CheckoutBanner status={checkoutReturn} />
+        ) : null}
         {user ? (
           <section className="mt-6 border-t border-dune pt-6" aria-labelledby="subscriptions-heading">
             <div className="flex flex-wrap items-end justify-between gap-3">
@@ -385,25 +394,35 @@ export default async function AccountPage({
                   Subscriptions
                 </h2>
               </div>
-              <Link
-                href={
-                  showMembershipOptions
-                    ? "/account#subscriptions-heading"
-                    : "/account?view=subscriptions#membership-options"
-                }
-                className="text-sm font-semibold text-clay"
-              >
-                {showMembershipOptions
-                  ? "Hide membership options"
-                  : "Upgrade membership"}
-              </Link>
+              {!accountTruthUnavailable ? (
+                <Link
+                  href={
+                    showMembershipOptions
+                      ? "/account#subscriptions-heading"
+                      : "/account?view=subscriptions#membership-options"
+                  }
+                  className="text-sm font-semibold text-clay"
+                >
+                  {showMembershipOptions
+                    ? "Hide membership options"
+                    : "Upgrade membership"}
+                </Link>
+              ) : null}
             </div>
 
-            {subscriptions.error ? (
+            {accountTruthUnavailable || subscriptions.error ? (
               <div className="mt-4">
                 <DataUnavailable
-                  title="Subscriptions could not be refreshed"
-                  description="Your access is being shown conservatively. Try again before changing billing."
+                  title={
+                    accountTruthUnavailable
+                      ? "Subscriptions could not be verified"
+                      : "Subscriptions could not be refreshed"
+                  }
+                  description={
+                    accountTruthUnavailable
+                      ? "Membership billing and access are unavailable until Account services recover. Refresh before relying on access or changing billing."
+                      : "Your access is being shown conservatively. Try again before changing billing."
+                  }
                 />
               </div>
             ) : (
@@ -476,7 +495,7 @@ export default async function AccountPage({
             )}
           </section>
         ) : null}
-        {user && showMembershipOptions ? (
+        {user && showMembershipOptions && !accountTruthUnavailable ? (
           <section
             id="membership-options"
             className="mt-6 border-t border-dune pt-6"
@@ -512,16 +531,26 @@ export default async function AccountPage({
                   Standalone purchases
                 </h2>
               </div>
-              <Link href="/products" className="text-sm font-semibold text-clay">
-                Browse products
-              </Link>
+              {!accountTruthUnavailable ? (
+                <Link href="/products" className="text-sm font-semibold text-clay">
+                  Browse products
+                </Link>
+              ) : null}
             </div>
 
-            {purchases.error ? (
+            {accountTruthUnavailable || purchases.error ? (
               <div className="mt-4">
                 <DataUnavailable
-                  title="Purchases could not be refreshed"
-                  description="Payment status is being shown conservatively. Try again before purchasing the same item."
+                  title={
+                    accountTruthUnavailable
+                      ? "Purchases could not be verified"
+                      : "Purchases could not be refreshed"
+                  }
+                  description={
+                    accountTruthUnavailable
+                      ? "Purchase status and downloads are unavailable until Account services recover. Refresh before relying on delivery or purchasing again."
+                      : "Payment status is being shown conservatively. Try again before purchasing the same item."
+                  }
                 />
               </div>
             ) : purchases.items.length > 0 ? (

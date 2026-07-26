@@ -164,6 +164,47 @@ describe("account billing management readiness", () => {
     expect(html).not.toContain("Foundational monthly essays");
   });
 
+  it("suppresses successful billing truth and actions when session truth is degraded", async () => {
+    pageMocks.getSessionSnapshot.mockResolvedValue({
+      entitlements: ["content.basic"],
+      error: "session_query_failed",
+      source: "supabase",
+      user: {
+        avatarUrl: null,
+        email: "member@example.com",
+        fullName: "Member",
+        id: "user-id",
+        providers: ["email"],
+        roles: ["member"],
+        tier: "tier_1"
+      }
+    });
+    pageMocks.getAccountSubscriptions.mockResolvedValue({
+      items: [subscription]
+    });
+    pageMocks.getAccountPurchases.mockResolvedValue({
+      items: [purchase({ downloadReady: true })]
+    });
+    pageMocks.getCheckoutReturnStatus.mockResolvedValue({
+      kind: "product",
+      state: "confirmed"
+    });
+
+    const html = await renderAccount({ view: "subscriptions" });
+
+    expect(html).toContain("Subscriptions could not be verified");
+    expect(html).toContain("Purchases could not be verified");
+    expect(html).not.toContain(">Active<");
+    expect(html).not.toContain("Access active");
+    expect(html).not.toContain("Download available");
+    expect(html).not.toContain("Download file");
+    expect(html).not.toContain("Manage billing");
+    expect(html).not.toContain("Billing unavailable");
+    expect(html).not.toContain("Upgrade your membership");
+    expect(html).not.toContain("Payment confirmed.");
+    expect(pageMocks.getBillingDeliveryReadiness).not.toHaveBeenCalled();
+  });
+
   it("keeps membership options collapsed until the member chooses Upgrade", async () => {
     pageMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
 
