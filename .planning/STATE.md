@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-26T19:44:04.733Z"
+last_updated: "2026-07-26T20:17:09.357Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 12
-  completed_plans: 7
+  completed_plans: 8
   percent: 20
 ---
 
@@ -25,11 +25,11 @@ See: `.planning/PROJECT.md` (updated 2026-07-21)
 ## Current Position
 
 Phase: 02 (Billing and Fulfillment UAT) — PLANNED
-Plan: 4 of 9
+Plan: 5 of 9
 Status: Ready to execute
 Last activity: 2026-07-26
 
-Progress: [██████░░░░] 58%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Progress: [██████░░░░] 58%
 | Phase 02 P02 | 15min | 3 tasks | 5 files |
 | Phase 02 P03 | 58min | 2 tasks | 6 files |
 | Phase 02 P04 | 27min | 2 tasks | 6 files |
+| Phase 02 P05 | 28min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,10 @@ Progress: [██████░░░░] 58%
 - [Phase 02]: Receipt remains Received while processing independently maps Awaiting, In progress, Lease expired, Complete, No handler, or Failed. — Durable delivery evidence must never be conflated with the business processor outcome.
 - [Phase 02]: Unsafe stored processing detail is replaced with a stable code before Admin API output. — Historical provider or database messages cannot cross the browser boundary even when a receipt is recoverable.
 - [Phase 02]: Retry disables only its own record while search, reconciliation, and pagination retain independent pending and focus behavior. — Bounded recovery should not freeze unrelated incident-ledger operations or disrupt keyboard context.
+- [Phase 02]: Provider PASS requires a live Stripe test-mode observation on the exact canonical origin. — Mocks, fixtures, repository tests, configuration, contracts, and dry runs cannot promote evidence.
+- [Phase 02]: Every Phase 2 production preflight mode uses exact named inputs and fails closed. — Malformed, missing, duplicate, extra, dirty, untracked, or identity-mismatched state must block UAT.
+- [Phase 02]: Production probes accept secrets only from the secure environment. — Probe output is limited to public commit or deployment identity and named readiness booleans.
+- [Phase 02]: The initial Phase 2 evidence artifact remains exactly 25 PENDING rows. — Later plans promote rows one at a time only from observed canonical outcomes.
 
 ### Pending Todos
 
@@ -102,6 +107,6 @@ Progress: [██████░░░░] 58%
 
 ## Session Continuity
 
-Last session: 2026-07-26T19:44:04.724Z
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-07-26T20:17:09.351Z
+Stopped at: Completed 02-05-PLAN.md
 Resume file: None
