@@ -51,11 +51,15 @@ sequence without performing it.
 umask 077
 corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 migration list > /tmp/soji-phase2-migrations-before.txt
 corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 db push --dry-run > /tmp/soji-phase2-dryrun-before.txt
-node scripts/check-phase2-uat-evidence.mjs --prepush --migration-list /tmp/soji-phase2-migrations-before.txt --dry-run /tmp/soji-phase2-dryrun-before.txt --expected-pending 20260726000000
+node scripts/check-phase2-uat-evidence.mjs --prepush --migration-list /tmp/soji-phase2-migrations-before.txt --dry-run /tmp/soji-phase2-dryrun-before.txt
 ```
 
-Review the pending migration before one authorized push. Do not use seed, reset, repair, or
-manual SQL shortcuts.
+The gate accepts only one of two truthful baselines: both
+`20260726000000_subscription_billing_adjustments.sql` and
+`20260726010000_database_reconciliation_tokens.sql` are pending, or the billing-adjustment
+migration is already applied and only the reconciliation-token migration is pending. Review
+every reported pending migration before one authorized push. Do not use seed, reset, repair,
+or manual SQL shortcuts.
 
 ```sh
 corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 db push
@@ -71,6 +75,10 @@ refuses to send secret-bearing headers unless the URL origin exactly matches
 `https://{SUPABASE_PROJECT_REF}.supabase.co`, and rejects redirects. Its public output is
 limited to boolean schema checks; it must never print the service-role key or raw database
 responses.
+The post-push evidence is valid only when local and remote history have exact parity through
+`20260726010000`, the dry run is empty, and both required filenames are recorded in the
+schema observation as
+`requiredMigrationFiles=20260726000000_subscription_billing_adjustments.sql,20260726010000_database_reconciliation_tokens.sql`.
 After the check succeeds, change only `BILL-DB-SCHEMA-PARITY` using the observed boolean
 result, then run:
 
@@ -156,13 +164,15 @@ For every scenario below:
 
 - **Action:** Run the preflight, one authorized migration push, postflight, and
   `--production-schema` sequence.
-- **Expected state:** Account and Admin behavior remain available; access decisions are
-  unchanged; all nine schema booleans are true with zero catalog, purchase, and subscription
-  mismatch counts.
+- **Expected state:** Local and remote migration history match through `20260726010000`; both
+  reviewed Phase 2 migration filenames are recorded; Account and Admin behavior remain
+  available; access decisions are unchanged; all nine schema booleans are true with zero
+  catalog, purchase, and subscription mismatch counts.
 - **Recovery:** Stop before deployment if any boolean is false or any migration remains
   pending; investigate schema drift without seed, reset, repair, or manual SQL.
-- **Redaction:** Record `schema_version` and its suffix only, plus boolean observations. Never
-  record service-role credentials or raw query output.
+- **Redaction:** Record the two public migration filenames, the local/remote latest version,
+  zero pending counts, and boolean observations. Never record service-role credentials or raw
+  query output.
 
 ## BILL-01-CATALOG — Canonical catalog
 

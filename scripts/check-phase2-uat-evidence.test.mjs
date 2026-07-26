@@ -6,6 +6,8 @@ import path from "node:path";
 import test from "node:test";
 import {
   CANONICAL_ORIGIN,
+  PHASE2_LATEST_MIGRATION_VERSION,
+  PHASE2_REQUIRED_MIGRATIONS,
   REQUIRED_READINESS_CHECKS,
   REQUIRED_SCENARIOS,
   REQUIRED_SCHEMA_CHECKS,
@@ -29,8 +31,9 @@ const scriptPath = path.resolve(
 function rowFor(scenarioId, status = "PENDING", overrides = {}) {
   const isPass = status === "PASS";
   const schemaObservation = [
-    "localMigrationVersion=20260726000000",
-    "remoteMigrationVersion=20260726000000",
+    `requiredMigrationFiles=${PHASE2_REQUIRED_MIGRATIONS.map(({ filename }) => filename).join(",")}`,
+    `localLatestMigrationVersion=${PHASE2_LATEST_MIGRATION_VERSION}`,
+    `remoteLatestMigrationVersion=${PHASE2_LATEST_MIGRATION_VERSION}`,
     "pendingMigrationCount=0",
     "dryRunPendingCount=0",
     ...REQUIRED_SCHEMA_CHECKS.map((name) => `${name}=true`),
@@ -262,7 +265,14 @@ test("schema PASS requires exact versions, zero counts, named booleans, UTC obse
   );
 
   for (const replacement of [
-    ["remoteMigrationVersion=20260726000000", "remoteMigrationVersion=20260725000000"],
+    [
+      "remoteLatestMigrationVersion=20260726010000",
+      "remoteLatestMigrationVersion=20260726000000"
+    ],
+    [
+      "20260726010000_database_reconciliation_tokens.sql",
+      "20260726010000_subscription_billing_adjustments.sql"
+    ],
     ["pendingMigrationCount=0", "pendingMigrationCount=1"],
     ["adjustmentTable=true", "adjustmentTable=false"],
     ["observedAt=2026-07-26T19:00:00Z", "observedAt=not-a-date"]
@@ -347,73 +357,94 @@ test("the module is import-safe and the all-status CLI fails closed on parser an
   assert.notEqual(missingFile.status, 0);
 });
 
-const migrationBefore = `
+const migrationBothPending = `
    Local          | Remote         | Time (UTC)
   ----------------|----------------|---------------------
    20260725000000 | 20260725000000 | 2026-07-25 00:00:00
    20260726000000 |                | 2026-07-26 00:00:00
+   20260726010000 |                | 2026-07-26 01:00:00
 `;
-const migrationAfter = `
+const migrationTokenPending = `
    Local          | Remote         | Time (UTC)
   ----------------|----------------|---------------------
    20260725000000 | 20260725000000 | 2026-07-25 00:00:00
    20260726000000 | 20260726000000 | 2026-07-26 00:00:00
+   20260726010000 |                | 2026-07-26 01:00:00
 `;
-const dryRunBefore = `
+const migrationBothApplied = `
+   Local          | Remote         | Time (UTC)
+  ----------------|----------------|---------------------
+   20260725000000 | 20260725000000 | 2026-07-25 00:00:00
+   20260726000000 | 20260726000000 | 2026-07-26 00:00:00
+   20260726010000 | 20260726010000 | 2026-07-26 01:00:00
+`;
+const dryRunBothPending = `
 DRY RUN: migrations will *not* be pushed.
 Would push these migrations:
  • 20260726000000_subscription_billing_adjustments.sql
+ • 20260726010000_database_reconciliation_tokens.sql
+`;
+const dryRunTokenPending = `
+DRY RUN: migrations will *not* be pushed.
+Would push these migrations:
+ • 20260726010000_database_reconciliation_tokens.sql
 `;
 const dryRunAfter = `
 DRY RUN: migrations will *not* be pushed.
 Remote database is up to date.
 `;
 
-test("migration and dry-run parsers enforce one reviewed prepush item and zero postpush items", () => {
-  assert.deepEqual(parseMigrationList(migrationBefore), {
-    local: ["20260725000000", "20260726000000"],
+test("migration gates accept both pending, token-only pending, and both applied", () => {
+  assert.deepEqual(parseMigrationList(migrationBothPending), {
+    local: ["20260725000000", "20260726000000", "20260726010000"],
     remote: ["20260725000000"]
   });
-  assert.deepEqual(parseDryRun(dryRunBefore), [
-    "20260726000000_subscription_billing_adjustments.sql"
+  assert.deepEqual(parseDryRun(dryRunBothPending), [
+    "20260726000000_subscription_billing_adjustments.sql",
+    "20260726010000_database_reconciliation_tokens.sql"
   ]);
   assert.deepEqual(
     validatePrepush({
-      dryRunSource: dryRunBefore,
-      expectedPending: "20260726000000",
-      migrationListSource: migrationBefore
+      dryRunSource: dryRunBothPending,
+      migrationListSource: migrationBothPending
     }),
     {
-      localVersions: ["20260725000000", "20260726000000"],
-      pendingVersions: ["20260726000000"],
+      localVersions: ["20260725000000", "20260726000000", "20260726010000"],
+      pendingVersions: ["20260726000000", "20260726010000"],
       remoteVersions: ["20260725000000"]
     }
   );
   assert.deepEqual(
+    validatePrepush({
+      dryRunSource: dryRunTokenPending,
+      migrationListSource: migrationTokenPending
+    }).pendingVersions,
+    ["20260726010000"]
+  );
+  assert.deepEqual(
     validatePostpush({
       dryRunSource: dryRunAfter,
-      migrationListSource: migrationAfter
+      migrationListSource: migrationBothApplied
     }),
     {
-      localVersions: ["20260725000000", "20260726000000"],
+      localVersions: ["20260725000000", "20260726000000", "20260726010000"],
       pendingVersions: [],
-      remoteVersions: ["20260725000000", "20260726000000"]
+      remoteVersions: ["20260725000000", "20260726000000", "20260726010000"]
     }
   );
 });
 
-test("migration and dry-run parsers fail closed on malformed, duplicate, missing, and extra versions", () => {
+test("migration gates reject malformed, duplicate, missing, extra, and wrong filenames", () => {
   for (const source of [
-    migrationBefore.replace("20260726000000", "20260726"),
-    `${migrationBefore}\n20260726000000 | | duplicate\n`,
-    migrationBefore.replace("20260725000000 | 20260725000000", "               | 20260725000000"),
-    migrationBefore.replace("20260726000000 |", "20260727000000 |")
+    migrationBothPending.replace("20260726010000", "20260726"),
+    `${migrationBothPending}\n20260726010000 | | duplicate\n`,
+    migrationBothPending.replace("20260725000000 | 20260725000000", "               | 20260725000000"),
+    `${migrationBothPending.trimEnd()}\n   20260726020000 |                | 2026-07-26 02:00:00\n`
   ]) {
     assert.throws(
       () =>
         validatePrepush({
-          dryRunSource: dryRunBefore,
-          expectedPending: "20260726000000",
+          dryRunSource: dryRunBothPending,
           migrationListSource: source
         }),
       /migration/i
@@ -423,11 +454,29 @@ test("migration and dry-run parsers fail closed on malformed, duplicate, missing
   assert.throws(
     () =>
       validatePrepush({
-        dryRunSource: `${dryRunBefore}\n• 20260727000000_extra.sql\n`,
-        expectedPending: "20260726000000",
-        migrationListSource: migrationBefore
+        dryRunSource: `${dryRunBothPending}\n• 20260726020000_extra.sql\n`,
+        migrationListSource: migrationBothPending
       }),
     /dry-run/i
+  );
+  assert.throws(
+    () =>
+      validatePrepush({
+        dryRunSource: dryRunTokenPending.replace(
+          "20260726010000_database_reconciliation_tokens.sql",
+          "20260726010000_subscription_billing_adjustments.sql"
+        ),
+        migrationListSource: migrationTokenPending
+      }),
+    /dry-run/i
+  );
+  assert.throws(
+    () =>
+      validatePostpush({
+        dryRunSource: dryRunAfter,
+        migrationListSource: `${migrationBothApplied.trimEnd()}\n   20260726020000 | 20260726020000 | 2026-07-26 02:00:00\n`
+      }),
+    /through 20260726010000/
   );
   assert.throws(() => parseDryRun("Would push these migrations:\nunknown.sql"), /dry-run/i);
 });
@@ -435,12 +484,16 @@ test("migration and dry-run parsers fail closed on malformed, duplicate, missing
 test("prepush and postpush CLI modes require their exact parser inputs", () => {
   const directory = mkdtempSync(path.join(tmpdir(), "soji-phase2-migrations-"));
   const migrationBeforePath = path.join(directory, "before-list.txt");
+  const migrationTokenPath = path.join(directory, "token-list.txt");
   const migrationAfterPath = path.join(directory, "after-list.txt");
   const dryRunBeforePath = path.join(directory, "before-dry-run.txt");
+  const dryRunTokenPath = path.join(directory, "token-dry-run.txt");
   const dryRunAfterPath = path.join(directory, "after-dry-run.txt");
-  writeFileSync(migrationBeforePath, migrationBefore, "utf8");
-  writeFileSync(migrationAfterPath, migrationAfter, "utf8");
-  writeFileSync(dryRunBeforePath, dryRunBefore, "utf8");
+  writeFileSync(migrationBeforePath, migrationBothPending, "utf8");
+  writeFileSync(migrationTokenPath, migrationTokenPending, "utf8");
+  writeFileSync(migrationAfterPath, migrationBothApplied, "utf8");
+  writeFileSync(dryRunBeforePath, dryRunBothPending, "utf8");
+  writeFileSync(dryRunTokenPath, dryRunTokenPending, "utf8");
   writeFileSync(dryRunAfterPath, dryRunAfter, "utf8");
 
   const prepush = runCli([
@@ -448,11 +501,18 @@ test("prepush and postpush CLI modes require their exact parser inputs", () => {
     "--migration-list",
     migrationBeforePath,
     "--dry-run",
-    dryRunBeforePath,
-    "--expected-pending",
-    "20260726000000"
+    dryRunBeforePath
   ]);
   assert.equal(prepush.status, 0, prepush.stderr);
+
+  const tokenOnlyPrepush = runCli([
+    "--prepush",
+    "--migration-list",
+    migrationTokenPath,
+    "--dry-run",
+    dryRunTokenPath
+  ]);
+  assert.equal(tokenOnlyPrepush.status, 0, tokenOnlyPrepush.stderr);
 
   const postpush = runCli([
     "--postpush",
@@ -463,14 +523,16 @@ test("prepush and postpush CLI modes require their exact parser inputs", () => {
   ]);
   assert.equal(postpush.status, 0, postpush.stderr);
 
-  const missingExpected = runCli([
+  const obsoleteExpectedOption = runCli([
     "--prepush",
     "--migration-list",
     migrationBeforePath,
     "--dry-run",
-    dryRunBeforePath
+    dryRunBeforePath,
+    "--expected-pending",
+    "20260726000000"
   ]);
-  assert.notEqual(missingExpected.status, 0);
+  assert.notEqual(obsoleteExpectedOption.status, 0);
 
   const unexpectedScope = runCli([
     "--prepush",
@@ -478,8 +540,6 @@ test("prepush and postpush CLI modes require their exact parser inputs", () => {
     migrationBeforePath,
     "--dry-run",
     dryRunBeforePath,
-    "--expected-pending",
-    "20260726000000",
     "--include-seed"
   ]);
   assert.notEqual(unexpectedScope.status, 0);

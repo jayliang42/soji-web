@@ -13,9 +13,18 @@ export const DEFAULT_EVIDENCE_PATH =
   ".planning/phases/02-billing-and-fulfillment-uat/02-UAT-EVIDENCE.md";
 
 export const CANONICAL_ORIGIN = "https://soji-web.vercel.app";
-export const PHASE2_MIGRATION_VERSION = "20260726000000";
-export const PHASE2_MIGRATION_FILE =
-  "20260726000000_subscription_billing_adjustments.sql";
+export const PHASE2_REQUIRED_MIGRATIONS = [
+  {
+    filename: "20260726000000_subscription_billing_adjustments.sql",
+    version: "20260726000000"
+  },
+  {
+    filename: "20260726010000_database_reconciliation_tokens.sql",
+    version: "20260726010000"
+  }
+];
+export const PHASE2_LATEST_MIGRATION_VERSION =
+  PHASE2_REQUIRED_MIGRATIONS.at(-1).version;
 
 export const REQUIRED_SCENARIOS = [
   "BILL-DB-SCHEMA-PARITY",
@@ -345,8 +354,9 @@ function validateSchemaPass(row, errors) {
   }
 
   const expectedFields = new Set([
-    "localMigrationVersion",
-    "remoteMigrationVersion",
+    "requiredMigrationFiles",
+    "localLatestMigrationVersion",
+    "remoteLatestMigrationVersion",
     "pendingMigrationCount",
     "dryRunPendingCount",
     ...REQUIRED_SCHEMA_CHECKS,
@@ -361,10 +371,22 @@ function validateSchemaPass(row, errors) {
     }
   }
 
-  for (const name of ["localMigrationVersion", "remoteMigrationVersion"]) {
-    if (fields.get(name) !== PHASE2_MIGRATION_VERSION) {
+  const requiredMigrationFiles = PHASE2_REQUIRED_MIGRATIONS
+    .map(({ filename }) => filename)
+    .join(",");
+  if (fields.get("requiredMigrationFiles") !== requiredMigrationFiles) {
+    errors.push(
+      `BILL-DB-SCHEMA-PARITY requiredMigrationFiles must be ${requiredMigrationFiles}`
+    );
+  }
+
+  for (const name of [
+    "localLatestMigrationVersion",
+    "remoteLatestMigrationVersion"
+  ]) {
+    if (fields.get(name) !== PHASE2_LATEST_MIGRATION_VERSION) {
       errors.push(
-        `BILL-DB-SCHEMA-PARITY ${name} must be ${PHASE2_MIGRATION_VERSION}`
+        `BILL-DB-SCHEMA-PARITY ${name} must be ${PHASE2_LATEST_MIGRATION_VERSION}`
       );
     }
   }
@@ -691,37 +713,53 @@ function sameOrderedValues(left, right) {
 
 export function validatePrepush({
   dryRunSource,
-  expectedPending,
   migrationListSource
 }) {
-  if (!migrationVersionPattern.test(expectedPending ?? "")) {
-    throw new Error("expected pending migration must be a 14-digit version");
-  }
-
   const { local, remote } = parseMigrationList(migrationListSource);
   const dryRunFiles = parseDryRun(dryRunSource);
   const remoteSet = new Set(remote);
   const localOnly = local.filter((version) => !remoteSet.has(version));
   const localSet = new Set(local);
   const remoteOnly = remote.filter((version) => !localSet.has(version));
+  const requiredVersions = PHASE2_REQUIRED_MIGRATIONS.map(
+    ({ version }) => version
+  );
+  const requiredFilesByVersion = new Map(
+    PHASE2_REQUIRED_MIGRATIONS.map(({ filename, version }) => [
+      version,
+      filename
+    ])
+  );
+  const allowedPendingSets = [
+    requiredVersions,
+    [PHASE2_LATEST_MIGRATION_VERSION]
+  ];
+  const localRequiredSuffix = local.slice(-requiredVersions.length);
+  const remoteIsLocalPrefix = sameOrderedValues(
+    remote,
+    local.slice(0, remote.length)
+  );
+  const pendingIsAllowed = allowedPendingSets.some((allowed) =>
+    sameOrderedValues(localOnly, allowed)
+  );
 
   if (
-    localOnly.length !== 1 ||
-    localOnly[0] !== expectedPending ||
+    !sameOrderedValues(localRequiredSuffix, requiredVersions) ||
+    !remoteIsLocalPrefix ||
+    !pendingIsAllowed ||
     remoteOnly.length !== 0
   ) {
     throw new Error(
-      `prepush migration scope must contain only pending version ${expectedPending}`
+      "prepush migration scope must contain exactly both Phase 2 migrations or the reconciliation-token migration"
     );
   }
 
-  const expectedFile = `${expectedPending}_subscription_billing_adjustments.sql`;
-  if (
-    dryRunFiles.length !== 1 ||
-    dryRunFiles[0] !== expectedFile
-  ) {
+  const expectedFiles = localOnly.map((version) =>
+    requiredFilesByVersion.get(version)
+  );
+  if (!sameOrderedValues(dryRunFiles, expectedFiles)) {
     throw new Error(
-      `prepush dry-run scope must contain only ${expectedFile}`
+      `prepush dry-run scope must contain only ${expectedFiles.join(", ")}`
     );
   }
 
@@ -735,10 +773,17 @@ export function validatePrepush({
 export function validatePostpush({ dryRunSource, migrationListSource }) {
   const { local, remote } = parseMigrationList(migrationListSource);
   const dryRunFiles = parseDryRun(dryRunSource);
+  const requiredVersions = PHASE2_REQUIRED_MIGRATIONS.map(
+    ({ version }) => version
+  );
+  const localRequiredSuffix = local.slice(-requiredVersions.length);
 
-  if (!sameOrderedValues(local, remote)) {
+  if (
+    !sameOrderedValues(local, remote) ||
+    !sameOrderedValues(localRequiredSuffix, requiredVersions)
+  ) {
     throw new Error(
-      "postpush migration list must have exact local/remote parity"
+      `postpush migration list must have exact local/remote parity through ${PHASE2_LATEST_MIGRATION_VERSION}`
     );
   }
   if (dryRunFiles.length !== 0) {
@@ -1419,7 +1464,7 @@ async function main() {
       booleanOptions: [mode],
       valueOptions:
         mode === "--prepush"
-          ? ["--migration-list", "--dry-run", "--expected-pending"]
+          ? ["--migration-list", "--dry-run"]
           : ["--migration-list", "--dry-run"]
     });
     const migrationListPath = optionValue(args, "--migration-list");
@@ -1432,14 +1477,12 @@ async function main() {
     const migrationListSource = await readFile(migrationListPath, "utf8");
     const dryRunSource = await readFile(dryRunPath, "utf8");
     if (mode === "--prepush") {
-      const expectedPending = optionValue(args, "--expected-pending");
       const result = validatePrepush({
         dryRunSource,
-        expectedPending,
         migrationListSource
       });
       console.log(
-        `Phase 2 prepush gate passed (pending ${result.pendingVersions[0]} only).`
+        `Phase 2 prepush gate passed (pending ${result.pendingVersions.join(", ")}).`
       );
     } else {
       const result = validatePostpush({
