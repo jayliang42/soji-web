@@ -1024,8 +1024,8 @@ begin
   ) as watermark;
   update public.stripe_customer_reconciliation_tokens as token
   set
-    started_at = clock_timestamp() - interval '20 minutes',
-    expires_at = clock_timestamp() - interval '5 minutes'
+    started_at = transaction_timestamp() - interval '20 minutes',
+    expires_at = transaction_timestamp() - interval '5 minutes'
   where token.reconciliation_token = expired_reconciliation_token;
   return next throws_like(
     format(
