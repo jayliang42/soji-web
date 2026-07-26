@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { BillingEventLog, BillingEventSnapshot } from "@soji/types";
 import {
   getBillingRetryDescription,
@@ -22,6 +22,49 @@ type ProcessingPresentation = {
 };
 
 const MESSAGE_TARGET_ID = "billing-event-action-message";
+
+type BillingRetryResponse = {
+  event?: unknown;
+  ok?: boolean;
+  reason?: string;
+};
+
+type BillingRetryFetch = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => Promise<Pick<Response, "json" | "ok">>;
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
+function isBillingEventLog(
+  value: unknown,
+  expectedEventId: string
+): value is BillingEventLog {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const event = value as Record<string, unknown>;
+  return (
+    event.id === expectedEventId &&
+    Number.isInteger(event.attemptCount) &&
+    typeof event.createdAt === "string" &&
+    typeof event.eventType === "string" &&
+    isNullableString(event.lastAttemptedAt) &&
+    isNullableString(event.processedAt) &&
+    isNullableString(event.processingError) &&
+    isNullableString(event.processingStartedAt) &&
+    event.provider === "stripe" &&
+    typeof event.providerEventId === "string" &&
+    (event.status === "received" ||
+      event.status === "processing" ||
+      event.status === "processed" ||
+      event.status === "ignored" ||
+      event.status === "failed")
+  );
+}
 
 export function getBillingEventHeadingId(eventId: string) {
   return `billing-event-heading-${eventId}`;
@@ -56,6 +99,85 @@ export function getBillingReconciliationResultMessage({
   subscriptionsSynced: number;
 }) {
   return `Reconciled ${subscriptionsSynced} subscription(s); closed ${staleSubscriptionsClosed} stale local record(s).`;
+}
+
+export async function executeBillingEventRetry({
+  eventId,
+  fetchImpl = fetch,
+  onEvent,
+  onFocus,
+  onMessage,
+  onPendingChange,
+  pendingIds
+}: {
+  eventId: string;
+  fetchImpl?: BillingRetryFetch;
+  onEvent: (event: BillingEventLog) => void;
+  onFocus: (targetId: string) => void;
+  onMessage: (message: ActionMessage | null) => void;
+  onPendingChange: (pendingIds: ReadonlySet<string>) => void;
+  pendingIds: Set<string>;
+}) {
+  if (pendingIds.has(eventId)) {
+    return false;
+  }
+
+  pendingIds.add(eventId);
+  onPendingChange(new Set(pendingIds));
+  onMessage(null);
+  try {
+    const response = await fetchImpl(
+      `/api/admin/billing-events/${eventId}/retry`,
+      { method: "POST" }
+    );
+    const result = (await response.json().catch(() => null)) as
+      | BillingRetryResponse
+      | null;
+    const event = isBillingEventLog(result?.event, eventId)
+      ? result.event
+      : null;
+
+    if (event) {
+      onEvent(event);
+    }
+
+    const settled =
+      event?.status === "processed" || event?.status === "ignored";
+    if (!response.ok || !result?.ok || !settled || !event.processedAt) {
+      onMessage(
+        result?.reason === "event_processing_in_progress"
+          ? {
+              heading: getBillingRetryResultMessage("active"),
+              tone: "status"
+            }
+          : {
+              heading: getBillingRetryResultMessage("failed"),
+              tone: "error"
+            }
+      );
+      onFocus(MESSAGE_TARGET_ID);
+      return true;
+    }
+
+    onMessage({
+      heading: getBillingRetryResultMessage(
+        event.status === "ignored" ? "ignored" : "processed"
+      ),
+      tone: "status"
+    });
+    onFocus(getBillingEventHeadingId(eventId));
+    return true;
+  } catch {
+    onMessage({
+      heading: getBillingRetryResultMessage("failed"),
+      tone: "error"
+    });
+    onFocus(MESSAGE_TARGET_ID);
+    return true;
+  } finally {
+    pendingIds.delete(eventId);
+    onPendingChange(new Set(pendingIds));
+  }
 }
 
 function focusTarget(targetId: string) {
@@ -378,7 +500,10 @@ export function AdminBillingEvents({
   );
   const [page, setPage] = useState(snapshot.page);
   const [pageSize, setPageSize] = useState(snapshot.pageSize);
-  const [retryingId, setRetryingId] = useState<string | null>(null);
+  const pendingRetryIds = useRef(new Set<string>());
+  const [retryingIds, setRetryingIds] = useState<ReadonlySet<string>>(
+    () => new Set()
+  );
   const [searching, setSearching] = useState(false);
   const [reconciling, setReconciling] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -466,73 +591,21 @@ export function AdminBillingEvents({
   }
 
   async function retryEvent(eventId: string) {
-    if (!canInspect || retryingId) {
+    if (!canInspect) {
       return;
     }
 
-    setRetryingId(eventId);
-    setMessage(null);
-    try {
-      const response = await fetch(
-        `/api/admin/billing-events/${eventId}/retry`,
-        { method: "POST" }
-      );
-      const result = (await response.json().catch(() => null)) as
-        | {
-            ok?: boolean;
-            processedAt?: string;
-            reason?: string;
-            status?: "ignored" | "processed";
-          }
-        | null;
-
-      if (!response.ok || !result?.ok || !result.processedAt) {
-        if (result?.reason === "event_processing_in_progress") {
-          setMessage({
-            heading: getBillingRetryResultMessage("active"),
-            tone: "status"
-          });
-        } else {
-          setMessage({
-            heading: getBillingRetryResultMessage("failed"),
-            tone: "error"
-          });
-        }
-        focusTarget(MESSAGE_TARGET_ID);
-        return;
-      }
-
-      setItems((currentItems) =>
-        currentItems.map((item) =>
-          item.id === eventId
-            ? {
-                ...item,
-                processedAt: result.processedAt ?? item.processedAt,
-                processingError: null,
-                processingStartedAt: null,
-                status:
-                  result.status === "ignored" ? "ignored" : "processed"
-              }
-            : item
-        )
-      );
-      setMessage({
-        heading:
-          result.status === "ignored"
-            ? getBillingRetryResultMessage("ignored")
-            : getBillingRetryResultMessage("processed"),
-        tone: "status"
-      });
-      focusTarget(getBillingEventHeadingId(eventId));
-    } catch {
-      setMessage({
-        heading: getBillingRetryResultMessage("failed"),
-        tone: "error"
-      });
-      focusTarget(MESSAGE_TARGET_ID);
-    } finally {
-      setRetryingId(null);
-    }
+    await executeBillingEventRetry({
+      eventId,
+      onEvent: (event) =>
+        setItems((currentItems) =>
+          currentItems.map((item) => (item.id === event.id ? event : item))
+        ),
+      onFocus: focusTarget,
+      onMessage: setMessage,
+      onPendingChange: setRetryingIds,
+      pendingIds: pendingRetryIds.current
+    });
   }
 
   async function reconcileBilling() {
@@ -816,7 +889,7 @@ export function AdminBillingEvents({
                     event={billingEvent}
                     now={now}
                     onRetry={(eventId) => void retryEvent(eventId)}
-                    retrying={retryingId === billingEvent.id}
+                    retrying={retryingIds.has(billingEvent.id)}
                   />
                 ))}
               </div>

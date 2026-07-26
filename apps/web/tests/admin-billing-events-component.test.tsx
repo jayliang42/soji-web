@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type {
   BillingEventLog,
   BillingEventSnapshot,
@@ -7,6 +7,7 @@ import type {
 } from "@soji/types";
 import {
   AdminBillingEvents,
+  executeBillingEventRetry,
   getBillingEventHeadingId,
   getBillingReconciliationResultMessage,
   getBillingReconciliationValidationMessage,
@@ -208,6 +209,182 @@ describe("Admin Billing incident ledger", () => {
     );
     expect(getBillingRetryResultMessage("failed")).toContain(
       "could not be retried"
+    );
+  });
+
+  it("applies the complete successful retry snapshot and restores focus to the event", async () => {
+    const eventId = baseEvent.id;
+    const settledEvent = event("processed", {
+      attemptCount: 2,
+      id: eventId,
+      lastAttemptedAt: "2026-07-15T12:01:00.000Z",
+      processedAt: "2026-07-15T12:01:01.000Z",
+      processingError: null,
+      processingStartedAt: null
+    });
+    const updatedEvents: BillingEventLog[] = [];
+    const focusTargets: string[] = [];
+    const messages: Array<{ heading: string } | null> = [];
+    const pendingSnapshots: string[][] = [];
+
+    const started = await executeBillingEventRetry({
+      eventId,
+      fetchImpl: async () =>
+        new Response(JSON.stringify({ event: settledEvent, ok: true })),
+      onEvent: (updatedEvent) => updatedEvents.push(updatedEvent),
+      onFocus: (targetId) => focusTargets.push(targetId),
+      onMessage: (message) => messages.push(message),
+      onPendingChange: (pendingIds) =>
+        pendingSnapshots.push([...pendingIds]),
+      pendingIds: new Set()
+    });
+
+    expect(started).toBe(true);
+    expect(updatedEvents).toEqual([settledEvent]);
+    expect(updatedEvents[0]).toMatchObject({
+      attemptCount: 2,
+      lastAttemptedAt: "2026-07-15T12:01:00.000Z"
+    });
+    expect(pendingSnapshots).toEqual([[eventId], []]);
+    expect(messages.at(-1)?.heading).toBe(
+      "Billing event processed successfully."
+    );
+    expect(focusTargets).toEqual([getBillingEventHeadingId(eventId)]);
+  });
+
+  it("applies failed-attempt evidence and focuses the recovery message", async () => {
+    const failedEvent = event("failed", {
+      attemptCount: 3,
+      id: baseEvent.id,
+      lastAttemptedAt: "2026-07-15T12:02:00.000Z",
+      processingError: "stripe_api_failed"
+    });
+    const updatedEvents: BillingEventLog[] = [];
+    const focusTargets: string[] = [];
+    const messages: Array<{ heading: string; tone: string } | null> = [];
+
+    await executeBillingEventRetry({
+      eventId: baseEvent.id,
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            event: failedEvent,
+            ok: false,
+            reason: "billing_event_retry_failed"
+          }),
+          { status: 500 }
+        ),
+      onEvent: (updatedEvent) => updatedEvents.push(updatedEvent),
+      onFocus: (targetId) => focusTargets.push(targetId),
+      onMessage: (message) => messages.push(message),
+      onPendingChange: () => undefined,
+      pendingIds: new Set()
+    });
+
+    expect(updatedEvents).toEqual([failedEvent]);
+    expect(messages.at(-1)).toMatchObject({
+      heading: expect.stringContaining("could not be retried"),
+      tone: "error"
+    });
+    expect(focusTargets).toEqual(["billing-event-action-message"]);
+  });
+
+  it("announces an active lease without replacing the current row", async () => {
+    const onEvent = vi.fn();
+    const onFocus = vi.fn();
+    const onMessage = vi.fn();
+
+    await executeBillingEventRetry({
+      eventId: baseEvent.id,
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            ok: false,
+            reason: "event_processing_in_progress"
+          }),
+          { status: 409 }
+        ),
+      onEvent,
+      onFocus,
+      onMessage,
+      onPendingChange: () => undefined,
+      pendingIds: new Set()
+    });
+
+    expect(onEvent).not.toHaveBeenCalled();
+    expect(onMessage).toHaveBeenLastCalledWith({
+      heading: expect.stringContaining("already being processed"),
+      tone: "status"
+    });
+    expect(onFocus).toHaveBeenCalledWith("billing-event-action-message");
+  });
+
+  it("allows concurrent retries for different records while rejecting a duplicate record retry", async () => {
+    const firstId = "00000000-0000-4000-8000-000000000601";
+    const secondId = "00000000-0000-4000-8000-000000000602";
+    const resolvers = new Map<
+      string,
+      (response: Pick<Response, "json" | "ok">) => void
+    >();
+    const pendingIds = new Set<string>();
+    const pendingSnapshots: string[][] = [];
+    const focusTargets: string[] = [];
+    const fetchImpl = vi.fn(
+      (input: RequestInfo | URL) =>
+        new Promise<Pick<Response, "json" | "ok">>((resolve) => {
+          resolvers.set(String(input), resolve);
+        })
+    );
+    const callbacks = {
+      fetchImpl,
+      onEvent: () => undefined,
+      onFocus: (targetId: string) => focusTargets.push(targetId),
+      onMessage: () => undefined,
+      onPendingChange: (currentIds: ReadonlySet<string>) =>
+        pendingSnapshots.push([...currentIds].sort()),
+      pendingIds
+    };
+
+    const firstRetry = executeBillingEventRetry({
+      ...callbacks,
+      eventId: firstId
+    });
+    const duplicateRetry = executeBillingEventRetry({
+      ...callbacks,
+      eventId: firstId
+    });
+    const secondRetry = executeBillingEventRetry({
+      ...callbacks,
+      eventId: secondId
+    });
+
+    await expect(duplicateRetry).resolves.toBe(false);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(pendingIds).toEqual(new Set([firstId, secondId]));
+
+    for (const eventId of [firstId, secondId]) {
+      const settledEvent = event("processed", {
+        id: eventId,
+        attemptCount: 2,
+        lastAttemptedAt: "2026-07-15T12:03:00.000Z",
+        processedAt: "2026-07-15T12:03:01.000Z"
+      });
+      resolvers.get(`/api/admin/billing-events/${eventId}/retry`)?.(
+        new Response(JSON.stringify({ event: settledEvent, ok: true }))
+      );
+    }
+
+    await expect(Promise.all([firstRetry, secondRetry])).resolves.toEqual([
+      true,
+      true
+    ]);
+    expect(pendingIds.size).toBe(0);
+    expect(pendingSnapshots).toContainEqual([firstId, secondId]);
+    expect(focusTargets.sort()).toEqual(
+      [
+        getBillingEventHeadingId(firstId),
+        getBillingEventHeadingId(secondId)
+      ].sort()
     );
   });
 
