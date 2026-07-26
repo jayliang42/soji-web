@@ -312,7 +312,7 @@ export function LoginForm({
           : "Continue with Google"}
       </button>
 
-      <div className="my-6 flex items-center gap-3 text-sm text-cocoa/60">
+      <div className="my-6 flex items-center gap-3 text-sm text-cocoa/75">
         <span aria-hidden="true" className="h-px flex-1 bg-dune" />
         <span>or continue with email</span>
         <span aria-hidden="true" className="h-px flex-1 bg-dune" />
