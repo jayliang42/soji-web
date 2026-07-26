@@ -715,6 +715,8 @@ export type Database = {
           created_at: string
           current_period_ends_at: string | null
           id: string
+          latest_paid_observed_at: string | null
+          latest_paid_provider_payment_id: string | null
           plan_id: Database["public"]["Enums"]["membership_tier"]
           provider: Database["public"]["Enums"]["billing_provider"]
           provider_customer_id: string | null
@@ -729,6 +731,8 @@ export type Database = {
           created_at?: string
           current_period_ends_at?: string | null
           id?: string
+          latest_paid_observed_at?: string | null
+          latest_paid_provider_payment_id?: string | null
           plan_id: Database["public"]["Enums"]["membership_tier"]
           provider: Database["public"]["Enums"]["billing_provider"]
           provider_customer_id?: string | null
@@ -743,6 +747,8 @@ export type Database = {
           created_at?: string
           current_period_ends_at?: string | null
           id?: string
+          latest_paid_observed_at?: string | null
+          latest_paid_provider_payment_id?: string | null
           plan_id?: Database["public"]["Enums"]["membership_tier"]
           provider?: Database["public"]["Enums"]["billing_provider"]
           provider_customer_id?: string | null

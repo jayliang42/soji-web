@@ -11,14 +11,14 @@ select
 \gset
 
 \if :phase2_missing_adjustment_table
-\warn 1..58
+\warn 1..75
 \warn not ok 1 - phase2 RED missing adjustment table
 \endif
 \if :phase2_missing_adjustment_rpc
 \warn not ok 2 - phase2 RED missing adjustment RPC
 \endif
 
-select plan(58);
+select plan(75);
 
 select ok(
   to_regclass('public.subscription_billing_adjustments') is not null,
@@ -47,7 +47,7 @@ begin
   then
     return next skip(
       'phase2 subscription billing implementation not present during RED',
-      56
+      73
     );
     return;
   end if;
@@ -92,6 +92,16 @@ begin
         and contype = 'c'
     ),
     'adjustment supersession evidence is stored as a complete state'
+  );
+  return next ok(
+    exists (
+      select 1
+      from pg_constraint
+      where conrelid = 'public.subscriptions'::regclass
+        and conname = 'subscriptions_latest_paid_payment_check'
+        and contype = 'c'
+    ),
+    'subscription paid-payment watermarks use a complete constrained state'
   );
 
   return next lives_ok(
@@ -279,6 +289,10 @@ begin
     (
       '00000000-0000-4000-8000-000000000123',
       'phase2-adjustment-admin@soji.local'
+    ),
+    (
+      '00000000-0000-4000-8000-000000000124',
+      'phase2-paid-first-owner@soji.local'
     );
 
   insert into public.profiles (id, email, full_name)
@@ -297,6 +311,11 @@ begin
       '00000000-0000-4000-8000-000000000123',
       'phase2-adjustment-admin@soji.local',
       'Phase 2 Adjustment Admin'
+    ),
+    (
+      '00000000-0000-4000-8000-000000000124',
+      'phase2-paid-first-owner@soji.local',
+      'Phase 2 Paid First Owner'
     );
 
   insert into public.user_roles (user_id, role)
@@ -304,7 +323,8 @@ begin
     ('00000000-0000-4000-8000-000000000121', 'member'),
     ('00000000-0000-4000-8000-000000000122', 'member'),
     ('00000000-0000-4000-8000-000000000123', 'member'),
-    ('00000000-0000-4000-8000-000000000123', 'admin');
+    ('00000000-0000-4000-8000-000000000123', 'admin'),
+    ('00000000-0000-4000-8000-000000000124', 'member');
 
   return next is(
     public.sync_stripe_subscription_state(
@@ -569,6 +589,196 @@ begin
       where plan_id = 'tier_2'
     ),
     'later paid evidence atomically restores plan entitlements'
+  );
+
+  return next is(
+    public.sync_stripe_subscription_state(
+      '00000000-0000-4000-8000-000000000124',
+      'sub_phase2_paid_first',
+      'cus_phase2_paid_first',
+      'tier_1',
+      'active',
+      '2026-09-04T12:00:00Z',
+      null,
+      '2026-07-26T12:18:00Z'
+    ),
+    'tier_1'::membership_tier,
+    'the paid-first delivery-order fixture starts eligible'
+  );
+  return next is(
+    public.reconcile_stripe_subscription_paid_payment(
+      'sub_phase2_paid_first',
+      'pi_phase2_paid_first',
+      '2026-07-26T12:20:00Z'
+    ),
+    'tier_1'::membership_tier,
+    'paid evidence is accepted before any refund row exists'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscriptions as subscription
+      where subscription.provider_subscription_id = 'sub_phase2_paid_first'
+        and subscription.latest_paid_provider_payment_id =
+          'pi_phase2_paid_first'
+        and subscription.latest_paid_observed_at =
+          '2026-07-26T12:20:00Z'
+        and not exists (
+          select 1
+          from public.subscription_billing_adjustments as adjustment
+          where adjustment.subscription_id = subscription.id
+        )
+    ),
+    'paid evidence persists a watermark even with no refund to update'
+  );
+  return next is(
+    public.sync_stripe_subscription_adjustment(
+      'sub_phase2_paid_first',
+      'pi_phase2_old_charge',
+      're_phase2_paid_first_older',
+      'refund',
+      'refunded',
+      500,
+      'usd',
+      '2026-07-26T12:19:00Z'
+    ),
+    'refunded',
+    'an older full refund can arrive after the newer paid payment'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscription_billing_adjustments
+      where provider_adjustment_id = 're_phase2_paid_first_older'
+        and superseded_by_provider_payment_id = 'pi_phase2_paid_first'
+        and superseded_at = '2026-07-26T12:20:00Z'
+    ),
+    'paid-first delivery creates the older refund already superseded'
+  );
+  return next is(
+    (
+      select tier
+      from public.profiles
+      where id = '00000000-0000-4000-8000-000000000124'
+    ),
+    'tier_1'::membership_tier,
+    'an older late-delivered refund cannot revoke newer paid access'
+  );
+  return next is(
+    public.sync_stripe_subscription_adjustment(
+      'sub_phase2_paid_first',
+      'pi_phase2_old_charge',
+      're_phase2_paid_first_older',
+      'refund',
+      'refunded',
+      500,
+      'usd',
+      '2026-07-26T12:19:00Z'
+    ),
+    'refunded',
+    'the paid-first refund replay is idempotent'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscription_billing_adjustments
+      where provider_adjustment_id = 're_phase2_paid_first_older'
+        and superseded_by_provider_payment_id = 'pi_phase2_paid_first'
+        and superseded_at = '2026-07-26T12:20:00Z'
+    ),
+    'a duplicate refund replay preserves its original supersession'
+  );
+  return next is(
+    public.sync_stripe_subscription_adjustment(
+      'sub_phase2_paid_first',
+      'pi_phase2_equal_charge',
+      're_phase2_paid_first_equal',
+      'refund',
+      'refunded',
+      500,
+      'usd',
+      '2026-07-26T12:20:00Z'
+    ),
+    'refunded',
+    'an equal-time full refund remains a current block'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscription_billing_adjustments
+      where provider_adjustment_id = 're_phase2_paid_first_equal'
+        and superseded_at is null
+    )
+    and (
+      select tier
+      from public.profiles
+      where id = '00000000-0000-4000-8000-000000000124'
+    ) = 'free'::membership_tier,
+    'equal provider time does not claim a later successful payment'
+  );
+  return next is(
+    public.reconcile_stripe_subscription_paid_payment(
+      'sub_phase2_paid_first',
+      'pi_phase2_paid_first_older_replay',
+      '2026-07-26T12:19:30Z'
+    ),
+    'free'::membership_tier,
+    'an older paid-payment replay cannot clear the equal-time refund'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscriptions
+      where provider_subscription_id = 'sub_phase2_paid_first'
+        and latest_paid_provider_payment_id = 'pi_phase2_paid_first'
+        and latest_paid_observed_at = '2026-07-26T12:20:00Z'
+    ),
+    'older paid evidence cannot regress the persisted watermark'
+  );
+  return next is(
+    public.reconcile_stripe_subscription_paid_payment(
+      'sub_phase2_paid_first',
+      'pi_phase2_z_equal',
+      '2026-07-26T12:20:00Z'
+    ),
+    'free'::membership_tier,
+    'equal-time paid evidence uses a deterministic watermark tie-breaker'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscriptions
+      where provider_subscription_id = 'sub_phase2_paid_first'
+        and latest_paid_provider_payment_id = 'pi_phase2_z_equal'
+        and latest_paid_observed_at = '2026-07-26T12:20:00Z'
+    )
+    and exists (
+      select 1
+      from public.subscription_billing_adjustments
+      where provider_adjustment_id = 're_phase2_paid_first_equal'
+        and superseded_at is null
+    ),
+    'equal-time paid evidence remains monotonic without superseding a peer'
+  );
+  return next is(
+    public.reconcile_stripe_subscription_paid_payment(
+      'sub_phase2_paid_first',
+      'pi_phase2_strictly_later',
+      '2026-07-26T12:21:00Z'
+    ),
+    'tier_1'::membership_tier,
+    'a strictly later paid payment restores the equal-time refund block'
+  );
+  return next ok(
+    exists (
+      select 1
+      from public.subscription_billing_adjustments
+      where provider_adjustment_id = 're_phase2_paid_first_equal'
+        and superseded_by_provider_payment_id =
+          'pi_phase2_strictly_later'
+        and superseded_at = '2026-07-26T12:21:00Z'
+    ),
+    'strictly later paid evidence records monotonic supersession'
   );
 
   return next is(

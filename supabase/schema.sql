@@ -60,7 +60,31 @@ create table if not exists subscriptions (
   status text not null,
   current_period_ends_at timestamptz,
   cancelled_at timestamptz,
+  latest_paid_provider_payment_id text,
+  latest_paid_observed_at timestamptz,
   created_at timestamptz not null default now()
+);
+
+alter table subscriptions
+add column if not exists latest_paid_provider_payment_id text;
+alter table subscriptions
+add column if not exists latest_paid_observed_at timestamptz;
+alter table subscriptions
+drop constraint if exists subscriptions_latest_paid_payment_check;
+alter table subscriptions
+add constraint subscriptions_latest_paid_payment_check check (
+  (
+    latest_paid_provider_payment_id is null
+    and latest_paid_observed_at is null
+  )
+  or (
+    latest_paid_provider_payment_id is not null
+    and latest_paid_provider_payment_id =
+      btrim(latest_paid_provider_payment_id)
+    and latest_paid_provider_payment_id <> ''
+    and length(latest_paid_provider_payment_id) <= 255
+    and latest_paid_observed_at is not null
+  )
 );
 
 create table if not exists user_entitlements (
@@ -513,8 +537,10 @@ declare
   existing_payment_id text;
   existing_subscription_id uuid;
   incoming_rank integer;
-  subscription_id uuid;
+  latest_paid_observed_at timestamptz;
+  latest_paid_provider_payment_id text;
   subscription_user_id uuid;
+  target_subscription_id uuid;
 begin
   if coalesce(auth.role(), '') <> 'service_role' then
     raise exception 'service_role_required' using errcode = '42501';
@@ -579,13 +605,21 @@ begin
     )
   );
 
-  select subscription.id, subscription.user_id
-  into subscription_id, subscription_user_id
+  select
+    subscription.id,
+    subscription.user_id,
+    subscription.latest_paid_provider_payment_id,
+    subscription.latest_paid_observed_at
+  into
+    target_subscription_id,
+    subscription_user_id,
+    latest_paid_provider_payment_id,
+    latest_paid_observed_at
   from public.subscriptions as subscription
   where subscription.provider = 'stripe'::billing_provider
     and subscription.provider_subscription_id = p_provider_subscription_id;
 
-  if subscription_id is null then
+  if target_subscription_id is null then
     raise exception 'subscription_not_found' using errcode = 'P0002';
   end if;
 
@@ -609,7 +643,7 @@ begin
 
   if existing_subscription_id is not null
     and (
-      existing_subscription_id <> subscription_id
+      existing_subscription_id <> target_subscription_id
       or existing_payment_id <> p_provider_payment_id
     )
   then
@@ -679,7 +713,7 @@ begin
       blocks_access,
       observed_at
     ) values (
-      subscription_id,
+      target_subscription_id,
       'stripe'::billing_provider,
       p_provider_payment_id,
       p_provider_adjustment_id,
@@ -704,8 +738,27 @@ begin
       and adjustment.provider_adjustment_id = p_provider_adjustment_id;
   end if;
 
+  if p_kind = 'refund'
+    and p_status = 'refunded'
+    and latest_paid_observed_at > p_observed_at
+    and latest_paid_provider_payment_id <> p_provider_payment_id
+  then
+    update public.subscription_billing_adjustments as adjustment
+    set
+      superseded_by_provider_payment_id =
+        latest_paid_provider_payment_id,
+      superseded_at = latest_paid_observed_at,
+      updated_at = clock_timestamp()
+    where adjustment.subscription_id = target_subscription_id
+      and adjustment.provider = 'stripe'::billing_provider
+      and adjustment.kind = 'refund'
+      and adjustment.provider_adjustment_id = p_provider_adjustment_id
+      and adjustment.status = 'refunded'
+      and adjustment.superseded_at is null;
+  end if;
+
   perform public.recompute_stripe_subscription_access(
-    subscription_id,
+    target_subscription_id,
     p_observed_at
   );
 
@@ -726,6 +779,8 @@ set search_path = public
 as $$
 declare
   effective_tier membership_tier;
+  latest_paid_observed_at timestamptz;
+  latest_paid_provider_payment_id text;
   target_subscription_id uuid;
   subscription_user_id uuid;
 begin
@@ -755,8 +810,16 @@ begin
     )
   );
 
-  select subscription.id, subscription.user_id
-  into target_subscription_id, subscription_user_id
+  select
+    subscription.id,
+    subscription.user_id,
+    subscription.latest_paid_provider_payment_id,
+    subscription.latest_paid_observed_at
+  into
+    target_subscription_id,
+    subscription_user_id,
+    latest_paid_provider_payment_id,
+    latest_paid_observed_at
   from public.subscriptions as subscription
   where subscription.provider = 'stripe'::billing_provider
     and subscription.provider_subscription_id = p_provider_subscription_id;
@@ -767,10 +830,27 @@ begin
 
   perform pg_advisory_xact_lock(hashtextextended(subscription_user_id::text, 0));
 
+  if latest_paid_observed_at is null
+    or p_observed_at > latest_paid_observed_at
+    or (
+      p_observed_at = latest_paid_observed_at
+      and p_provider_payment_id > latest_paid_provider_payment_id
+    )
+  then
+    update public.subscriptions as subscription
+    set
+      latest_paid_provider_payment_id = p_provider_payment_id,
+      latest_paid_observed_at = p_observed_at
+    where subscription.id = target_subscription_id;
+
+    latest_paid_provider_payment_id := p_provider_payment_id;
+    latest_paid_observed_at := p_observed_at;
+  end if;
+
   update public.subscription_billing_adjustments as adjustment
   set
-    superseded_by_provider_payment_id = p_provider_payment_id,
-    superseded_at = p_observed_at,
+    superseded_by_provider_payment_id = latest_paid_provider_payment_id,
+    superseded_at = latest_paid_observed_at,
     updated_at = clock_timestamp()
   where adjustment.subscription_id = target_subscription_id
     and adjustment.provider = 'stripe'::billing_provider
@@ -778,12 +858,13 @@ begin
     and adjustment.status = 'refunded'
     and adjustment.blocks_access
     and adjustment.superseded_at is null
-    and adjustment.provider_payment_id <> p_provider_payment_id
-    and adjustment.observed_at < p_observed_at;
+    and adjustment.provider_payment_id <>
+      latest_paid_provider_payment_id
+    and adjustment.observed_at < latest_paid_observed_at;
 
   effective_tier := public.recompute_stripe_subscription_access(
     target_subscription_id,
-    p_observed_at
+    latest_paid_observed_at
   );
 
   return effective_tier;
