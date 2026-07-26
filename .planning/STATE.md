@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-26T08:38:25.969Z"
+last_updated: "2026-07-26T08:38:39.851Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 5
@@ -68,6 +68,7 @@ Progress: [███████░░░] 67%
 - Production Supabase, SMTP, Google OAuth, Stripe catalog/webhook, and first Admin setup require owner credentials and dashboard actions.
 - Legal/support copy requires a business-owner or legal review before launch.
 - The worktree contains extensive existing uncommitted changes; GSD initialization must not bundle or overwrite unrelated work.
+- Phase 1 production UAT is waiting for a working canonical Vercel deployment and production Auth URL configuration; the previous production alias returns 404, Vercel is signed out, and Supabase still uses a localhost Site URL with no redirect allow-list entry.
 
 ## Deferred Items
 
