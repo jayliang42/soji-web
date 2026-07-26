@@ -77,7 +77,7 @@ This milestone converts an extensively implemented and tested brownfield applica
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Production Identity and Admin | 1/3 | In Progress|  |
+| 1. Production Identity and Admin | 2/3 | In Progress|  |
 | 2. Billing and Fulfillment UAT | 0/TBD | Not started | - |
 | 3. Launch Content and Customer Policy | 0/TBD | Not started | - |
 | 4. Experience and Operations Acceptance | 0/TBD | Not started | - |
