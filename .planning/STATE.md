@@ -20,14 +20,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-07-21)
 
 **Core value:** A verified payment must produce a durable, queryable receipt and the correct customer access state, while unpaid or unauthorized users never receive protected content.
-**Current focus:** Phase 02 — Billing and Fulfillment UAT, while Phase 01 external-provider UAT remains explicitly carried.
+**Current focus:** Phase 03 — Launch Content and Customer Policy, while Phase 01 identity/Admin and Phase 02 production/provider UAT remain explicitly carried.
 
 ## Current Position
 
-Phase: 02 (Billing and Fulfillment UAT) — PLANNED
-Plan: 5 of 9
-Status: Ready to execute
-Last activity: 2026-07-26
+Phase: 03 (Launch Content and Customer Policy) — DISCUSSING
+Plan: 0 of TBD
+Status: Phase 2 automatable plans 5/5 complete with exact-release review clean; provider-backed Plans 02-06 through 02-09 carried without fabricated PASS results
+Last activity: 2026-07-26 -- Phase 02 automatable closeout complete
 
 Progress: [███████░░░] 67%
 
@@ -83,17 +83,22 @@ Progress: [███████░░░] 67%
 - [Phase 02]: Every Phase 2 production preflight mode uses exact named inputs and fails closed. — Malformed, missing, duplicate, extra, dirty, untracked, or identity-mismatched state must block UAT.
 - [Phase 02]: Production probes accept secrets only from the secure environment. — Probe output is limited to public commit or deployment identity and named readiness booleans.
 - [Phase 02]: The initial Phase 2 evidence artifact remains exactly 25 PENDING rows. — Later plans promote rows one at a time only from observed canonical outcomes.
+- [Phase 02]: Reconciliation closure uses a database-issued, customer-bound, expiring, single-use token. — Application clock skew cannot authorize stale subscription closure.
+- [Phase 02]: The committed Web release is self-contained and verified from an exact detached revision. — Release gates must never borrow untracked files from the mutable working tree.
+- [Phase 02]: Both reviewed billing migrations are one ordered evidence scope. — Production parity must end at `20260726010000` before provider UAT begins.
 
 ### Pending Todos
 
 - Complete the consolidated Phase 1 provider/Admin UAT checkpoint after all automatable phases are exhausted.
-- Define and test the membership-subscription dispute policy during Phase 2.
+- Complete Phase 2 Plans 02-06 through 02-09 during the consolidated owner-authorized provider checkpoint.
+- Discuss, plan, and execute Phase 3 automatable launch-content and policy work.
 - Reuse the dedicated Vercel Web project for the v1 production deployment unless Phase 5 uncovers a blocking platform constraint.
 
 ### Blockers/Concerns
 
 - Production Supabase service-role readiness, custom SMTP/DNS delivery, mailbox links, Google consent, and live Admin role/workspace acceptance require owner authorization or interaction.
 - Stripe server secrets and provider-backed Checkout/webhook UAT require explicit owner authorization before any secret is uploaded to Vercel.
+- Phase 2 production schema push, exact-commit deployment, Stripe catalog/Portal, receipt/recovery, and reversal evidence remain 25 truthful PENDING rows.
 - Legal/support copy requires a business-owner or legal review before launch.
 - The worktree contains extensive existing uncommitted changes; GSD initialization must not bundle or overwrite unrelated work.
 - Phase 1 verification is `gaps_found`: canonical Vercel deployment, Supabase migration parity, Auth URL configuration, public readiness, provider switches, and first-Admin aggregate evidence are verified; external identity delivery and service-role-dependent checks remain open.
@@ -107,6 +112,6 @@ Progress: [███████░░░] 67%
 
 ## Session Continuity
 
-Last session: 2026-07-26T20:17:09.351Z
-Stopped at: Completed 02-05-PLAN.md
-Resume file: None
+Last session: 2026-07-26T23:17:49Z
+Stopped at: Phase 2 automatable implementation and release-closure review complete; external Plans 02-06 through 02-09 carried
+Resume file: .planning/phases/02-billing-and-fulfillment-uat/02-VERIFICATION.md

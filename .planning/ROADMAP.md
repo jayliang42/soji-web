@@ -38,11 +38,11 @@ This milestone converts an extensively implemented and tested brownfield applica
   5. Membership disputes pause, restore, end, or cancel access according to one documented and tested policy.
 **Plans**: 9 plans
 
-- [ ] `02-01-PLAN.md` — Add atomic membership adjustments, shared access recomputation, schema tests, and generated types.
-- [ ] `02-02-PLAN.md` — Enforce Checkout authority and classify, dispatch, and reconcile Stripe billing events.
-- [ ] `02-03-PLAN.md` — Render authoritative Account billing truth with stable loading states.
-- [ ] `02-04-PLAN.md` — Build the bounded Admin billing incident ledger and recovery UI.
-- [ ] `02-05-PLAN.md` — Create the secret-safe 25-scenario evidence validator, artifact, and runbook.
+- [x] `02-01-PLAN.md` — Add atomic membership adjustments, shared access recomputation, schema tests, and generated types.
+- [x] `02-02-PLAN.md` — Enforce Checkout authority and classify, dispatch, and reconcile Stripe billing events.
+- [x] `02-03-PLAN.md` — Render authoritative Account billing truth with stable loading states.
+- [x] `02-04-PLAN.md` — Build the bounded Admin billing incident ledger and recovery UI.
+- [x] `02-05-PLAN.md` — Create the secret-safe 25-scenario evidence validator, artifact, and runbook.
 - [ ] `02-06-PLAN.md` — Gate and apply production schema/configuration and deploy the exact verified commit.
 - [ ] `02-07-PLAN.md` — Prove membership catalog, Customer reuse, Checkout, and Portal behavior in Stripe test mode.
 - [ ] `02-08-PLAN.md` — Prove signed receipt, failure, Retry, and reconciliation behavior.
@@ -88,6 +88,7 @@ This milestone converts an extensively implemented and tested brownfield applica
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Production Identity and Admin | 3/3 | Human UAT gaps carried |  |
+| 2. Billing and Fulfillment UAT | 5/9 | Production/provider UAT gaps carried |  |
 | 2. Billing and Fulfillment UAT | 5/9 | In Progress|  |
 | 3. Launch Content and Customer Policy | 0/TBD | Not started | - |
 | 4. Experience and Operations Acceptance | 0/TBD | Not started | - |
