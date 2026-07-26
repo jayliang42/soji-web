@@ -111,6 +111,7 @@ describe("admin billing event query", () => {
       disputeId: "du_bounded",
       paymentId: "pi_bounded",
       providerEventId: "evt_test",
+      processingError: "billing_event_processing_failed",
       processingStartedAt: null,
       subscriptionId: "sub_bounded",
       status: "failed"
@@ -203,7 +204,8 @@ describe("admin billing event query", () => {
               paymentId: "pi_visible"
             },
             processed_at: null,
-            processing_error: null,
+            processing_error:
+              "private@example.com database detail must not cross the route",
             processing_started_at: null,
             provider: "stripe",
             provider_event_id: "evt_test",
@@ -233,6 +235,10 @@ describe("admin billing event query", () => {
       paymentId: "pi_visible"
     });
     expect(JSON.stringify(body)).not.toContain("private@example.com");
+    expect(JSON.stringify(body)).not.toContain("database detail");
+    expect(body.items[0].processingError).toBe(
+      "billing_event_processing_failed"
+    );
   });
 
   it("accepts the terminal ignored status as an explicit filter", async () => {

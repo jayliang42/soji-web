@@ -81,6 +81,16 @@ function getBillingEventReferences(payload: Json) {
   };
 }
 
+function getStableProcessingError(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  return /^[a-z][a-z0-9_]{0,119}$/.test(value)
+    ? value
+    : "billing_event_processing_failed";
+}
+
 export function mapBillingEventRow(row: BillingEventRow): BillingEventLog {
   return {
     attemptCount: row.attempt_count,
@@ -92,7 +102,7 @@ export function mapBillingEventRow(row: BillingEventRow): BillingEventLog {
     lastAttemptedAt: row.last_attempted_at,
     status: row.status as BillingEventStatus,
     processedAt: row.processed_at,
-    processingError: row.processing_error,
+    processingError: getStableProcessingError(row.processing_error),
     processingStartedAt: row.processing_started_at,
     createdAt: row.created_at
   };

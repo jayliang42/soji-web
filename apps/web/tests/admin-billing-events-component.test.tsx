@@ -5,7 +5,13 @@ import type {
   BillingEventSnapshot,
   BillingEventStatus
 } from "@soji/types";
-import { AdminBillingEvents } from "@/components/admin-billing-events";
+import {
+  AdminBillingEvents,
+  getBillingEventHeadingId,
+  getBillingReconciliationResultMessage,
+  getBillingReconciliationValidationMessage,
+  getBillingRetryResultMessage
+} from "@/components/admin-billing-events";
 
 const baseEvent: BillingEventLog = {
   attemptCount: 1,
@@ -174,7 +180,35 @@ describe("Admin Billing incident ledger", () => {
     expect(html).toContain(
       'id="billing-event-heading-00000000-0000-4000-8000-000000000501"'
     );
-    expect(html).toContain('tabIndex="-1"');
+    expect(html).toContain('tabindex="-1"');
+    expect(getBillingEventHeadingId(baseEvent.id)).toBe(
+      `billing-event-heading-${baseEvent.id}`
+    );
+  });
+
+  it("keeps validation and recovery result announcements exact and stable", () => {
+    expect(getBillingReconciliationValidationMessage("evt_wrong")).toBe(
+      "Enter a Stripe subscription ID (sub_…) or customer ID (cus_…)."
+    );
+    expect(getBillingReconciliationValidationMessage("sub_valid123")).toBeNull();
+    expect(
+      getBillingReconciliationResultMessage({
+        staleSubscriptionsClosed: 2,
+        subscriptionsSynced: 3
+      })
+    ).toBe("Reconciled 3 subscription(s); closed 2 stale local record(s).");
+    expect(getBillingRetryResultMessage("processed")).toBe(
+      "Billing event processed successfully."
+    );
+    expect(getBillingRetryResultMessage("ignored")).toBe(
+      "Billing event stored; this event type has no Soji handler."
+    );
+    expect(getBillingRetryResultMessage("active")).toContain(
+      "already being processed"
+    );
+    expect(getBillingRetryResultMessage("failed")).toContain(
+      "could not be retried"
+    );
   });
 
   it("uses the approved control copy, helper text, and responsive target geometry", () => {
