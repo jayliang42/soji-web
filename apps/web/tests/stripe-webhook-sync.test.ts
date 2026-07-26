@@ -35,6 +35,18 @@ function subscription(
     cancel_at_period_end: false,
     customer: "cus_test",
     id: "sub_test",
+    items: {
+      data: [
+        {
+          current_period_end: 1786708800,
+          id: "si_membership",
+          object: "subscription_item"
+        } as Stripe.SubscriptionItem
+      ],
+      has_more: false,
+      object: "list",
+      url: "/v1/subscription_items?subscription=sub_test"
+    },
     metadata: { planId: "tier_2", userId },
     status: "active",
     ...overrides
@@ -312,6 +324,7 @@ describe("Stripe webhook state synchronization", () => {
       "sync_stripe_subscription_state",
       expect.objectContaining({
         p_cancel_at_period_end: false,
+        p_current_period_ends_at: "2026-08-14T12:00:00.000Z",
         p_plan_id: "tier_2",
         p_provider_customer_id: "cus_test",
         p_provider_subscription_id: "sub_test",
@@ -319,6 +332,61 @@ describe("Stripe webhook state synchronization", () => {
         p_user_id: userId
       })
     );
+  });
+
+  it.each([
+    {
+      items: {
+        data: [],
+        has_more: false,
+        object: "list" as const,
+        url: "/v1/subscription_items?subscription=sub_test"
+      },
+      name: "missing"
+    },
+    {
+      items: {
+        data: [
+          {
+            current_period_end: 1786708800,
+            id: "si_membership",
+            object: "subscription_item"
+          } as Stripe.SubscriptionItem,
+          {
+            current_period_end: 1789387200,
+            id: "si_ambiguous",
+            object: "subscription_item"
+          } as Stripe.SubscriptionItem
+        ],
+        has_more: false,
+        object: "list" as const,
+        url: "/v1/subscription_items?subscription=sub_test"
+      },
+      name: "ambiguous"
+    },
+    {
+      items: {
+        data: [
+          {
+            current_period_end: null,
+            id: "si_period_missing",
+            object: "subscription_item"
+          } as unknown as Stripe.SubscriptionItem
+        ],
+        has_more: false,
+        object: "list" as const,
+        url: "/v1/subscription_items?subscription=sub_test"
+      },
+      name: "period-less"
+    }
+  ])("fails closed for a $name Basil subscription item set", async ({ items }) => {
+    await expect(
+      syncSubscriptionEntitlements({
+        subscription: subscription({ items })
+      })
+    ).rejects.toThrow("stripe_subscription_period_missing");
+
+    expect(syncMocks.rpc).not.toHaveBeenCalled();
   });
 
   it("refreshes current Stripe state instead of trusting an old subscription snapshot", async () => {

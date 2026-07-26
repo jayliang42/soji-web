@@ -127,10 +127,12 @@ function isUuid(value: string | undefined): value is string {
 }
 
 function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
-  const period = subscription as Stripe.Subscription & {
-    current_period_end?: number | null;
-  };
-  return stripeTimestampToIso(period.current_period_end);
+  const items = subscription.items.data;
+  if (items.length !== 1 || !items[0]?.current_period_end) {
+    throw new Error("stripe_subscription_period_missing");
+  }
+
+  return new Date(items[0].current_period_end * 1000).toISOString();
 }
 
 function getSojiSubscriptionIdentity(
