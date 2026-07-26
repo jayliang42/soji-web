@@ -74,6 +74,7 @@ describe("account subscription history", () => {
     expect(
       hasOpenStripeMembership([
         {
+          billingAdjustments: [],
           canManage: true,
           cancelAtPeriodEnd: false,
           cancelledAt: null,
@@ -162,6 +163,33 @@ describe("account subscription history", () => {
     );
     expect(select).not.toContain("provider_adjustment_id");
     expect(select).not.toContain("provider_payment_id");
+  });
+
+  it("requires Stripe, a Customer binding, and a manageable status for Portal", async () => {
+    const row = {
+      cancel_at_period_end: false,
+      cancelled_at: null,
+      created_at: "2026-07-01T12:00:00Z",
+      current_period_ends_at: "2026-08-01T12:00:00Z",
+      id: "subscription-id",
+      plan_id: "tier_2",
+      provider: "stripe",
+      provider_customer_id: "cus_existing",
+      status: "active",
+      subscription_billing_adjustments: []
+    };
+    subscriptionMocks.order.mockResolvedValue({
+      data: [
+        { ...row, id: "missing-customer", provider_customer_id: null },
+        { ...row, id: "canceled", status: "canceled" },
+        { ...row, id: "different-provider", provider: "app_store" }
+      ],
+      error: null
+    });
+
+    const snapshot = await getAccountSubscriptions("user-id", "supabase");
+    expect(snapshot.items).toHaveLength(3);
+    expect(snapshot.items.every((item) => item.canManage === false)).toBe(true);
   });
 
   it("logs query details and returns a stable account error", async () => {
@@ -319,7 +347,7 @@ describe("account subscription history", () => {
 
   it("prioritizes lost disputes, then open disputes, then full refunds", () => {
     const resolved = adjustment("dispute", "won");
-    const fullyRefunded = adjustment("refund", "fully_refunded", true);
+    const fullyRefunded = adjustment("refund", "refunded", true);
     const open = adjustment("dispute", "under_review", true);
     const lost = adjustment("dispute", "lost", true);
 
