@@ -430,6 +430,8 @@ begin
 end;
 $$;
 
+-- This post-helper definition is authoritative and must preserve synthetic
+-- reconciliation repair semantics when the declarative schema is reapplied.
 create or replace function public.sync_stripe_subscription_state(
   p_user_id uuid,
   p_provider_subscription_id text,
