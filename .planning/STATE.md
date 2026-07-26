@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-26T17:41:08.118Z"
+last_updated: "2026-07-26T18:02:30.958Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 12
-  completed_plans: 4
+  completed_plans: 5
   percent: 20
 ---
 
@@ -25,11 +25,11 @@ See: `.planning/PROJECT.md` (updated 2026-07-21)
 ## Current Position
 
 Phase: 02 (Billing and Fulfillment UAT) — PLANNED
-Plan: 1 of 9
+Plan: 2 of 9
 Status: Ready to execute
 Last activity: 2026-07-26
 
-Progress: [███░░░░░░░] 33%
+Progress: [████░░░░░░] 42%
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Progress: [███░░░░░░░] 33%
 |-------|-------|-------|----------|
 | Phase 01 | 3 | 1h 11min | 24min |
 | Phase 02 P01 | 33min | 3 tasks | 4 files |
+| Phase 02 P02 | 15min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,9 @@ Progress: [███░░░░░░░] 33%
 - [Phase 02]: Lost disputes and full refunds remain monotonic access blocks; only a later verified payment may supersede a full refund.
 - [Phase 02]: Subscription and adjustment sync share one internal recomputation helper so subscription refreshes cannot erase unresolved billing blocks.
 - [Phase 02]: Readiness is exposed as service-role-only named booleans, keeping production catalog rows and secrets private.
+- [Phase 02]: Zero Invoice Payment mappings remain stable ignored outcomes, while ambiguous or malformed mappings fail before any adjustment RPC. — This preserves non-Soji receipts without guessing ownership and fails closed whenever provider evidence could attach an adjustment to the wrong member.
+- [Phase 02]: Valid product metadata is the exclusive fast path; membership adjustments require one Invoice Payment, one subscription Invoice parent, and valid current Subscription metadata. — Product and membership state machines remain mutually exclusive and depend only on server/provider authority.
+- [Phase 02]: Reconciliation may refresh active subscription state, but only an exact paid PaymentIntent and its provider paid timestamp can invoke paid-payment supersession. — The database retains authority over later, same-time, and older payment ordering so active status alone cannot erase a full-refund block.
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ Progress: [███░░░░░░░] 33%
 
 ## Session Continuity
 
-Last session: 2026-07-26T17:41:08.114Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-07-26T18:02:16.724Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
