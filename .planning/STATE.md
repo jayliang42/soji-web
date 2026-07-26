@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-26T17:03:11.954Z"
-last_activity: 2026-07-26 -- Phase 02 planning complete
+last_updated: "2026-07-26T17:41:08.118Z"
+last_activity: 2026-07-26
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 12
-  completed_plans: 3
+  completed_plans: 4
   percent: 20
 ---
 
@@ -25,11 +25,11 @@ See: `.planning/PROJECT.md` (updated 2026-07-21)
 ## Current Position
 
 Phase: 02 (Billing and Fulfillment UAT) — PLANNED
-Plan: 0 of 9
+Plan: 1 of 9
 Status: Ready to execute
-Last activity: 2026-07-26 -- Phase 02 planning complete
+Last activity: 2026-07-26
 
-Progress: [██░░░░░░░░] 20%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | Phase 01 | 3 | 1h 11min | 24min |
+| Phase 02 P01 | 33min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -61,6 +62,9 @@ Progress: [██░░░░░░░░] 20%
 - The dedicated canonical deployment is `https://soji-web.vercel.app`; the unrelated `soji-official` project remains untouched.
 - External mailbox, SMTP, Google-consent, service-role, and live role-transition checks remain human-gated and must not be promoted to PASS from repository tests.
 - User directed GSD to continue with automatable later-phase work and consolidate all owner actions into one final checkpoint.
+- [Phase 02]: Lost disputes and full refunds remain monotonic access blocks; only a later verified payment may supersede a full refund.
+- [Phase 02]: Subscription and adjustment sync share one internal recomputation helper so subscription refreshes cannot erase unresolved billing blocks.
+- [Phase 02]: Readiness is exposed as service-role-only named booleans, keeping production catalog rows and secrets private.
 
 ### Pending Todos
 
@@ -85,6 +89,6 @@ Progress: [██░░░░░░░░] 20%
 
 ## Session Continuity
 
-Last session: 2026-07-26T15:16:00Z
-Stopped at: Phase 1 automatable closeout complete with human UAT gaps carried; Phase 2 autonomous discussion is next
-Resume file: .planning/phases/01-production-identity-and-admin/01-VERIFICATION.md
+Last session: 2026-07-26T17:41:08.114Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: None
