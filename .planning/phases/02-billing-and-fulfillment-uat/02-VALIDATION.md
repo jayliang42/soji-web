@@ -5,88 +5,111 @@ status: ready
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-07-26
+revised: 2026-07-26
 ---
 
 # Phase 02 — Validation Strategy
 
-> Per-phase validation contract for feedback sampling during execution.
-
----
-
 ## Test Infrastructure
 
 | Property | Value |
-|----------|-------|
-| **Framework** | Vitest, Playwright, pgTAP, Node test, TypeScript, ESLint |
-| **Config files** | `apps/web/vitest.config.mts`, `apps/web/playwright.config.ts`, `supabase/config.toml`, `apps/web/tsconfig.typecheck.json` |
-| **Quick run command** | `corepack pnpm --filter @soji/web exec vitest run tests/stripe-webhook-sync.test.ts tests/stripe-webhook-route.test.ts tests/account-subscriptions.test.ts` |
-| **Full suite command** | `corepack pnpm --filter @soji/web test && corepack pnpm test:db && corepack pnpm --filter @soji/web test:e2e` |
-| **Estimated runtime** | Quick: under 30 seconds; full billing/database/browser gate: approximately 10–15 minutes |
+|---|---|
+| Frameworks | Vitest, Playwright, pgTAP, Node test, TypeScript, ESLint |
+| Focused target | Every implementation task uses one sub-30-second file-scoped command |
+| Wave gate | Full applicable Web/database/static suite after the focused task checks |
+| Final gate | Web + database + type + lint + build + artifact + focused Playwright/axe + evidence ready + docs |
+| Provider rule | Mocks/config/repository tests never promote provider scenario rows to PASS |
+| Human review | One end-of-phase `<human-check>` in autonomous Task 02-09-03; no standalone checkpoint |
 
----
+## Fixed Evidence Scenarios
 
-## Sampling Rate
+Exactly these 25 IDs exist once in `02-UAT-EVIDENCE.md`:
 
-- **After every schema task:** Run the focused membership-adjustment pgTAP file, schema lint, and generated-type check.
-- **After every Stripe processor task:** Run the focused webhook, reconciliation, refund, and dispute Vitest files.
-- **After every Account/Admin task:** Run focused subscription, purchase, billing-event route, and component tests.
-- **After every evidence task:** Run the Phase 2 Node validator suite and structure/safety gate.
-- **After every plan wave:** Run the full Web Vitest suite plus the applicable database tests.
-- **Before phase verification:** Run Web, database, Playwright, typecheck, lint, build, deploy artifact, docs, and evidence gates.
-- **Max automated feedback latency:** 15 minutes for the full phase gate; 30 seconds for task-local feedback.
-
----
+1. `BILL-DB-SCHEMA-PARITY`
+2. `BILL-01-CATALOG`
+3. `BILL-01-PORTAL-CONFIG`
+4. `BILL-03-TIER-1-CHECKOUT`
+5. `BILL-03-TIER-2-CHECKOUT`
+6. `BILL-03-TIER-3-CHECKOUT`
+7. `BILL-03-CUSTOMER-REUSE`
+8. `BILL-03-PORTAL-CANCEL`
+9. `BILL-02-SIGNED-RECEIPT`
+10. `BILL-02-IGNORED-RECEIPT`
+11. `BILL-02-FAILED-RETRY`
+12. `BILL-02-RECONCILIATION`
+13. `BILL-04-PRODUCT-CATALOG`
+14. `BILL-04-PRODUCT-DELIVERY`
+15. `BILL-04-UNAUTHORIZED-DOWNLOAD`
+16. `BILL-04-PARTIAL-REFUND`
+17. `BILL-04-FULL-REFUND`
+18. `BILL-04-DISPUTE-OPEN`
+19. `BILL-04-DISPUTE-WON`
+20. `BILL-04-DISPUTE-LOST`
+21. `BILL-05-PARTIAL-REFUND`
+22. `BILL-05-FULL-REFUND`
+23. `BILL-05-DISPUTE-OPEN`
+24. `BILL-05-DISPUTE-WON`
+25. `BILL-05-DISPUTE-LOST`
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 1 | BILL-03, BILL-05 | T-02-02, T-02-03 | Membership adjustments have normalized provider identity, observation ordering, and terminal-state constraints | database | `corepack pnpm test:db` | ✅ infrastructure | ⬜ pending |
-| 02-01-02 | 01 | 1 | BILL-03, BILL-05 | T-02-02 | Subscription state and adjustment sync share one atomic entitlement recomputation and cannot regrant blocked access | database | `corepack pnpm test:db && corepack pnpm db:schema:check` | ✅ infrastructure | ⬜ pending |
-| 02-01-03 | 01 | 1 | BILL-05 | T-02-03, T-02-09 | New schema is represented by one forward migration, declarative schema, grants/RLS tests, and generated types | schema | `corepack pnpm db:lint && corepack pnpm db:schema:check && corepack pnpm db:types:check` | ✅ infrastructure | ⬜ pending |
-| 02-02-01 | 02 | 2 | BILL-02, BILL-05 | T-02-01, T-02-07 | A PaymentIntent maps only through exact Invoice Payment and subscription parent evidence; missing/ambiguous mappings fail or ignore explicitly | unit | `corepack pnpm --filter @soji/web exec vitest run tests/stripe-webhook-sync.test.ts` | ✅ | ⬜ pending |
-| 02-02-02 | 02 | 2 | BILL-02, BILL-04, BILL-05 | T-02-02, T-02-04 | Product and subscription refunds/disputes dispatch to different idempotent state machines | unit/route | `corepack pnpm --filter @soji/web exec vitest run tests/stripe-webhook-sync.test.ts tests/stripe-webhook-route.test.ts` | ✅ | ⬜ pending |
-| 02-02-03 | 02 | 2 | BILL-02 | T-02-04, T-02-06 | Duplicate delivery, Retry, lease expiry, ignored events, and reconciliation preserve one durable minimized receipt | unit/route | `corepack pnpm --filter @soji/web exec vitest run tests/billing-processing.test.ts tests/stripe-reconciliation.test.ts tests/admin-billing-retry-route.test.ts tests/admin-billing-reconcile-route.test.ts` | ✅ | ⬜ pending |
-| 02-03-01 | 03 | 3 | BILL-03, BILL-05 | T-02-05 | Account labels open/won/lost/full/partial states without treating Portal or return queries as authority | component | `corepack pnpm --filter @soji/web exec vitest run tests/account-subscriptions.test.ts tests/account-billing-readiness-page.test.tsx tests/checkout-return.test.ts` | ✅ | ⬜ pending |
-| 02-03-02 | 03 | 3 | BILL-02 | T-02-06 | Admin distinguishes receipt and processing outcomes and exposes only supported bounded recovery actions | component/route | `corepack pnpm --filter @soji/web exec vitest run tests/admin-billing-events-component.test.tsx tests/admin-billing-events-route.test.ts tests/admin-billing-retry-route.test.ts tests/admin-billing-reconcile-route.test.ts` | ✅ | ⬜ pending |
-| 02-03-03 | 03 | 3 | BILL-01, BILL-02, BILL-03, BILL-04, BILL-05 | T-02-06 | Phase 2 evidence requires fixed scenarios, rejects secrets/customer identifiers, and cannot become ready without all provider rows PASS | Node contract | `corepack pnpm phase2:uat:check && corepack pnpm test:uat` | ✅ infrastructure | ⬜ pending |
-| 02-04-01 | 04 | 4 | BILL-01, BILL-03 | T-02-05 | Each plan produces one correct test subscription, reuses one Customer history, and opens Portal from the bound local subscription | manual UAT | `corepack pnpm phase2:uat:check` after recording redacted outcomes | ✅ infrastructure | ⬜ pending |
-| 02-04-02 | 04 | 4 | BILL-02 | T-02-04, T-02-06 | Signed received/processed/ignored/failed receipts and supported Retry/reconciliation are observed in production Admin | manual UAT | `corepack pnpm phase2:uat:check` after recording redacted outcomes | ✅ infrastructure | ⬜ pending |
-| 02-04-03 | 04 | 4 | BILL-04, BILL-05 | T-02-02, T-02-05 | Product and membership refund/dispute transitions enforce the documented access policy and unauthorized download denial | manual UAT | `corepack pnpm phase2:uat:ready` after all observations | ✅ infrastructure | ⬜ pending |
+| Task ID | Wave | Requirements | Secure behavior | Focused automated command | Status |
+|---|---:|---|---|---|---|
+| 02-01-01 | 1 | BILL-03, BILL-05 | RED reaches TAP plan, matches two unique named `not ok`, rejects syntax/connection/Bail out | focused named pgTAP expected-failure shell gate in Plan 01 | ⬜ |
+| 02-01-02 | 1 | BILL-03, BILL-05 | Ordered atomic adjustment/access/RLS/grants/readiness | `supabase test db --local supabase/tests/subscription_billing_adjustments.sql && pnpm db:schema:check` | ⬜ |
+| 02-01-03 | 1 | BILL-03, BILL-05 | Generated schema/RPC contracts | `pnpm db:types && pnpm db:types:check && pnpm --filter @soji/web typecheck` | ⬜ |
+| 02-02-01 | 2 | BILL-01, BILL-03 | Client authority rejected; Customer/claim/idempotency continuity | `pnpm --filter @soji/web exec vitest run tests/checkout-routes.test.ts` | ⬜ |
+| 02-02-02 | 2 | BILL-02, BILL-04, BILL-05 | Exact InvoicePayment classification and mutually exclusive dispatch | `pnpm --filter @soji/web exec vitest run tests/stripe-webhook-sync.test.ts` | ⬜ |
+| 02-02-03 | 2 | BILL-02, BILL-05 | Paid evidence, lease, Retry, reconciliation | focused reconciliation/processing/retry/reconcile Vitest files | ⬜ |
+| 02-03-01 | 3 | BILL-03, BILL-05 | Owner-scoped fail-closed presentation | `pnpm --filter @soji/web exec vitest run tests/account-subscriptions.test.ts` | ⬜ |
+| 02-03-02 | 3 | BILL-03, BILL-04, BILL-05 | Exact loading status/geometry/no false flash | focused Account/return/download Vitest files | ⬜ |
+| 02-04-01 | 4 | BILL-02 | Auth-first bounded event search and stable mapping | focused Admin route + billing Vitest files | ⬜ |
+| 02-04-02 | 4 | BILL-02, BILL-05 | Receipt/process/lease/recovery UI truth | focused Admin component/retry/reconcile Vitest files | ⬜ |
+| 02-05-01 | 5 | BILL-01..05 | Evidence safety, tested positive `--require-all-status`, schema-aware `--require-pass`, and machine-parsed production/canonical/release gates | `node --test scripts/check-phase2-uat-evidence.test.mjs` | ⬜ |
+| 02-05-02 | 5 | BILL-01..05 | Exactly all 25 fixed rows pending; malformed/parser/script errors rejected | structure + unit + docs + `--require-all-status PENDING` | ⬜ |
+| 02-06-01 | 6 | BILL-01..05 | Machine-parsed pre/post migration/dry-run plus schema-specific PASS evidence; inputs retained through verify | prepush + postpush + production-schema + structure + `--require-pass BILL-DB-SCHEMA-PARITY`, then Task 2 cleanup | ⬜ |
+| 02-06-02 | 6 | BILL-01..05 | Exact clean commit detached-worktree release-input preflight with no production mutation | `--release-inputs --worktree-file ... --commit-file ...` | ⬜ |
+| 02-06-03 | 6 | BILL-01..05 | T-02-14 gates before mutation, then exact Vercel identity plus canonical readiness | detached build + deploy-artifact check before link/deploy; deployment + production-schema + canonical-readiness validators after | ⬜ |
+| 02-07-01 | 7 | BILL-01 | Provider catalog/Portal config observation | structure + `--require-pass BILL-01-CATALOG,BILL-01-PORTAL-CONFIG` | ⬜ |
+| 02-07-02 | 7 | BILL-03 | Exactly four rows: three tiers plus Customer reuse | structure + `--require-pass` four exact BILL-03 IDs | ⬜ |
+| 02-07-03 | 7 | BILL-01, BILL-03 | Exact Portal ownership/cancellation sync | structure + `--require-pass BILL-03-PORTAL-CANCEL` | ⬜ |
+| 02-08-01 | 8 | BILL-02 | Signed processed/ignored receipt-first evidence | structure + `--require-pass` signed,ignored | ⬜ |
+| 02-08-02 | 8 | BILL-02 | Real recoverable failure and original-event Retry | structure + `--require-pass BILL-02-FAILED-RETRY` | ⬜ |
+| 02-08-03 | 8 | BILL-02 | sub_/cus_ reconciliation and synthetic receipt | structure + `--require-pass BILL-02-RECONCILIATION` | ⬜ |
+| 02-09-01 | 9 | BILL-04 | Exactly eight product catalog/delivery/denial/refund/dispute rows | structure + `--require-pass` eight exact BILL-04 IDs | ⬜ |
+| 02-09-02 | 9 | BILL-05 | Five membership refund/dispute policy rows | structure + `--require-pass` five exact BILL-05 IDs | ⬜ |
+| 02-09-03 | 9 | BILL-01..05 | Fresh postpush/schema/deployment/canonical parsers, all-25 ready, full regression, one HUMAN-UAT | full final command in Plan 09 | ⬜ |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+## Sampling Rules
 
----
+- After each implementation task: run only its focused command; maximum target latency is 30 seconds.
+- After each sequential wave: run the applicable full Web or database suite, typecheck, and lint outside the task-local RED/GREEN loop.
+- Playwright and full suites are wave/final gates only, never task-local implementation gates.
+- After every provider evidence edit: structure check plus task-owned `--require-pass ID[,ID...]`.
+- Before provider UAT: machine-parse migration versions/dry-runs, remote readiness booleans, and exact Vercel commit/deployment identity.
+- In Task 02-06-03, rerun release-input validation and pass the detached exact-commit production build plus deploy-artifact check before any Vercel/Stripe configuration, link, or deploy mutation.
+- Before closeout: run the Plan 02-09-03 final automated command; only then expose its `<human-check>`.
 
-## Wave 0 Requirements
+## Provider/Manual-Only Assertions
 
-The repository already has the required Vitest, Playwright, pgTAP, Node test,
-TypeScript, ESLint, schema, build, and artifact infrastructure. Each new
-membership-adjustment behavior will add tests before or in the same task as its
-implementation; no framework installation or shared harness is required.
+| Plan | Assertions |
+|---|---|
+| 02-07 | Exact three-Price catalog, one subscription per tier, Customer reuse, claim/idempotency reuse, Portal cancellation |
+| 02-08 | Stripe-signed received/ignored/failed receipts, Retry, reconciliation |
+| 02-09 | Product owner/unauthorized delivery, product and membership partial/full/open/won/lost transitions |
 
----
+Provider observations must be Stripe test mode against `https://soji-web.vercel.app`. No live payment is authorized.
 
-## Manual-Only Verifications
+## Final HUMAN-UAT Contract
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| Exact three-Price catalog and Customer Portal configuration | BILL-01 | Requires the actual Stripe test account configuration | Validate lookup key, active recurring Price, USD amount, monthly interval, and Portal access; record redacted Price suffixes only |
-| One test subscription per tier and Customer reuse | BILL-03 | Requires authenticated canonical Checkout and provider-created objects | Complete each tier scenario in test mode, verify local Account state, Stripe Customer continuity, and no duplicate live subscription |
-| Signed receipt, failure, ignored, Retry, and reconciliation | BILL-02 | Requires Stripe-to-deployment signed delivery and production Admin | Deliver controlled events, verify receipt-first states, force a processing failure, use the supported recovery action, and record only redacted identifiers |
-| Product purchase and private fulfillment | BILL-04 | Requires real test Checkout plus two user identities | Purchase one active product, verify owner download, then verify a different signed-in user and a signed-out user are denied |
-| Product/membership refunds and disputes | BILL-04, BILL-05 | Requires Stripe test refund and dispute state transitions | Exercise partial/full refund and open/won/lost dispute states; verify Account, entitlements, downloads, and Admin receipt outcomes after each webhook |
-
----
+Plan `02-09`, Task `02-09-03` remains `type="auto"` and `autonomous: true`. Its `<verify>` contains one `<human-check>` harvested by execute-phase after all automation. It must not create a standalone checkpoint or clear/override `_auto_chain_active`.
 
 ## Validation Sign-Off
 
-- [x] Every provisional task has an automated check or explicit provider-only reason.
-- [x] Sampling continuity has no three consecutive tasks without an automated check.
-- [x] Existing infrastructure covers all required framework references.
-- [x] Commands use non-watch modes.
-- [x] Task-local feedback latency target is under 30 seconds.
-- [x] Security behavior and threat references are mapped per task.
-- [x] `nyquist_compliant: true` is set in frontmatter.
-
-**Approval:** ready for plan verification on 2026-07-26
+- [x] Nine sequential plans and 24 task IDs are mapped.
+- [x] Every implementation task has a focused sub-30-second command.
+- [x] RED gate requires TAP plan plus two unique named `not ok` assertions and rejects syntax/connection/Bail out.
+- [x] Full/Playwright suites occur only at wave/final gates.
+- [x] Provider tasks require exact owned PASS IDs; mocks cannot promote PASS.
+- [x] ASVS HIGH threats map to blocking verification.
+- [x] Exactly one end-of-phase HUMAN-UAT review remains.

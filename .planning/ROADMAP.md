@@ -36,7 +36,17 @@ This milestone converts an extensively implemented and tested brownfield applica
   3. A standalone product purchaser can access its private file, while refund and dispute states enforce the documented delivery policy.
   4. The customer can open Customer Portal and manage a subscription without creating fragmented Stripe customer history.
   5. Membership disputes pause, restore, end, or cancel access according to one documented and tested policy.
-**Plans**: TBD
+**Plans**: 9 plans
+
+- [ ] `02-01-PLAN.md` — Add atomic membership adjustments, shared access recomputation, schema tests, and generated types.
+- [ ] `02-02-PLAN.md` — Enforce Checkout authority and classify, dispatch, and reconcile Stripe billing events.
+- [ ] `02-03-PLAN.md` — Render authoritative Account billing truth with stable loading states.
+- [ ] `02-04-PLAN.md` — Build the bounded Admin billing incident ledger and recovery UI.
+- [ ] `02-05-PLAN.md` — Create the secret-safe 25-scenario evidence validator, artifact, and runbook.
+- [ ] `02-06-PLAN.md` — Gate and apply production schema/configuration and deploy the exact verified commit.
+- [ ] `02-07-PLAN.md` — Prove membership catalog, Customer reuse, Checkout, and Portal behavior in Stripe test mode.
+- [ ] `02-08-PLAN.md` — Prove signed receipt, failure, Retry, and reconciliation behavior.
+- [ ] `02-09-PLAN.md` — Prove refund/dispute policy, run final readiness, and expose one consolidated human review.
 **UI hint**: yes
 
 ### Phase 3: Launch Content and Customer Policy
