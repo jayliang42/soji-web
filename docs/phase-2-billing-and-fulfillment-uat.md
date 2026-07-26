@@ -51,7 +51,7 @@ sequence without performing it.
 umask 077
 corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 migration list > /tmp/soji-phase2-migrations-before.txt
 corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 db push --dry-run > /tmp/soji-phase2-dryrun-before.txt
-node scripts/check-phase2-uat-evidence.mjs --prepush /tmp/soji-phase2-migrations-before.txt /tmp/soji-phase2-dryrun-before.txt --expected-pending 20260726000000
+node scripts/check-phase2-uat-evidence.mjs --prepush --migration-list /tmp/soji-phase2-migrations-before.txt --dry-run /tmp/soji-phase2-dryrun-before.txt --expected-pending 20260726000000
 ```
 
 Review the pending migration before one authorized push. Do not use seed, reset, repair, or
@@ -61,7 +61,7 @@ manual SQL shortcuts.
 corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 db push
 corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 migration list > /tmp/soji-phase2-migrations-after.txt
 corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 db push --dry-run > /tmp/soji-phase2-dryrun-after.txt
-node scripts/check-phase2-uat-evidence.mjs --postpush /tmp/soji-phase2-migrations-after.txt /tmp/soji-phase2-dryrun-after.txt --expected-applied 20260726000000
+node scripts/check-phase2-uat-evidence.mjs --postpush --migration-list /tmp/soji-phase2-migrations-after.txt --dry-run /tmp/soji-phase2-dryrun-after.txt
 node scripts/check-phase2-uat-evidence.mjs --production-schema
 ```
 
@@ -82,12 +82,14 @@ Create a clean detached worktree from the reviewed commit. Do not deploy the mut
 tree.
 
 ```sh
-release_commit="$(git rev-parse HEAD)"
+install -m 600 /dev/null /tmp/soji-phase2-release-commit.txt
+install -m 600 /dev/null /tmp/soji-phase2-release-worktree.txt
+git rev-parse HEAD > /tmp/soji-phase2-release-commit.txt
+release_commit="$(tr -d '\n' < /tmp/soji-phase2-release-commit.txt)"
 release_tree="$(mktemp -d /tmp/soji-phase2-release.XXXXXX)"
+printf '%s\n' "$release_tree" > /tmp/soji-phase2-release-worktree.txt
 git worktree add --detach "$release_tree" "$release_commit"
-node scripts/check-phase2-uat-evidence.mjs --release-inputs "$release_tree" "$release_commit"
-corepack pnpm --dir "$release_tree" --filter @soji/web build
-corepack pnpm --dir "$release_tree" deploy:check
+node scripts/check-phase2-uat-evidence.mjs --release-inputs --worktree-file /tmp/soji-phase2-release-worktree.txt --commit-file /tmp/soji-phase2-release-commit.txt
 ```
 
 The release-input gate requires the detached `HEAD` to equal the requested full commit, the
@@ -96,12 +98,23 @@ free of secrets. Stop on any mismatch.
 
 ### 3. Deploy and prove identity
 
-After authorization, use the repository's deployment workflow from the validated detached
+Before the first production configuration, link, or deployment operation, rerun the release
+gate and build checks from the detached tree:
+
+```sh
+node scripts/check-phase2-uat-evidence.mjs --release-inputs --worktree-file /tmp/soji-phase2-release-worktree.txt --commit-file /tmp/soji-phase2-release-commit.txt
+release_tree="$(tr -d '\n' < /tmp/soji-phase2-release-worktree.txt)"
+corepack pnpm --dir "$release_tree" --filter @soji/web build
+corepack pnpm --dir "$release_tree" deploy:check
+```
+
+Stop if any of those three gates fails. Only after they pass and the production operation is
+explicitly authorized, use the repository's deployment workflow from the validated detached
 tree. Capture the authoritative JSON inspection without displaying secrets:
 
 ```sh
 vercel inspect https://soji-web.vercel.app --format=json > /tmp/soji-phase2-vercel-inspect.json
-node scripts/check-phase2-uat-evidence.mjs --deployment /tmp/soji-phase2-vercel-inspect.json "$release_commit"
+node scripts/check-phase2-uat-evidence.mjs --deployment /tmp/soji-phase2-vercel-inspect.json --expected-commit-file /tmp/soji-phase2-release-commit.txt --expected-alias https://soji-web.vercel.app
 ```
 
 The deployment proof must name the expected project, production target, `READY` state,
