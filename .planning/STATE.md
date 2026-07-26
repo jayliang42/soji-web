@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-26T08:55:32Z"
+last_updated: "2026-07-26T15:16:00Z"
 last_activity: 2026-07-26
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 2
-  percent: 0
+  completed_plans: 3
+  percent: 20
 ---
 
 # Project State
@@ -20,35 +20,36 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-07-21)
 
 **Core value:** A verified payment must produce a durable, queryable receipt and the correct customer access state, while unpaid or unauthorized users never receive protected content.
-**Current focus:** Phase 01 — Production Identity and Admin
+**Current focus:** Phase 02 — Billing and Fulfillment UAT, while Phase 01 external-provider UAT remains explicitly carried.
 
 ## Current Position
 
-Phase: 01 (Production Identity and Admin) — EXECUTING
-Plan: 3 of 3
-Status: Production deployment/Auth UAT checkpoint
+Phase: 02 (Billing and Fulfillment UAT) — DISCUSSING
+Plan: 0 of TBD
+Status: Phase 1 automatable work and code review complete; external-provider acceptance carried without fabricated PASS results
 Last activity: 2026-07-26
 
-Progress: [███████░░░] 67%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 3
+- Average duration: 24min
+- Total execution time: 1h 11min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| Phase 01 | 3 | 1h 11min | 24min |
 
 ## Accumulated Context
 
 | Phase 01 P01 | 7min | 3 tasks | 13 files |
 | Phase 01 P02 | 4min | 2 tasks | 6 files |
+| Phase 01 P03 | 1h | 3 automatable slices | 4 files |
 
 ### Decisions
 
@@ -57,19 +58,23 @@ Progress: [███████░░░] 67%
 - Billing receipt evidence remains durable and separate from processing outcome.
 - Current implementation already includes broad billing, security, Admin, deployment, and UI foundations; this milestone focuses on production proof.
 - Reader-facing content metadata uses stable presentation labels and semantic dates rather than storage enums or raw ISO timestamps.
+- The dedicated canonical deployment is `https://soji-web.vercel.app`; the unrelated `soji-official` project remains untouched.
+- External mailbox, SMTP, Google-consent, service-role, and live role-transition checks remain human-gated and must not be promoted to PASS from repository tests.
+- User directed GSD to continue with automatable later-phase work and consolidate all owner actions into one final checkpoint.
 
 ### Pending Todos
 
-- Complete the Phase 1 provider and Admin UAT after the canonical Vercel deployment is restored.
-- Define the membership-subscription dispute policy before Phase 2 planning.
-- Select the production deployment platform before Phase 5 planning.
+- Complete the consolidated Phase 1 provider/Admin UAT checkpoint after all automatable phases are exhausted.
+- Define and test the membership-subscription dispute policy during Phase 2.
+- Reuse the dedicated Vercel Web project for the v1 production deployment unless Phase 5 uncovers a blocking platform constraint.
 
 ### Blockers/Concerns
 
-- Production Supabase, SMTP, Google OAuth, Stripe catalog/webhook, and first Admin setup require owner credentials and dashboard actions.
+- Production Supabase service-role readiness, custom SMTP/DNS delivery, mailbox links, Google consent, and live Admin role/workspace acceptance require owner authorization or interaction.
+- Stripe server secrets and provider-backed Checkout/webhook UAT require explicit owner authorization before any secret is uploaded to Vercel.
 - Legal/support copy requires a business-owner or legal review before launch.
 - The worktree contains extensive existing uncommitted changes; GSD initialization must not bundle or overwrite unrelated work.
-- Phase 1 production UAT is waiting for a working canonical Vercel deployment and production Auth URL configuration; the previous production alias returns 404, Vercel is signed out, and Supabase still uses a localhost Site URL with no redirect allow-list entry.
+- Phase 1 verification is `gaps_found`: canonical Vercel deployment, Supabase migration parity, Auth URL configuration, public readiness, provider switches, and first-Admin aggregate evidence are verified; external identity delivery and service-role-dependent checks remain open.
 
 ## Deferred Items
 
@@ -80,6 +85,6 @@ Progress: [███████░░░] 67%
 
 ## Session Continuity
 
-Last session: 2026-07-26T08:55:32Z
-Stopped at: Paused 01-03 at production deployment/Auth checkpoint after public-surface UI follow-up
-Resume file: .planning/phases/01-production-identity-and-admin/01-03-PLAN.md
+Last session: 2026-07-26T15:16:00Z
+Stopped at: Phase 1 automatable closeout complete with human UAT gaps carried; Phase 2 autonomous discussion is next
+Resume file: .planning/phases/01-production-identity-and-admin/01-VERIFICATION.md
