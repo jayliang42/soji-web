@@ -2,6 +2,19 @@
 
 这份清单用于把 Soji 从本地 demo preview 推到可收款、可登录、可运营的生产环境。
 
+## Phase 5：生产部署与回滚
+
+- [x] 精确 commit、staged/current inspection、body-free smoke 门禁完成
+- [x] 非 root standalone 镜像和本地 prior → candidate → prior 演练完成
+- [x] 发布证据固定为 10 条自动行和 48 条 owner/provider 行
+- [ ] 在一次 coordinated session 中完成 staged deploy、promote、rollback、re-promote
+
+Phase 5 技术步骤见
+[production deployment and rollback](./phase-5-production-deployment-and-rollback.md)。
+所有登录、账号和 owner 操作仍只以
+[the consolidated owner checkpoint](./phase-4-experience-and-operations-acceptance.md#consolidated-owner-checkpoint)
+为准。
+
 ## Phase 4：体验与运营验收
 
 - [x] 九个客户流程、六个 Admin workspace 和五档响应式宽度完成自动化验收
@@ -24,9 +37,7 @@
 - [x] `/api/health/ready` 与 Admin 使用同一套安全启动状态
 - [ ] 完成 owner/provider 真实观察；在完成前不得把 Phase 3 标为生产就绪
 
-所有未完成输入与登录位置只在
-[Phase 3 consolidated owner checkpoint](./phase-3-launch-content-and-policy.md#consolidated-owner-checkpoint)
-列出一次。证据记录在
+Phase 3 的旧登录步骤已由 Phase 4/5 的唯一合并 checkpoint 取代。证据记录在
 [Phase 3 UAT ledger](../.planning/phases/03-launch-content-and-customer-policy/03-UAT-EVIDENCE.md)。
 
 ## 0. 当前结论

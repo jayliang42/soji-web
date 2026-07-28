@@ -59,7 +59,7 @@ No deployment, production login, environment change, or production data mutation
 
 ## Consolidated owner checkpoint
 
-This is the one authoritative list of every remaining Phase 1–4 login or owner action.
+This is the one authoritative list of every remaining Phase 1–5 login or owner action.
 Complete it in one coordinated session when the production accounts are available; do not
 repeat older phase checklists independently.
 
@@ -168,7 +168,31 @@ and Billing.
 - Do not copy receiver endpoints, request headers, file locations, error text, or complete
   provider identifiers into evidence.
 
-### 7. Final validation
+### 7. Phase 5 staged release, rollback, and re-promotion
+
+Location: Vercel project `soji-web` → production environment, deployments, domains, and cron;
+the canonical Soji guest/customer/Admin sessions; the operations receiver.
+
+- Confirm every named production environment setting exists in Vercel without copying values.
+  Confirm `apps/web/vercel.json` is the active project configuration and every readiness check
+  is true. Close `PH5-ENV-READINESS`.
+- From the exact clean detached commit, create one production candidate using
+  `vercel deploy --prod --skip-domain`. Inspect it as `READY`, exact-commit, and without the
+  canonical alias. Run staged liveness, readiness, security-header, and fixed public-route
+  smoke. Close `PH5-STAGED-DEPLOYMENT` and `PH5-STAGED-SMOKE`.
+- Promote that same inspected candidate without rebuilding. Re-inspect current production and
+  run the canonical guest, customer, Admin, receiver, scheduler, Auth, access, and billing
+  matrix above. Close `PH5-CANONICAL-PROMOTION` and `PH5-CANONICAL-SMOKE`.
+- Use Vercel Instant Rollback to restore the captured immediately previous deployment. Verify
+  its exact identity, liveness, readiness, canonical public surface, and cron registration.
+  Close `PH5-ROLLBACK` and `PH5-PRIOR-SMOKE`.
+- Re-promote the same candidate, confirm normal production assignment is restored, and repeat
+  the complete final smoke set. Close `PH5-REPROMOTE-SMOKE`.
+- Record only UTC, exact public Git commit, lifecycle label, redacted outcome, and permitted
+  final-eight deployment suffix. Do not record generated origins, full deployment identifiers,
+  provider output, response bodies, accounts, or raw logs.
+
+### 8. Final validation
 
 Update only rows directly observed, then run:
 
@@ -177,7 +201,8 @@ corepack pnpm phase1:uat:check
 corepack pnpm phase2:uat:check
 corepack pnpm phase3:uat:check
 corepack pnpm phase4:uat:check
-corepack pnpm phase4:uat:ready
+corepack pnpm phase5:uat:check
+corepack pnpm phase5:uat:ready
 ```
 
 The ready command must stay nonzero if any external row is still pending. Never promote a

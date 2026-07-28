@@ -1,0 +1,71 @@
+# Phase 5 Production Deployment and Rollback UAT Evidence
+
+Evidence policy: automated `PASS` rows name a repository command and implementation commit.
+Owner/provider rows remain `PENDING` until a direct redacted observation is made in the one
+coordinated production session. Never record generated deployment URLs, full deployment or
+provider identifiers, credentials, identities, private paths, response bodies, or unfiltered
+diagnostic output.
+
+| Scenario ID | Status | Evidence class | UTC observed | Canonical origin | Expected | Observed | Proof | Notes |
+|---|---|---|---|---|---|---|---|---|
+| PH5-EXACT-RELEASE-INPUT | PASS | automated | 2026-07-28T05:30:00Z | local-repository | A clean detached exact commit is the only permitted release input. | Exact release input and provider commit mismatch cases passed. | command: node --test scripts/check-phase5-release.test.mjs; commit: fa9e41a | No production mutation claimed. |
+| PH5-DEPLOYMENT-PARSER | PASS | automated | 2026-07-28T05:30:00Z | local-repository | Staged and current provider inspection must match the project, target, state, commit, and alias contract. | Adversarial deployment inspection cases passed. | command: node --test scripts/check-phase5-release.test.mjs; commit: fa9e41a | Provider fixtures do not count as live proof. |
+| PH5-LIFECYCLE-TRANSITIONS | PASS | automated | 2026-07-28T05:30:00Z | local-repository | Only prior current, candidate staged/current, prior rollback, and candidate re-promotion order is accepted. | Ordered identity transition cases passed. | command: node --test scripts/check-phase5-release.test.mjs; commit: fa9e41a | Complete provider identifiers are discarded. |
+| PH5-BODY-FREE-SMOKE | PASS | automated | 2026-07-28T05:30:00Z | local-repository | Fixed public smoke fails closed without retaining targets, headers, bodies, errors, cookies, or identities. | Route, readiness, header, demo-marker, and privacy cases passed. | command: node --test scripts/check-phase5-release.test.mjs; commit: fa9e41a | Canonical outcome remains external. |
+| PH5-STANDALONE-ARTIFACT | PASS | automated | 2026-07-28T05:30:00Z | local-repository | The exact commit builds a portable standalone artifact without environment files. | Clean-commit production build and artifact check passed. | command: docker build and corepack pnpm deploy:check; commit: ee2aaff | Docker is a fallback artifact only. |
+| PH5-NONROOT-IMAGE | PASS | automated | 2026-07-28T05:30:00Z | local-repository | Final image user, entry, port, healthcheck, env, labels, and history satisfy the secret-safe contract. | Final image inspection passed. | command: node scripts/check-phase5-container.mjs --inspect; commit: ee2aaff | No runtime secret value was used. |
+| PH5-LOCAL-ROLLBACK-DRILL | PASS | automated | 2026-07-28T05:30:00Z | local-repository | Prior and candidate containers switch and restore with exact owned cleanup. | Four health transitions passed and no drill container remained. | command: corepack pnpm phase5:container:drill; commit: 53882d0 | This does not prove Vercel or database rollback. |
+| PH5-RELEASE-REGRESSION | PENDING | automated | — | local-repository | One exact-commit command passes every local release gate. | Pending repository regression. | pending repository command | Promoted only after the complete command passes. |
+| PH5-DOCS | PENDING | automated | — | local-repository | Release and owner procedures have valid local links and one authoritative checkpoint. | Pending repository regression. | pending repository command | No second login list is permitted. |
+| PH5-PRIVACY-VALIDATION | PENDING | automated | — | local-repository | Evidence rejects private release and provider material. | Pending repository regression. | pending repository command | Whole-file privacy cases must pass. |
+| INFRA-01-READINESS | PENDING | owner | — | — | Production identity readiness reports every required service check true. | Pending owner observation. | pending owner observation | Carried from Phase 1. |
+| AUTH-01-SIGNUP | PENDING | owner | — | — | Signup confirmation arrives through two mailbox providers and returns canonically. | Pending owner observation. | pending owner observation | Carried from Phase 1. |
+| AUTH-01-RECOVERY | PENDING | owner | — | — | Password recovery completes and the new password signs in canonically. | Pending owner observation. | pending owner observation | Carried from Phase 1. |
+| AUTH-02-GOOGLE | PENDING | owner | — | — | Google consent returns to the canonical callback and intended safe page. | Pending owner observation. | pending owner observation | Carried from Phase 1. |
+| ADMIN-01-ROLE-TRANSITION | PENDING | owner | — | — | Admin grant, revoke, audit, and last-Admin protection match the contract. | Pending owner observation. | pending owner observation | Carried from Phase 1. |
+| ADMIN-01-WORKSPACES | PENDING | owner | — | — | Admin, editor, and member workspace boundaries match the contract. | Pending owner observation. | pending owner observation | Carried from Phase 1. |
+| BILL-DB-SCHEMA-PARITY | PENDING | owner | — | — | Production billing schema and readiness match the reviewed local migrations. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-01-CATALOG | PENDING | owner | — | — | Three active monthly membership prices match the locked tiers. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-01-PORTAL-CONFIG | PENDING | owner | — | — | Customer Portal supports the approved management and return flow. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-03-TIER-1-CHECKOUT | PENDING | owner | — | — | Tier 1 Checkout produces durable signed membership state. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-03-TIER-2-CHECKOUT | PENDING | owner | — | — | Tier 2 Checkout produces durable signed membership state. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-03-TIER-3-CHECKOUT | PENDING | owner | — | — | Tier 3 Checkout produces durable signed membership state. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-03-CUSTOMER-REUSE | PENDING | owner | — | — | Repeated membership intent reuses one bound billing customer. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-03-PORTAL-CANCEL | PENDING | owner | — | — | Period-end cancellation synchronizes to Account with the paid-through date. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-02-SIGNED-RECEIPT | PENDING | owner | — | — | A valid signed receipt is stored before a distinct Complete processing outcome. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-02-IGNORED-RECEIPT | PENDING | owner | — | — | A signed unsupported receipt remains durable with a no-handler outcome. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-02-FAILED-RETRY | PENDING | owner | — | — | Controlled processing failure stays durable and Retry reaches a terminal result. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-02-RECONCILIATION | PENDING | owner | — | — | Admin reconciliation refreshes authoritative state and records a separate receipt. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-04-PRODUCT-CATALOG | PENDING | owner | — | — | Every active product has one valid one-time price and private delivery asset. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-04-PRODUCT-DELIVERY | PENDING | owner | — | — | Paid product Checkout creates durable owner-only delivery access. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-04-UNAUTHORIZED-DOWNLOAD | PENDING | owner | — | — | Signed-out and non-owner requests cannot obtain the purchased file. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-04-PARTIAL-REFUND | PENDING | owner | — | — | Partial product refund preserves delivery while showing the adjustment. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-04-FULL-REFUND | PENDING | owner | — | — | Full product refund ends delivery and direct authorization. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-04-DISPUTE-OPEN | PENDING | owner | — | — | Open product dispute pauses delivery while retaining the receipt. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-04-DISPUTE-WON | PENDING | owner | — | — | Won product dispute restores eligible non-refunded delivery. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-04-DISPUTE-LOST | PENDING | owner | — | — | Lost product dispute keeps delivery ended. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-05-PARTIAL-REFUND | PENDING | owner | — | — | Partial membership refund preserves an otherwise eligible paid period. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-05-FULL-REFUND | PENDING | owner | — | — | Full membership refund ends access until a later verified payment. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-05-DISPUTE-OPEN | PENDING | owner | — | — | Open membership dispute pauses access without changing provider collection. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-05-DISPUTE-WON | PENDING | owner | — | — | Won membership dispute restores access only when other eligibility remains. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| BILL-05-DISPUTE-LOST | PENDING | owner | — | — | Lost membership dispute keeps access ended across later refreshes. | Pending owner observation. | pending owner observation | Carried from Phase 2. |
+| PH3-OFFICE-MEMBER-SIGNUP | PENDING | owner | — | — | An entitled member opens the approved Office Hours signup. | Pending owner observation. | pending owner observation | Carried from Phase 3. |
+| PH3-OFFICE-MEMBER-REPLAY | PENDING | owner | — | — | An entitled member opens the approved Office Hours replay. | Pending owner observation. | pending owner observation | Carried from Phase 3. |
+| PH3-SUPPORT-RESPONSE | PENDING | owner | — | — | The public Support action reaches a durable responding channel. | Pending owner observation. | pending owner observation | Carried from Phase 3. |
+| PH3-POLICY-OWNER-APPROVAL | PENDING | owner | — | — | The owner or qualified reviewer approves every current policy page. | Pending owner observation. | pending owner observation | Carried from Phase 3. |
+| PH3-STRIPE-TERMS-LIVE | PENDING | owner | — | — | Hosted Checkout visibly requires canonical Terms acceptance. | Pending owner observation. | pending owner observation | Carried from Phase 3. |
+| PH3-CANONICAL-CONTENT-STATES | PENDING | owner | — | — | Guest, locked member, and entitled member states match the access contract. | Pending owner observation. | pending owner observation | Carried from Phase 3. |
+| PH4-OPS-RECEIVER-LIVE | PENDING | owner | — | — | The production receiver obtains one controlled redacted failure alert. | Pending owner observation. | pending owner observation | Carried from Phase 4. |
+| PH4-CLEANUP-SCHEDULER-LIVE | PENDING | owner | — | — | The production scheduler invokes cleanup and records aggregate truth. | Pending owner observation. | pending owner observation | Carried from Phase 4. |
+| PH4-ADMIN-BILLING-LIVE | PENDING | owner | — | — | Production Admin Billing shows representative receipt and processing states distinctly. | Pending owner observation. | pending owner observation | Carried from Phase 4. |
+| PH5-ENV-READINESS | PENDING | owner | — | — | Production environment names and readiness checks are complete without recording values. | Pending owner observation. | pending owner observation | Inspect in the one coordinated session. |
+| PH5-STAGED-DEPLOYMENT | PENDING | owner | — | — | The exact commit creates one READY production candidate without the canonical alias. | Pending owner observation. | pending owner observation | Retain only the final-eight suffix. |
+| PH5-STAGED-SMOKE | PENDING | owner | — | — | Staged liveness, readiness, headers, and fixed public routes pass. | Pending owner observation. | pending owner observation | No generated target or response body is retained. |
+| PH5-CANONICAL-PROMOTION | PENDING | owner | — | — | The inspected staged candidate becomes current without rebuilding. | Pending owner observation. | pending owner observation | Retain only the final-eight suffix. |
+| PH5-CANONICAL-SMOKE | PENDING | owner | — | — | Canonical guest, customer, Admin, receiver, and scheduler checks pass after promotion. | Pending owner observation. | pending owner observation | Run before accepting traffic or payments. |
+| PH5-ROLLBACK | PENDING | owner | — | — | Instant Rollback restores the exact immediately previous known-good deployment. | Pending owner observation. | pending owner observation | Database history remains forward-only. |
+| PH5-PRIOR-SMOKE | PENDING | owner | — | — | The restored prior deployment passes liveness, readiness, canonical, and schedule checks. | Pending owner observation. | pending owner observation | Stop if the known-good state is not healthy. |
+| PH5-REPROMOTE-SMOKE | PENDING | owner | — | — | Re-promoting the candidate restores normal production state and all final smoke checks pass. | Pending owner observation. | pending owner observation | Release remains closed until this row passes. |
+
+`phase5:uat:ready` must remain nonzero until the three pending automated rows have passed
+locally and all 48 owner/provider rows contain genuine redacted canonical observations.
