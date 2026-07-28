@@ -2,6 +2,19 @@
 
 这份清单用于把 Soji 从本地 demo preview 推到可收款、可登录、可运营的生产环境。
 
+## Phase 4：体验与运营验收
+
+- [x] 九个客户流程、六个 Admin workspace 和五档响应式宽度完成自动化验收
+- [x] 键盘焦点、200% 文本、reduced motion 和 serious/critical axe gate 通过
+- [x] 运营告警使用固定脱敏 envelope，失败不会递归或改变原操作结果
+- [x] 定时私有文件清理使用严格鉴权、汇总响应和可重试 durable receipt
+- [ ] 完成生产 receiver、scheduler、Admin 行以及 Phase 1–3 遗留真实观察
+
+所有仍需登录或 owner 操作的事项只以
+[Phase 4 consolidated owner checkpoint](./phase-4-experience-and-operations-acceptance.md#consolidated-owner-checkpoint)
+为准；不要再分别执行旧阶段的登录清单。Phase 4 证据记录在
+[Phase 4 UAT ledger](../.planning/phases/04-experience-and-operations-acceptance/04-UAT-EVIDENCE.md)。
+
 ## Phase 3：内容与客户政策
 
 - [x] 发布一篇带仓库自有封面的完整旗舰内容
