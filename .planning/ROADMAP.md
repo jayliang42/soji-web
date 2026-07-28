@@ -90,7 +90,7 @@ This milestone converts an extensively implemented and tested brownfield applica
 | 1. Production Identity and Admin | 3/3 | Human UAT gaps carried |  |
 | 2. Billing and Fulfillment UAT | 5/9 | Production/provider UAT gaps carried |  |
 | 2. Billing and Fulfillment UAT | 5/9 | In Progress|  |
-| 3. Launch Content and Customer Policy | 0/TBD | Not started | - |
+| 3. Launch Content and Customer Policy | 1/5 | In Progress|  |
 | 4. Experience and Operations Acceptance | 0/TBD | Not started | - |
 | 5. Production Deployment and Rollback | 0/TBD | Not started | - |
 
