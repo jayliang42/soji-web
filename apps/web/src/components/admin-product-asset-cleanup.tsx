@@ -14,6 +14,35 @@ const reasonLabels: Record<ProductAssetCleanupJob["reason"], string> = {
 
 const cleanupLeaseMs = 120_000;
 
+export const PRODUCT_ASSET_CLEANUP_MESSAGE_ID =
+  "product-asset-cleanup-action-message";
+
+export function getProductAssetCleanupResultMessage({
+  attempted,
+  cleaned,
+  failed,
+  failedReason
+}: {
+  attempted: number;
+  cleaned: number;
+  failed: number;
+  failedReason?: unknown;
+}) {
+  if (failedReason !== undefined) {
+    return "Private file cleanup could not finish. Review the cleanup history, then retry due items.";
+  }
+
+  return attempted === 0
+    ? "No cleanup jobs are due."
+    : `Cleaned ${cleaned} file(s); ${failed} attempt(s) still need attention.`;
+}
+
+function focusCleanupMessage() {
+  window.requestAnimationFrame(() => {
+    document.getElementById(PRODUCT_ASSET_CLEANUP_MESSAGE_ID)?.focus();
+  });
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
     dateStyle: "medium",
@@ -91,14 +120,23 @@ export function AdminProductAssetCleanup({
 
         setItems(result.items);
         setMessage(
-          result.attempted === 0
-            ? "No cleanup jobs are due."
-            : `Cleaned ${result.cleaned} file(s); ${result.failed} attempt(s) still need attention.`
+          getProductAssetCleanupResultMessage({
+            attempted: result.attempted ?? 0,
+            cleaned: result.cleaned ?? 0,
+            failed: result.failed ?? 0
+          })
         );
-      } catch (error) {
+        focusCleanupMessage();
+      } catch {
         setMessage(
-          error instanceof Error ? error.message : "Private file cleanup failed."
+          getProductAssetCleanupResultMessage({
+            attempted: 0,
+            cleaned: 0,
+            failed: 0,
+            failedReason: true
+          })
         );
+        focusCleanupMessage();
       }
     });
   }
@@ -159,7 +197,13 @@ export function AdminProductAssetCleanup({
       )}
 
       {message ? (
-        <p aria-live="polite" className="mt-4 text-sm text-cocoa/75" role="status">
+        <p
+          aria-live="polite"
+          className="mt-4 text-sm text-cocoa/75"
+          id={PRODUCT_ASSET_CLEANUP_MESSAGE_ID}
+          role="status"
+          tabIndex={-1}
+        >
           {message}
         </p>
       ) : null}
