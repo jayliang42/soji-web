@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ProductCheckoutButton } from "@/components/product-checkout-button";
+import { PurchaseDisclosure } from "@/components/purchase-disclosure";
 import { DataEmpty, DataUnavailable } from "@/components/data-state";
 import { SectionShell } from "@/components/section-shell";
 import { getAccountPurchases } from "@/lib/account-purchases";
@@ -150,7 +151,7 @@ export default async function ProductsPage({
                   </li>
                 ))}
               </ul>
-              <div className="mt-auto flex flex-wrap items-center gap-4 pt-8">
+              <div className="mt-auto pt-8">
                 <ProductCheckoutButton
                   alreadyPurchased={purchasedProductIds.has(product.id)}
                   accessPaused={pausedProductIds.has(product.id)}
@@ -159,9 +160,7 @@ export default async function ProductsPage({
                   purchaseStateAvailable={purchaseStateAvailable}
                   productSlug={product.slug}
                 />
-                <span className="text-sm text-cocoa/58">
-                  Secure account delivery
-                </span>
+                <PurchaseDisclosure variant="product" />
               </div>
             </article>
           ))}

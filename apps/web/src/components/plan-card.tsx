@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { MembershipPlan } from "@soji/types";
 import { PlanCheckoutButton } from "@/components/plan-checkout-button";
+import { PurchaseDisclosure } from "@/components/purchase-disclosure";
 import { getEntitlementLabel } from "@/lib/entitlements";
 import { cn } from "@/lib/utils";
 
@@ -128,6 +129,10 @@ export function PlanCard({
             ? "View billing status or manage your subscription from your account."
             : "Billed monthly. Manage or cancel from your account."}
         </p>
+        <PurchaseDisclosure
+          priceLabel={`$${plan.monthlyPrice}`}
+          variant="membership"
+        />
       </div>
     </div>
   );

@@ -6,6 +6,20 @@ import { getSessionSnapshot } from "@/lib/session";
 import "./globals.css";
 
 const siteUrl = getSiteUrl() ?? "http://localhost:3000";
+const exploreLinks = [
+  ["Library", "/library"],
+  ["Membership", "/pricing"],
+  ["Shop", "/products"],
+  ["Office Hours", "/office-hours"],
+  ["Account", "/account"]
+] as const;
+const supportPolicyLinks = [
+  ["Support", "/support"],
+  ["Privacy", "/privacy"],
+  ["Terms", "/terms"],
+  ["Refund policy", "/refund-policy"],
+  ["Financial disclaimer", "/financial-disclaimer"]
+] as const;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -62,26 +76,54 @@ export default async function RootLayout({
         <div id="main-content" tabIndex={-1}>
           {children}
         </div>
-        <footer className="border-t border-dune bg-shell px-6 py-12">
-          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-5 text-sm text-cocoa/70 md:flex-row md:items-center">
-            <p className="font-semibold">
-              Soji presents Well Endowed, an editorial money membership with public previews and paid depth.
-            </p>
-            <div className="flex gap-6 font-semibold">
+        <footer className="border-t border-dune bg-shell px-6 py-12 md:py-16">
+          <div className="mx-auto grid max-w-6xl gap-6 text-sm text-cocoa/70 sm:grid-cols-2 md:grid-cols-[1.5fr_0.75fr_1fr] md:gap-10">
+            <div className="sm:col-span-2 md:col-span-1">
               <Link
-                href={
-                  snapshot.user
-                    ? "/account?view=subscriptions"
-                    : "/pricing"
-                }
-                className="hover:text-cocoa transition-colors"
+                href="/"
+                className="inline-flex min-h-11 items-center text-xl font-black text-cocoa"
               >
-                {snapshot.user ? "Subscriptions" : "Join"}
+                Soji
               </Link>
-              <Link href="/products" className="hover:text-cocoa transition-colors">Shop</Link>
-              <Link href="/office-hours" className="hover:text-cocoa transition-colors">Office hours</Link>
-              <Link href="/library" className="hover:text-cocoa transition-colors">Preview</Link>
+              <p className="mt-2 max-w-sm font-medium leading-6">
+                Well Endowed is an editorial money membership for calmer,
+                better-informed decisions.
+              </p>
             </div>
+            <nav aria-label="Explore">
+              <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
+                Explore
+              </h2>
+              <ul className="mt-2 grid font-semibold">
+                {exploreLinks.map(([label, href]) => (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      className="inline-flex min-h-11 items-center transition-colors hover:text-clay"
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <nav aria-label="Support and policies">
+              <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
+                Support &amp; policies
+              </h2>
+              <ul className="mt-2 grid font-semibold">
+                {supportPolicyLinks.map(([label, href]) => (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      className="inline-flex min-h-11 items-center transition-colors hover:text-clay"
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
         </footer>
       </body>

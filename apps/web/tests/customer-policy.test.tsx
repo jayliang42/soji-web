@@ -23,6 +23,9 @@ vi.mock("@/lib/session", () => ({
     user: null
   }))
 }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/"
+}));
 
 const readyConfiguration = {
   policiesApproved: "true",
