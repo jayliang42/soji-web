@@ -114,14 +114,17 @@ export type Database = {
       content_items: {
         Row: {
           body_markdown: string
+          cover_image_alt: string
           cover_image_url: string | null
           created_at: string
           created_by: string | null
           id: string
+          preview_markdown: string
           published_at: string | null
           revision: number
           slug: string
           summary: string
+          tags: string[]
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at: string
@@ -129,14 +132,17 @@ export type Database = {
         }
         Insert: {
           body_markdown: string
+          cover_image_alt?: string
           cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          preview_markdown?: string
           published_at?: string | null
           revision?: number
           slug: string
           summary: string
+          tags?: string[]
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at?: string
@@ -144,14 +150,17 @@ export type Database = {
         }
         Update: {
           body_markdown?: string
+          cover_image_alt?: string
           cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          preview_markdown?: string
           published_at?: string | null
           revision?: number
           slug?: string
           summary?: string
+          tags?: string[]
           title?: string
           type?: Database["public"]["Enums"]["content_type"]
           updated_at?: string
@@ -1113,12 +1122,15 @@ export type Database = {
         Args: {
           p_body_markdown: string
           p_content_id: string
+          p_cover_image_alt: string
           p_cover_image_url: string
           p_expected_revision?: number
+          p_preview_markdown: string
           p_published: boolean
           p_required_entitlements: string[]
           p_slug: string
           p_summary: string
+          p_tags: string[]
           p_title: string
           p_type: Database["public"]["Enums"]["content_type"]
           p_visibility: Database["public"]["Enums"]["visibility"]
