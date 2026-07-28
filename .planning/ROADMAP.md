@@ -74,7 +74,7 @@ This milestone converts an extensively implemented and tested brownfield applica
 #### Wave 1
 
 - [x] 04-01: Lock customer/Admin workflow, responsive, accessibility, and focus acceptance.
-- [ ] 04-02: Harden the versioned, redacted operations-alert contract and delivery boundary.
+- [x] 04-02: Harden the versioned, redacted operations-alert contract and delivery boundary.
 - [ ] 04-03: Prove exact scheduler authentication and lease-based cleanup failure semantics.
 
 #### Wave 2 *(blocked on Wave 1 completion)*
@@ -101,7 +101,7 @@ This milestone converts an extensively implemented and tested brownfield applica
 | 2. Billing and Fulfillment UAT | 5/9 | Production/provider UAT gaps carried |  |
 | 2. Billing and Fulfillment UAT | 5/9 | In Progress|  |
 | 3. Launch Content and Customer Policy | 5/5 | Complete   | 2026-07-28 |
-| 4. Experience and Operations Acceptance | 1/4 | In Progress|  |
+| 4. Experience and Operations Acceptance | 2/4 | In Progress|  |
 | 5. Production Deployment and Rollback | 0/TBD | Not started | - |
 
 ## Coverage
