@@ -12,6 +12,10 @@ vi.mock("@/lib/product-asset-cleanup", () => ({
 }));
 
 import { POST } from "@/app/api/admin/product-assets/cleanup/route";
+import {
+  getProductAssetCleanupResultMessage,
+  PRODUCT_ASSET_CLEANUP_MESSAGE_ID
+} from "@/components/admin-product-asset-cleanup";
 
 function request(body: unknown) {
   return new Request("http://localhost:3000/api/admin/product-assets/cleanup", {
@@ -88,5 +92,49 @@ describe("admin product asset cleanup route", () => {
       ok: false,
       reason: "product_asset_cleanup_claim_failed"
     });
+  });
+
+  it("projects cleanup outcomes to exact safe operator copy", () => {
+    expect(
+      getProductAssetCleanupResultMessage({
+        attempted: 0,
+        cleaned: 0,
+        failed: 0
+      })
+    ).toBe("No cleanup jobs are due.");
+    expect(
+      getProductAssetCleanupResultMessage({
+        attempted: 4,
+        cleaned: 3,
+        failed: 1
+      })
+    ).toBe("Cleaned 3 file(s); 1 attempt(s) still need attention.");
+    expect(PRODUCT_ASSET_CLEANUP_MESSAGE_ID).toBe(
+      "product-asset-cleanup-action-message"
+    );
+  });
+
+  it("never turns a raw cleanup failure reason into operator copy", () => {
+    const rawReason =
+      "bucket/private/customer@example.com?token=service-role-secret";
+
+    expect(
+      getProductAssetCleanupResultMessage({
+        attempted: 0,
+        cleaned: 0,
+        failed: 0,
+        failedReason: rawReason
+      })
+    ).toBe(
+      "Private file cleanup could not finish. Review the cleanup history, then retry due items."
+    );
+    expect(
+      getProductAssetCleanupResultMessage({
+        attempted: 0,
+        cleaned: 0,
+        failed: 0,
+        failedReason: rawReason
+      })
+    ).not.toContain(rawReason);
   });
 });
