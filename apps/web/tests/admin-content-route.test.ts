@@ -38,6 +38,13 @@ const validDeletePayload = {
   expectedRevision: 3,
   id: contentId
 };
+const launchMetadata = {
+  coverImage: "/covers/atomic-content-test.webp",
+  coverImageAlt: "A paper decision map beside a pencil and warm ceramic cup.",
+  preview:
+    "This practical opening helps readers name one decision before the member-only guide continues.",
+  tags: ["Decision making", "Money clarity"]
+};
 
 function request(body: unknown, method: "DELETE" | "PATCH" | "POST") {
   return new NextRequest("http://localhost:3000/api/admin/content", {
@@ -93,19 +100,31 @@ describe("admin content writes", () => {
   });
 
   it("creates content and access rules through one transaction RPC", async () => {
-    const response = await POST(request(validPayload, "POST"));
+    const response = await POST(
+      request({ ...validPayload, ...launchMetadata }, "POST")
+    );
 
     expect(response.status).toBe(200);
     expect(routeMocks.rpc).toHaveBeenCalledWith(
       "upsert_content_item",
       expect.objectContaining({
         p_content_id: null,
+        p_cover_image_alt: launchMetadata.coverImageAlt,
         p_expected_revision: null,
         p_published: true,
+        p_preview_markdown: launchMetadata.preview,
         p_required_entitlements: ["content.basic"],
-        p_slug: validPayload.slug
+        p_slug: validPayload.slug,
+        p_tags: launchMetadata.tags
       })
     );
+  });
+
+  it("rejects a restricted launch publication without preview, cover metadata, and tags", async () => {
+    const response = await POST(request(validPayload, "POST"));
+
+    expect(response.status).toBe(400);
+    expect(routeMocks.rpc).not.toHaveBeenCalled();
   });
 
   it("does not expose database errors from an atomic update", async () => {

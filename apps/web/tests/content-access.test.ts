@@ -8,7 +8,9 @@ import {
 function contentItem(overrides: Partial<ContentItem> = {}): ContentItem {
   return {
     body: "PRIVATE BODY THAT MUST NOT LEAK",
+    coverImageAlt: "A pencil beside a handwritten decision map.",
     id: "content-1",
+    preview: "A useful public opening that is distinct from the summary.",
     publishedAt: "2026-07-13T00:00:00.000Z",
     requiredEntitlements: ["content.basic"],
     slug: "member-guide",
@@ -45,7 +47,7 @@ describe("content access policy", () => {
         isAuthenticated: true
       })
     ).toBe("unavailable");
-    expect(getVisibleContentBody(item, "unavailable")).toBe(item.summary);
+    expect(getVisibleContentBody(item, "unavailable")).toBe(item.preview);
     expect(getVisibleContentBody(item, "unavailable")).not.toContain("PRIVATE BODY");
   });
 
@@ -93,7 +95,8 @@ describe("content access policy", () => {
 
   it("never exposes private body text in preview or locked modes", () => {
     const item = contentItem();
-    expect(getVisibleContentBody(item, "preview")).toBe(item.summary);
+    expect(getVisibleContentBody(item, "preview")).toBe(item.preview);
+    expect(getVisibleContentBody(item, "preview")).not.toBe(item.summary);
     expect(getVisibleContentBody(item, "preview")).not.toContain("PRIVATE BODY");
     expect(getVisibleContentBody(item, "locked")).toBeNull();
     expect(getVisibleContentBody(item, "full")).toBe(item.body);

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(269);
+select plan(277);
 
 insert into auth.users (id, email)
 values
@@ -380,7 +380,7 @@ select ok(
 select ok(
   not has_function_privilege(
     'anon',
-    'public.upsert_content_item(uuid,text,text,text,content_type,visibility,text,text,boolean,text[],bigint)',
+    'public.upsert_content_item(uuid,text,text,text,content_type,visibility,text,text,text,text,text[],boolean,text[],bigint)',
     'execute'
   ),
   'anonymous clients cannot execute atomic content writes'
@@ -388,10 +388,35 @@ select ok(
 select ok(
   has_function_privilege(
     'authenticated',
-    'public.upsert_content_item(uuid,text,text,text,content_type,visibility,text,text,boolean,text[],bigint)',
+    'public.upsert_content_item(uuid,text,text,text,content_type,visibility,text,text,text,text,text[],boolean,text[],bigint)',
     'execute'
   ),
   'authenticated clients can reach the publisher-guarded content RPC'
+);
+select has_column(
+  'public',
+  'content_items',
+  'preview_markdown',
+  'content items persist an explicit public preview'
+);
+select has_column(
+  'public',
+  'content_items',
+  'cover_image_alt',
+  'content items persist meaningful cover alternative text'
+);
+select has_column(
+  'public',
+  'content_items',
+  'tags',
+  'content items persist reader-facing tags'
+);
+select col_type_is(
+  'public',
+  'content_items',
+  'tags',
+  'text[]',
+  'content tags use a normalized text array'
 );
 select ok(
   not has_function_privilege(
@@ -2124,7 +2149,10 @@ select throws_like(
       'article',
       'members_only',
       'A sufficiently long body that must never be persisted by a member.',
+      'A useful public preview that must never authorize this member write.',
       null,
+      '',
+      array['Member test'],
       true,
       array['content.basic']
     )
@@ -2663,7 +2691,10 @@ select lives_ok(
       'article',
       'members_only',
       'This body is long enough to represent a real protected content item.',
-      null,
+      'This explicit preview gives visitors useful context without the private body.',
+      '/covers/database-atomic-content.webp',
+      'A paper plan used to test atomic content publication.',
+      array['Decision making', 'Database test'],
       true,
       array['content.basic']
     )
@@ -2683,6 +2714,32 @@ select is(
 );
 select is(
   (
+    select preview_markdown from public.content_items
+    where slug = 'database-atomic-content'
+  ),
+  'This explicit preview gives visitors useful context without the private body.',
+  'the atomic content create persists its explicit preview'
+);
+select is(
+  (
+    select cover_image_alt from public.content_items
+    where slug = 'database-atomic-content'
+  ),
+  'A paper plan used to test atomic content publication.',
+  'the atomic content create persists its cover alternative text'
+);
+select results_eq(
+  $$
+    select unnest(tags)
+    from public.content_items
+    where slug = 'database-atomic-content'
+    order by 1
+  $$,
+  array['Database test', 'Decision making'],
+  'the atomic content create persists normalized tags'
+);
+select is(
+  (
     select revision from public.content_items
     where slug = 'database-atomic-content'
   ),
@@ -2699,7 +2756,10 @@ select lives_ok(
       'article',
       'members_only',
       'This body is long enough to represent a real protected content item.',
-      null,
+      'An updated explicit preview that remains separate from the private body.',
+      '/covers/database-atomic-content.webp',
+      'A revised paper plan used to test atomic content publication.',
+      array['Decision making', 'Database test'],
       true,
       array['content.basic'],
       1
@@ -2732,7 +2792,10 @@ select throws_like(
       'article',
       'members_only',
       'This body is long enough to represent a real protected content item.',
-      null,
+      'A stale preview that must never replace the saved launch copy.',
+      '/covers/database-atomic-content.webp',
+      'A stale cover description that must not be saved.',
+      array['Stale metadata'],
       true,
       array['content.basic'],
       1
@@ -2759,7 +2822,10 @@ select throws_like(
       'article',
       'members_only',
       'This body is long enough to represent a real protected content item.',
-      null,
+      'This preview must roll back with the rejected access rule.',
+      '/covers/database-atomic-content.webp',
+      'A cover description that must roll back.',
+      array['Rollback test'],
       true,
       array['missing.entitlement'],
       2
@@ -2775,6 +2841,14 @@ select is(
   ),
   'Database concurrent edit',
   'a rejected access-rule update rolls back the content fields'
+);
+select is(
+  (
+    select preview_markdown from public.content_items
+    where slug = 'database-atomic-content'
+  ),
+  'An updated explicit preview that remains separate from the private body.',
+  'a rejected access-rule update rolls back launch metadata'
 );
 select is(
   (
