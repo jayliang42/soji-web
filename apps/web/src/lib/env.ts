@@ -129,10 +129,29 @@ export function isValidOpsAlertWebhookUrl(
       url.protocol === "https:" ||
       (nodeEnv !== "production" && url.protocol === "http:");
 
-    return validProtocol && !url.username && !url.password && !url.hash;
+    return (
+      validProtocol &&
+      !url.username &&
+      !url.password &&
+      !url.search &&
+      !url.hash
+    );
   } catch {
     return false;
   }
+}
+
+export function getOpsAlertConfigState(
+  configuredValue = env.OPS_ALERT_WEBHOOK_URL,
+  nodeEnv = process.env.NODE_ENV
+) {
+  if (!configuredValue?.trim()) {
+    return "missing" as const;
+  }
+
+  return isValidOpsAlertWebhookUrl(configuredValue, nodeEnv)
+    ? ("ready" as const)
+    : ("invalid" as const);
 }
 
 export function getOpsAlertWebhookUrl() {
@@ -148,7 +167,7 @@ export function hasOpsAlertConfig() {
 export function hasProductionOpsAlertConfig(
   configuredValue = env.OPS_ALERT_WEBHOOK_URL
 ) {
-  return isValidOpsAlertWebhookUrl(configuredValue, "production");
+  return getOpsAlertConfigState(configuredValue, "production") === "ready";
 }
 
 export function isValidCronSecret(configuredValue: string | undefined) {

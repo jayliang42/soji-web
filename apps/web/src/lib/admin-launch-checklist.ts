@@ -20,7 +20,7 @@ export interface LaunchChecklistItem {
 export interface LaunchChecklistConfig {
   cronSecret: boolean;
   demoModeDisabled: boolean;
-  operationsAlerts: boolean;
+  operationsAlerts: "invalid" | "missing" | "ready";
   productionSiteUrl: boolean;
   stripeCheckout: boolean;
   stripeWebhook: boolean;
@@ -228,11 +228,19 @@ export function buildLaunchChecklist({
       )
     },
     {
-      detail: config.operationsAlerts
-        ? "A valid alert webhook is configured. Verify delivery from the deployed environment before launch."
-        : "Set a valid HTTPS OPS_ALERT_WEBHOOK_URL to forward structured payment failures.",
+      detail:
+        config.operationsAlerts === "ready"
+          ? "A valid alert webhook is configured. Verify delivery from the deployed environment before launch."
+          : config.operationsAlerts === "invalid"
+            ? "Replace OPS_ALERT_WEBHOOK_URL with a credential-free HTTPS receiver URL."
+            : "Set OPS_ALERT_WEBHOOK_URL to the HTTPS operations receiver.",
       label: "Operations failure alerts",
-      status: config.operationsAlerts ? "ready" : "manual"
+      status:
+        config.operationsAlerts === "ready"
+          ? "ready"
+          : config.operationsAlerts === "invalid"
+            ? "invalid"
+            : "needs_owner_input"
     },
     {
       detail: "Set a 32+ character CRON_SECRET so scheduled private-file cleanup can authenticate.",

@@ -18,7 +18,7 @@ import { getBillingEventSnapshot } from "@/lib/billing";
 import { getEditorialContentSnapshot } from "@/lib/content";
 import {
   hasCronSecretConfig,
-  hasProductionOpsAlertConfig,
+  getOpsAlertConfigState,
   hasProductionSiteUrlConfig,
   hasStripeConfig,
   hasStripeWebhookConfig,
@@ -208,7 +208,7 @@ export default async function AdminPage({
     config: {
       cronSecret: hasCronSecretConfig(),
       demoModeDisabled: !isExplicitDemoModeEnabled(),
-      operationsAlerts: hasProductionOpsAlertConfig(),
+      operationsAlerts: getOpsAlertConfigState(undefined, "production"),
       productionSiteUrl: hasProductionSiteUrlConfig(),
       stripeCheckout: hasStripeConfig(),
       stripeWebhook: hasStripeWebhookConfig(),
