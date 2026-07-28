@@ -9,7 +9,7 @@ import type { OperationalReadiness } from "@/lib/readiness";
 const configured: LaunchChecklistConfig = {
   cronSecret: true,
   demoModeDisabled: true,
-  operationsAlerts: true,
+  operationsAlerts: "ready",
   productionSiteUrl: true,
   stripeCheckout: true,
   stripeWebhook: true,
@@ -159,5 +159,33 @@ describe("admin launch checklist", () => {
     expect(itemStatus(items, "Stripe Terms acceptance")?.status).toBe(
       "invalid"
     );
+  });
+
+  it("distinguishes missing and invalid operations receivers without exposing a destination", () => {
+    const missing = build({
+      config: { ...configured, operationsAlerts: "missing" }
+    });
+    const invalid = build({
+      config: { ...configured, operationsAlerts: "invalid" }
+    });
+
+    expect(itemStatus(missing, "Operations failure alerts")).toEqual({
+      detail:
+        "Set OPS_ALERT_WEBHOOK_URL to the HTTPS operations receiver.",
+      label: "Operations failure alerts",
+      status: "needs_owner_input"
+    });
+    expect(itemStatus(invalid, "Operations failure alerts")).toEqual({
+      detail:
+        "Replace OPS_ALERT_WEBHOOK_URL with a credential-free HTTPS receiver URL.",
+      label: "Operations failure alerts",
+      status: "invalid"
+    });
+    expect(
+      JSON.stringify([
+        itemStatus(missing, "Operations failure alerts"),
+        itemStatus(invalid, "Operations failure alerts")
+      ])
+    ).not.toContain("alerts.example");
   });
 });

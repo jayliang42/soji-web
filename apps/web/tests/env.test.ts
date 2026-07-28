@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getClientSiteUrl,
+  getOpsAlertConfigState,
   getSiteUrl,
   hasProductionOpsAlertConfig,
   hasProductionSiteUrlConfig,
@@ -93,13 +94,19 @@ describe("operations alert webhook policy", () => {
     ).toBe(true);
   });
 
-  it("accepts provider webhook paths and query tokens", () => {
+  it("accepts provider webhook paths but rejects URL credentials", () => {
+    expect(
+      isValidOpsAlertWebhookUrl(
+        "https://alerts.example/hooks/soji",
+        "production"
+      )
+    ).toBe(true);
     expect(
       isValidOpsAlertWebhookUrl(
         "https://alerts.example/hooks/soji?token=managed-secret",
         "production"
       )
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("never treats a local HTTP receiver as production alert configuration", () => {
@@ -125,6 +132,16 @@ describe("operations alert webhook policy", () => {
         "production"
       )
     ).toBe(false);
+  });
+
+  it("distinguishes missing, invalid, and ready alert configuration", () => {
+    expect(getOpsAlertConfigState(undefined, "production")).toBe("missing");
+    expect(
+      getOpsAlertConfigState("http://alerts.example/hooks/soji", "production")
+    ).toBe("invalid");
+    expect(
+      getOpsAlertConfigState("https://alerts.example/hooks/soji", "production")
+    ).toBe("ready");
   });
 });
 
