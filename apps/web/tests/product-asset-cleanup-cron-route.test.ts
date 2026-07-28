@@ -118,6 +118,8 @@ describe("scheduled product asset cleanup route", () => {
   it("returns 500 when scheduled cleanup cannot complete safely", async () => {
     cronMocks.processDueProductAssetCleanupJobs.mockResolvedValue({
       attempted: 0,
+      cleaned: 0,
+      failed: 0,
       ok: false,
       reason: "product_asset_cleanup_claim_failed"
     });

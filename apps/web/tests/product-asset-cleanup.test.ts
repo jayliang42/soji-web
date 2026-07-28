@@ -110,6 +110,8 @@ describe("product asset cleanup executor", () => {
 
     expect(result).toEqual({
       attempted: 0,
+      cleaned: 0,
+      failed: 0,
       ok: false,
       reason: "product_asset_cleanup_claim_failed"
     });
@@ -208,6 +210,8 @@ describe("product asset cleanup executor", () => {
 
     expect(result).toEqual({
       attempted: 1,
+      cleaned: 1,
+      failed: 0,
       ok: false,
       reason: "product_asset_cleanup_refresh_failed"
     });

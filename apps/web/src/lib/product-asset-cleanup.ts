@@ -86,8 +86,11 @@ export type ProductAssetCleanupRunResult =
     }
   | {
       attempted: number;
+      cleaned: number;
+      failed: number;
       ok: false;
       reason:
+        | "product_asset_cleanup_attempt_record_failed"
         | "product_asset_cleanup_claim_failed"
         | "product_asset_cleanup_refresh_failed";
     };
@@ -131,7 +134,10 @@ async function processClaimedCleanupJob({
     );
   }
 
-  return { cleaned: !storageError && !receiptError && Boolean(receipt?.length) };
+  return {
+    cleaned: !storageError && !receiptError && Boolean(receipt?.length),
+    durable: !receiptError && Boolean(receipt?.length)
+  };
 }
 
 async function processClaimedJobs({
@@ -145,7 +151,7 @@ async function processClaimedJobs({
   jobs: ClaimedCleanupJob[];
   supabase: AppSupabaseClient;
 }) {
-  const results = Array<{ cleaned: boolean }>(jobs.length);
+  const results = Array<{ cleaned: boolean; durable: boolean }>(jobs.length);
   let nextIndex = 0;
 
   async function worker() {
@@ -223,12 +229,26 @@ export async function processDueProductAssetCleanupJobs({
     await reportOperationalError(`${eventPrefix}.claim_failed`, claimError, { actor });
     return {
       attempted: 0,
+      cleaned: 0,
+      failed: 0,
       ok: false,
       reason: "product_asset_cleanup_claim_failed"
     };
   }
 
   const results = await processClaimedJobs({ actor, eventPrefix, jobs, supabase });
+  const cleaned = results.filter((result) => result.cleaned).length;
+  const failed = jobs.length - cleaned;
+
+  if (results.some((result) => !result.durable)) {
+    return {
+      attempted: jobs.length,
+      cleaned,
+      failed,
+      ok: false,
+      reason: "product_asset_cleanup_attempt_record_failed"
+    };
+  }
 
   const snapshot = await queryProductAssetCleanupJobs(supabase);
   if (snapshot.error) {
@@ -239,16 +259,17 @@ export async function processDueProductAssetCleanupJobs({
     );
     return {
       attempted: jobs.length,
+      cleaned,
+      failed,
       ok: false,
       reason: "product_asset_cleanup_refresh_failed"
     };
   }
 
-  const cleaned = results.filter((result) => result.cleaned).length;
   return {
     attempted: jobs.length,
     cleaned,
-    failed: jobs.length - cleaned,
+    failed,
     items: snapshot.items,
     ok: true
   };

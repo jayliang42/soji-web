@@ -41,8 +41,8 @@ export async function GET(request: Request) {
       }
     : {
         claimed: result.attempted,
-        cleaned: "cleaned" in result ? result.cleaned : 0,
-        failed: "failed" in result ? result.failed : result.attempted,
+        cleaned: result.cleaned,
+        failed: result.failed,
         ok: false as const,
         reason: result.reason,
         status: "failed" as const
