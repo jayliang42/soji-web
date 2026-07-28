@@ -6,10 +6,12 @@ const checkoutMocks = vi.hoisted(() => ({
   consumeCheckoutRateLimit: vi.fn(),
   createSupabaseServerClient: vi.fn(),
   getBillingDeliveryReadiness: vi.fn(),
+  getCustomerPolicyReadiness: vi.fn(),
   getExistingStripeCustomerId: vi.fn(),
   getSiteUrl: vi.fn(),
   getStripeClient: vi.fn(),
   reportOperationalError: vi.fn(),
+  claimProductCheckout: vi.fn(),
   claimSubscriptionCheckout: vi.fn()
 }));
 
@@ -25,6 +27,9 @@ vi.mock("@/lib/billing-readiness", () => ({
 vi.mock("@/lib/rate-limit", () => ({
   consumeCheckoutRateLimit: checkoutMocks.consumeCheckoutRateLimit,
   getRetryAfterSeconds: vi.fn(() => 300)
+}));
+vi.mock("@/lib/customer-policy", () => ({
+  getCustomerPolicyReadiness: checkoutMocks.getCustomerPolicyReadiness
 }));
 const requestId = "00000000-0000-4000-8000-000000000501";
 
@@ -45,6 +50,9 @@ vi.mock("@/lib/observability", () => ({
 }));
 vi.mock("@/lib/subscription-checkout", () => ({
   claimSubscriptionCheckout: checkoutMocks.claimSubscriptionCheckout
+}));
+vi.mock("@/lib/product-checkout", () => ({
+  claimProductCheckout: checkoutMocks.claimProductCheckout
 }));
 
 import { POST as createProductCheckout } from "@/app/api/checkout/product/route";
@@ -105,12 +113,38 @@ function subscriptionStripe() {
   };
 }
 
+function productSupabase() {
+  const maybeSingle = vi.fn().mockResolvedValue({
+    data: {
+      entitlement_id: "product.wealth_guide",
+      id: "product-1",
+      is_active: true,
+      slug: "wealth-guide",
+      stripe_price_id: "price_product",
+      title: "Wealth guide"
+    },
+    error: null
+  });
+  const eq = vi.fn(() => ({ maybeSingle }));
+  const select = vi.fn(() => ({ eq }));
+
+  return {
+    ...authenticatedSupabase(),
+    from: vi.fn(() => ({ select }))
+  };
+}
+
 describe("checkout route validation", () => {
   beforeEach(() => {
     for (const mock of Object.values(checkoutMocks)) mock.mockReset();
     checkoutMocks.getBillingDeliveryReadiness.mockResolvedValue({
       stripeWebhookConfigured: true,
       supabaseServiceRoleOperational: true
+    });
+    checkoutMocks.getCustomerPolicyReadiness.mockReturnValue({
+      ready: true,
+      reasons: [],
+      supportUrl: "https://support.soji.co/help"
     });
     checkoutMocks.getSiteUrl.mockReturnValue("http://localhost:3000");
     checkoutMocks.getExistingStripeCustomerId.mockResolvedValue(null);
@@ -119,6 +153,11 @@ describe("checkout route validation", () => {
       ok: true
     });
     checkoutMocks.claimSubscriptionCheckout.mockResolvedValue({
+      expiresAt: "2026-07-14T12:35:00.000Z",
+      ok: true,
+      outcome: "claimed"
+    });
+    checkoutMocks.claimProductCheckout.mockResolvedValue({
       expiresAt: "2026-07-14T12:35:00.000Z",
       ok: true,
       outcome: "claimed"
@@ -156,7 +195,8 @@ describe("checkout route validation", () => {
     ["cancelUrl", "https://attacker.example/cancel"],
     ["userId", "00000000-0000-4000-8000-000000000999"],
     ["customerId", "cus_attacker"],
-    ["metadata", { role: "admin" }]
+    ["metadata", { role: "admin" }],
+    ["termsAccepted", true]
   ])(
     "rejects forged subscription %s authority before provider work",
     async (field, value) => {
@@ -211,7 +251,14 @@ describe("checkout route validation", () => {
         allow_promotion_codes: true,
         cancel_url: "http://localhost:3000/pricing?checkout=cancelled",
         client_reference_id: "00000000-0000-4000-8000-000000000101",
+        consent_collection: { terms_of_service: "required" },
         customer: "cus_newest_bound",
+        custom_text: {
+          submit: {
+            message:
+              "By subscribing, you agree to the Soji Terms. Your membership renews monthly until canceled."
+          }
+        },
         expires_at: 1_784_032_500,
         line_items: [{ price: "price_server_tier_2", quantity: 1 }],
         metadata: {
@@ -236,6 +283,102 @@ describe("checkout route validation", () => {
       }
     );
   });
+
+  it("requires hosted Terms consent for one-time product Checkout", async () => {
+    const createSession = vi
+      .fn()
+      .mockResolvedValue({ url: "https://checkout.stripe.test/product" });
+    checkoutMocks.getStripeClient.mockReturnValue({
+      checkout: { sessions: { create: createSession } }
+    });
+    checkoutMocks.createSupabaseServerClient.mockResolvedValue(
+      productSupabase()
+    );
+
+    const response = await createProductCheckout(
+      request(
+        "/api/checkout/product",
+        JSON.stringify({ productSlug: "wealth-guide", requestId })
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(createSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        consent_collection: { terms_of_service: "required" },
+        custom_text: {
+          submit: {
+            message:
+              "By purchasing, you agree to the Soji Terms and acknowledge the digital-product refund policy."
+          }
+        },
+        mode: "payment"
+      }),
+      expect.objectContaining({
+        idempotencyKey: expect.stringContaining(requestId)
+      })
+    );
+  });
+
+  it.each([
+    [
+      "product",
+      createProductCheckout,
+      "/api/checkout/product",
+      { productSlug: "wealth-guide", requestId }
+    ],
+    [
+      "subscription",
+      createSubscriptionCheckout,
+      "/api/checkout/subscription",
+      { planId: "tier_2", requestId }
+    ]
+  ])(
+    "blocks %s Checkout with a stable policy result before provider work",
+    async (_mode, handler, path, body) => {
+      checkoutMocks.getCustomerPolicyReadiness.mockReturnValue({
+        ready: false,
+        reasons: ["policies_not_approved"],
+        supportUrl: "https://support.soji.co/help"
+      });
+
+      const response = await handler(request(path, JSON.stringify(body)));
+
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({
+        error: "customer_policy_not_ready"
+      });
+      expect(checkoutMocks.getStripeClient).not.toHaveBeenCalled();
+      expect(checkoutMocks.createSupabaseServerClient).not.toHaveBeenCalled();
+      expect(checkoutMocks.consumeCheckoutRateLimit).not.toHaveBeenCalled();
+      expect(checkoutMocks.claimProductCheckout).not.toHaveBeenCalled();
+      expect(checkoutMocks.claimSubscriptionCheckout).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    [
+      "product",
+      createProductCheckout,
+      "/api/checkout/product",
+      { productSlug: "wealth-guide", requestId, termsAccepted: true }
+    ],
+    [
+      "subscription",
+      createSubscriptionCheckout,
+      "/api/checkout/subscription",
+      { planId: "tier_2", requestId, termsAccepted: true }
+    ]
+  ])(
+    "rejects a client-provided consent override for %s Checkout",
+    async (_mode, handler, path, body) => {
+      const response = await handler(request(path, JSON.stringify(body)));
+
+      expect(response.status).toBe(400);
+      expect(checkoutMocks.getCustomerPolicyReadiness).not.toHaveBeenCalled();
+      expect(checkoutMocks.getStripeClient).not.toHaveBeenCalled();
+    }
+  );
 
   it("creates neither a Customer nor a Session when Customer lookup fails", async () => {
     const { createCustomer, createSession, stripe } = subscriptionStripe();
