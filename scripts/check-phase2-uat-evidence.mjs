@@ -160,7 +160,7 @@ const trackedSecretRules = [
   {
     name: "assigned server secret",
     pattern:
-      /\b(?:SUPABASE_SERVICE_ROLE_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|CRON_SECRET|OPS_ALERT_WEBHOOK_URL)\s*=\s*[^\s#]{8,}/i
+      /\b(?:SUPABASE_SERVICE_ROLE_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|CRON_SECRET|OPS_ALERT_WEBHOOK_URL)[ \t]*=[ \t]*[^\s#]{8,}/i
   },
   {
     name: "private key",

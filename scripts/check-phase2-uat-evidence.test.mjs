@@ -818,7 +818,10 @@ function createReleaseRepository({ dirty = false, secret = false } = {}) {
   const directory = mkdtempSync(path.join(tmpdir(), "soji-phase2-release-"));
   const files = new Map([
     [".vercelignore", ".env\n.vercel\n"],
-    ["apps/web/.env.example", "STRIPE_SECRET_KEY=\n"],
+    [
+      "apps/web/.env.example",
+      "SUPABASE_SERVICE_ROLE_KEY=\nCRON_SECRET=\nSTRIPE_SECRET_KEY=\nSTRIPE_WEBHOOK_SECRET=\nOPS_ALERT_WEBHOOK_URL=\n"
+    ],
     ["apps/web/next.config.ts", 'export default { output: "standalone" };\n'],
     ["apps/web/package.json", '{"name":"@soji/web","scripts":{"build":"next build"}}\n'],
     ["apps/web/vercel.json", '{"framework":"nextjs"}\n'],
