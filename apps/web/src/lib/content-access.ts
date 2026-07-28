@@ -57,7 +57,7 @@ export function getVisibleContentBody(
   }
 
   if (accessMode === "preview" || accessMode === "unavailable") {
-    return item.summary;
+    return item.preview;
   }
 
   return null;

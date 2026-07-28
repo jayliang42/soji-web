@@ -284,7 +284,10 @@ create table if not exists content_items (
   type content_type not null,
   visibility visibility not null default 'members_only',
   body_markdown text not null,
+  preview_markdown text not null default '',
   cover_image_url text,
+  cover_image_alt text not null default '',
+  tags text[] not null default '{}'::text[],
   published_at timestamptz,
   created_by uuid references profiles (id),
   created_at timestamptz not null default now(),
@@ -298,6 +301,13 @@ create table if not exists content_access_rules (
   entitlement_id text not null references entitlements (id) on delete cascade,
   primary key (content_id, entitlement_id)
 );
+
+alter table content_items
+add column if not exists preview_markdown text not null default '';
+alter table content_items
+add column if not exists cover_image_alt text not null default '';
+alter table content_items
+add column if not exists tags text[] not null default '{}'::text[];
 
 create table if not exists products (
   id uuid primary key default gen_random_uuid(),
@@ -1222,6 +1232,14 @@ $$;
 drop function if exists public.upsert_content_item(
   uuid, text, text, text, content_type, visibility, text, text, boolean, text[]
 );
+drop function if exists public.upsert_content_item(
+  uuid, text, text, text, content_type, visibility,
+  text, text, boolean, text[], bigint
+);
+drop function if exists public.upsert_content_item(
+  uuid, text, text, text, content_type, visibility,
+  text, text, text, text, text[], boolean, text[], bigint
+);
 create or replace function public.upsert_content_item(
   p_content_id uuid,
   p_slug text,
@@ -1230,7 +1248,10 @@ create or replace function public.upsert_content_item(
   p_type content_type,
   p_visibility visibility,
   p_body_markdown text,
+  p_preview_markdown text,
   p_cover_image_url text,
+  p_cover_image_alt text,
+  p_tags text[],
   p_published boolean,
   p_required_entitlements text[],
   p_expected_revision bigint default null
@@ -1258,7 +1279,10 @@ begin
       type,
       visibility,
       body_markdown,
+      preview_markdown,
       cover_image_url,
+      cover_image_alt,
+      tags,
       published_at,
       created_by
     )
@@ -1269,7 +1293,10 @@ begin
       p_type,
       p_visibility,
       p_body_markdown,
+      p_preview_markdown,
       nullif(p_cover_image_url, ''),
+      p_cover_image_alt,
+      coalesce(p_tags, '{}'::text[]),
       case when p_published then clock_timestamp() else null end,
       caller_user_id
     )
@@ -1287,7 +1314,10 @@ begin
       type = p_type,
       visibility = p_visibility,
       body_markdown = p_body_markdown,
+      preview_markdown = p_preview_markdown,
       cover_image_url = nullif(p_cover_image_url, ''),
+      cover_image_alt = p_cover_image_alt,
+      tags = coalesce(p_tags, '{}'::text[]),
       published_at = case
         when p_published and content_items.published_at is null then clock_timestamp()
         when p_published then content_items.published_at
@@ -2549,10 +2579,12 @@ grant execute on function public.bootstrap_first_admin(text) to service_role;
 revoke all on function public.list_managed_users(text, integer, integer) from public;
 grant execute on function public.list_managed_users(text, integer, integer) to authenticated;
 revoke all on function public.upsert_content_item(
-  uuid, text, text, text, content_type, visibility, text, text, boolean, text[], bigint
+  uuid, text, text, text, content_type, visibility,
+  text, text, text, text, text[], boolean, text[], bigint
 ) from public;
 grant execute on function public.upsert_content_item(
-  uuid, text, text, text, content_type, visibility, text, text, boolean, text[], bigint
+  uuid, text, text, text, content_type, visibility,
+  text, text, text, text, text[], boolean, text[], bigint
 ) to authenticated;
 revoke all on function public.delete_content_item(uuid, bigint) from public;
 grant execute on function public.delete_content_item(uuid, bigint) to authenticated;

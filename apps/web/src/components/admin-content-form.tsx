@@ -48,10 +48,13 @@ export function AdminContentForm({
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [summary, setSummary] = useState("");
+  const [preview, setPreview] = useState("");
   const [type, setType] = useState<ContentType>("article");
   const [visibility, setVisibility] = useState<Visibility>("members_only");
   const [body, setBody] = useState("");
   const [coverImage, setCoverImage] = useState("");
+  const [coverImageAlt, setCoverImageAlt] = useState("");
+  const [tags, setTags] = useState("");
   const [requiredEntitlements, setRequiredEntitlements] = useState<EntitlementKey[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -68,10 +71,13 @@ export function AdminContentForm({
     setTitle("");
     setSlug("");
     setSummary("");
+    setPreview("");
     setType("article");
     setVisibility("members_only");
     setBody("");
     setCoverImage("");
+    setCoverImageAlt("");
+    setTags("");
     setRequiredEntitlements([]);
   }
 
@@ -93,10 +99,16 @@ export function AdminContentForm({
             slug: slug || slugify(title),
             title,
             summary,
+            preview,
             type,
             visibility,
             body,
             coverImage,
+            coverImageAlt,
+            tags: tags
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter(Boolean),
             requiredEntitlements
           })
         });
@@ -155,6 +167,16 @@ export function AdminContentForm({
             className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
           />
         </label>
+        <label className="grid gap-2 text-sm text-cocoa/75">
+          Public preview
+          <textarea
+            value={preview}
+            onChange={(event) => setPreview(event.target.value)}
+            rows={6}
+            placeholder="Give visitors a useful opening before the membership boundary."
+            className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+          />
+        </label>
         <div className="grid gap-4 md:grid-cols-2">
           <label className="grid gap-2 text-sm text-cocoa/75">
             Type
@@ -191,6 +213,24 @@ export function AdminContentForm({
           value={coverImage}
           onChange={setCoverImage}
         />
+        <label className="grid gap-2 text-sm text-cocoa/75">
+          Cover description
+          <input
+            value={coverImageAlt}
+            onChange={(event) => setCoverImageAlt(event.target.value)}
+            placeholder="Describe the editorial image for readers who cannot see it."
+            className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+          />
+        </label>
+        <label className="grid gap-2 text-sm text-cocoa/75">
+          Tags
+          <input
+            value={tags}
+            onChange={(event) => setTags(event.target.value)}
+            placeholder="Decision making, Money clarity"
+            className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+          />
+        </label>
         <MarkdownEditor value={body} onChange={setBody} rows={10} />
         <div className="grid gap-3">
           <p className="text-sm text-cocoa/75">Required entitlements</p>

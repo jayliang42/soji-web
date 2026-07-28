@@ -13,11 +13,14 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 type ContentRow = Pick<
   Tables<"content_items">,
   | "body_markdown"
+  | "cover_image_alt"
   | "cover_image_url"
   | "id"
   | "published_at"
+  | "preview_markdown"
   | "slug"
   | "summary"
+  | "tags"
   | "title"
   | "type"
   | "updated_at"
@@ -45,7 +48,9 @@ function mapContentRow(row: ContentRow): ContentItem {
     revision: row.revision,
     updatedAt: row.updated_at,
     coverImage: row.cover_image_url ?? undefined,
-    tags: [],
+    coverImageAlt: row.cover_image_alt,
+    preview: row.preview_markdown,
+    tags: row.tags,
     body: row.body_markdown
   };
 }
@@ -63,7 +68,7 @@ async function loadSupabaseContent({
   let query = supabase
     .from("content_items")
     .select(
-      "id, slug, title, summary, type, visibility, body_markdown, cover_image_url, published_at, updated_at, revision, content_access_rules(entitlement_id)"
+      "id, slug, title, summary, type, visibility, body_markdown, preview_markdown, cover_image_url, cover_image_alt, tags, published_at, updated_at, revision, content_access_rules(entitlement_id)"
     )
     .order("published_at", { ascending: false, nullsFirst: false });
 

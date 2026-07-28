@@ -89,6 +89,8 @@ export interface ContentItem {
   revision?: number;
   updatedAt?: string;
   coverImage?: string;
+  coverImageAlt: string;
+  preview: string;
   tags: string[];
   body: string;
 }

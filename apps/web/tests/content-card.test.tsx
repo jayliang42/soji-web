@@ -5,9 +5,11 @@ import { ContentCard } from "@/components/content-card";
 
 const item = {
   body: "Member-only body",
+  coverImageAlt: "",
   id: "content-id",
   publishedAt: "2026-07-19T21:47:56.62735+00:00",
   requiredEntitlements: [],
+  preview: "A practical public preview.",
   slug: "march-update-pack",
   summary: "A practical monthly update.",
   tags: [],

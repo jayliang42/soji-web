@@ -28,8 +28,16 @@ const validPayload = {
   type: "article",
   visibility: "members_only"
 };
+const launchMetadata = {
+  coverImage: "/covers/atomic-content-test.webp",
+  coverImageAlt: "A paper decision map beside a pencil and warm ceramic cup.",
+  preview:
+    "This practical opening helps readers name one decision before the member-only guide continues.",
+  tags: ["Decision making", "Money clarity"]
+};
 const validUpdatePayload = {
   ...validPayload,
+  ...launchMetadata,
   expectedRevision: 3,
   id: contentId,
   published: true
@@ -37,13 +45,6 @@ const validUpdatePayload = {
 const validDeletePayload = {
   expectedRevision: 3,
   id: contentId
-};
-const launchMetadata = {
-  coverImage: "/covers/atomic-content-test.webp",
-  coverImageAlt: "A paper decision map beside a pencil and warm ceramic cup.",
-  preview:
-    "This practical opening helps readers name one decision before the member-only guide continues.",
-  tags: ["Decision making", "Money clarity"]
 };
 
 function request(body: unknown, method: "DELETE" | "PATCH" | "POST") {
@@ -171,7 +172,9 @@ describe("admin content writes", () => {
       error: { code: "23505", message: "duplicate key detail" }
     });
 
-    const response = await POST(request(validPayload, "POST"));
+    const response = await POST(
+      request({ ...validPayload, ...launchMetadata }, "POST")
+    );
 
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({

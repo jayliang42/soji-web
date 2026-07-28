@@ -68,6 +68,9 @@ export const sampleLibrary: ContentItem[] = [
     visibility: "public",
     requiredEntitlements: [],
     publishedAt: "2026-03-08",
+    coverImageAlt: "",
+    preview:
+      "Start by comparing the purchases you still value with the ones you barely remember.",
     tags: ["free", "audit"],
     body: [
       "A useful money audit starts with behavior, not spreadsheets. List the ten purchases from the last month that still feel worthwhile, then list the ten that disappeared from memory within a week.",
@@ -85,6 +88,9 @@ export const sampleLibrary: ContentItem[] = [
     visibility: "members_only",
     requiredEntitlements: ["content.basic"],
     publishedAt: "2026-03-01",
+    coverImageAlt: "",
+    preview:
+      "Begin with four labels for the last thirty days: keep, reduce, replace, or investigate.",
     tags: ["mindset", "budgeting"],
     body: [
       "The reset starts with a simple rule: every dollar should either support the life you are building or teach you something about the life you do not want.",
@@ -102,6 +108,9 @@ export const sampleLibrary: ContentItem[] = [
     visibility: "members_only",
     requiredEntitlements: ["library.case_studies"],
     publishedAt: "2026-03-04",
+    coverImageAlt: "",
+    preview:
+      "The strongest preparation combined business outcomes, peer benchmarks, and one clean alternative.",
     tags: ["career", "negotiation"],
     body: [
       "This case study follows a high-leverage salary conversation from preparation through close. The strongest move was not the opening number; it was the candidate's evidence file.",
@@ -118,6 +127,9 @@ export const sampleLibrary: ContentItem[] = [
     visibility: "members_only",
     requiredEntitlements: ["library.templates"],
     publishedAt: "2026-03-06",
+    coverImageAlt: "",
+    preview:
+      "A useful dashboard answers where you are, what changed, and which decision needs attention next.",
     tags: ["templates", "tracking"],
     body: [
       "A useful wealth dashboard should answer three questions quickly: where are we now, what changed this month, and what decision needs attention next?",
@@ -135,6 +147,9 @@ export const sampleLibrary: ContentItem[] = [
     visibility: "members_only",
     requiredEntitlements: ["monthly.updates"],
     publishedAt: "2026-03-10",
+    coverImageAlt: "",
+    preview:
+      "This month turns broad money goals into smaller decisions a family can make this week.",
     tags: ["monthly", "scripts"],
     body: [
       "This month's update is focused on making money conversations less vague. The theme is replacing big abstract goals with smaller decisions that can be made this week.",

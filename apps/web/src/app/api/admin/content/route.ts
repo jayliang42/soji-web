@@ -20,7 +20,19 @@ const entitlementKeys = [
   "product.digital"
 ] as const satisfies readonly EntitlementKey[];
 
-const payloadSchema = z.object({
+const coverImageSchema = z
+  .string()
+  .trim()
+  .max(2_000)
+  .refine(
+    (value) =>
+      value === "" ||
+      /^\/covers\/[a-zA-Z0-9/_-]+\.(?:avif|jpe?g|png|webp)$/u.test(value) ||
+      z.string().url().safeParse(value).success,
+    "Cover image must be an absolute URL or an owned /covers/ image."
+  );
+
+const contentFieldsSchema = z.object({
   slug: z
     .string()
     .trim()
@@ -39,14 +51,71 @@ const payloadSchema = z.object({
   ]),
   visibility: z.enum(["public", "members_only", "purchase_required"]),
   body: z.string().min(20).max(100_000),
-  coverImage: z.string().url().optional().or(z.literal("")),
+  preview: z.string().trim().max(20_000).default(""),
+  coverImage: coverImageSchema.default(""),
+  coverImageAlt: z.string().trim().max(300).default(""),
+  tags: z
+    .array(z.string().trim().min(2).max(40))
+    .max(8)
+    .transform((tags) => [...new Set(tags)])
+    .default([]),
   requiredEntitlements: z.array(z.enum(entitlementKeys)).max(entitlementKeys.length)
 }).strict();
 
-const updatePayloadSchema = payloadSchema.extend({
+type ContentPayload = z.infer<typeof contentFieldsSchema>;
+
+function validatePublication(
+  payload: ContentPayload,
+  published: boolean,
+  context: z.RefinementCtx
+) {
+  if (!published) {
+    return;
+  }
+
+  if (!payload.coverImage) {
+    context.addIssue({
+      code: "custom",
+      message: "Published content requires a cover image.",
+      path: ["coverImage"]
+    });
+  }
+
+  if (payload.coverImage && payload.coverImageAlt.length < 8) {
+    context.addIssue({
+      code: "custom",
+      message: "Describe the cover image in at least 8 characters.",
+      path: ["coverImageAlt"]
+    });
+  }
+
+  if (payload.tags.length === 0) {
+    context.addIssue({
+      code: "custom",
+      message: "Published content requires at least one useful tag.",
+      path: ["tags"]
+    });
+  }
+
+  if (payload.visibility !== "public" && payload.preview.length < 20) {
+    context.addIssue({
+      code: "custom",
+      message: "Restricted published content requires a useful public preview.",
+      path: ["preview"]
+    });
+  }
+}
+
+const payloadSchema = contentFieldsSchema.superRefine((payload, context) => {
+  validatePublication(payload, true, context);
+});
+
+const updatePayloadSchema = contentFieldsSchema.extend({
   expectedRevision: z.number().int().positive(),
   id: z.string().uuid(),
   published: z.boolean()
+}).superRefine((payload, context) => {
+  validatePublication(payload, payload.published, context);
 });
 
 const deletePayloadSchema = z.object({
@@ -55,19 +124,22 @@ const deletePayloadSchema = z.object({
 }).strict();
 
 function toContentRpcPayload(
-  payload: z.infer<typeof payloadSchema>,
+  payload: ContentPayload,
   options: { expectedRevision: number | null; id: string | null; published: boolean }
 ): UpsertContentArgs {
   // Generated RPC types do not encode nullable PostgreSQL function arguments.
   return {
     p_body_markdown: payload.body,
     p_content_id: options.id,
+    p_cover_image_alt: payload.coverImageAlt,
     p_cover_image_url: payload.coverImage || null,
     p_expected_revision: options.expectedRevision,
     p_published: options.published,
+    p_preview_markdown: payload.preview,
     p_required_entitlements: payload.requiredEntitlements,
     p_slug: payload.slug,
     p_summary: payload.summary,
+    p_tags: payload.tags,
     p_title: payload.title,
     p_type: payload.type,
     p_visibility: payload.visibility

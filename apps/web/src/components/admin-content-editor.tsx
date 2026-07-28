@@ -35,12 +35,15 @@ const entitlementOptions: Array<{ value: EntitlementKey; label: string }> = [
 type EditableContent = {
   body: string;
   coverImage: string;
+  coverImageAlt: string;
   expectedRevision: number;
   id: string;
   published: boolean;
+  preview: string;
   requiredEntitlements: EntitlementKey[];
   slug: string;
   summary: string;
+  tags: string[];
   title: string;
   type: ContentType;
   visibility: Visibility;
@@ -59,12 +62,15 @@ function toEditableContent(item: ContentItem): EditableContent {
   return {
     body: item.body,
     coverImage: item.coverImage ?? "",
+    coverImageAlt: item.coverImageAlt,
     expectedRevision: item.revision ?? 1,
     id: item.id,
     published: Boolean(item.publishedAt),
+    preview: item.preview,
     requiredEntitlements: item.requiredEntitlements,
     slug: item.slug,
     summary: item.summary,
+    tags: item.tags,
     title: item.title,
     type: item.type,
     visibility: item.visibility
@@ -314,6 +320,15 @@ export function AdminContentEditor({
                 className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
               />
             </label>
+            <label className="grid gap-2 text-sm text-cocoa/75">
+              Public preview
+              <textarea
+                value={draft.preview}
+                onChange={(event) => updateDraft("preview", event.target.value)}
+                rows={6}
+                className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+              />
+            </label>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="grid gap-2 text-sm text-cocoa/75">
                 Type
@@ -352,6 +367,30 @@ export function AdminContentEditor({
               value={draft.coverImage}
               onChange={(value) => updateDraft("coverImage", value)}
             />
+            <label className="grid gap-2 text-sm text-cocoa/75">
+              Cover description
+              <input
+                value={draft.coverImageAlt}
+                onChange={(event) => updateDraft("coverImageAlt", event.target.value)}
+                className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+              />
+            </label>
+            <label className="grid gap-2 text-sm text-cocoa/75">
+              Tags
+              <input
+                value={draft.tags.join(", ")}
+                onChange={(event) =>
+                  updateDraft(
+                    "tags",
+                    event.target.value
+                      .split(",")
+                      .map((tag) => tag.trimStart())
+                      .filter(Boolean)
+                  )
+                }
+                className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
+              />
+            </label>
             <MarkdownEditor
               value={draft.body}
               onChange={(value) => updateDraft("body", value)}
