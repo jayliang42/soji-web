@@ -106,7 +106,7 @@ test("rejects wrong deployment identity, malformed provider data, and unknown li
     [{ id: "candidate" }, /deployment ID/],
     [{ url: "http://soji-web-a1b2c3.vercel.app" }, /HTTPS/],
     [{ url: "https://a.b.vercel.app" }, /root Vercel/],
-    [{ commitSha: undefined }, /commit/]
+    [{ commitSha: null }, /commit/]
   ];
 
   for (const [overrides, message] of cases) {
@@ -188,10 +188,10 @@ test("accepts only prior current, candidate staged/current, prior rollback, cand
   assert.throws(
     () =>
       validateLifecycleSequence([
-        candidateCurrent,
+        { ...candidateCurrent },
         candidateStaged,
         candidateCurrent,
-        candidateCurrent,
+        { ...candidateCurrent, lifecycleState: "rolled_back" },
         candidateRepromoted
       ]),
     /prior and candidate/
@@ -243,12 +243,18 @@ function successfulFetch(records, options = {}) {
           options.readiness ?? {
             checks: {
               demoModeDisabled: true,
+              launchContentOperational: true,
+              officeHoursOperational: true,
               policiesApproved: true,
+              siteUrl: true,
+              stripe: true,
               stripeMembershipPrices: true,
               stripeTermsAcceptanceReady: true,
               stripeWebhook: true,
               supportContactConfigured: true,
               supabase: true,
+              supabaseAdmin: true,
+              supabasePublicOperational: true,
               supabaseServiceRoleOperational: true
             },
             ok: true,
