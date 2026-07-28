@@ -21,22 +21,26 @@ export async function GET() {
     supabaseAdmin: hasSupabaseAdminConfig()
   };
   const operationalChecks = await getOperationalReadiness();
-  const {
-    launchContentCount,
-    officeHourReplayCount,
-    officeHourSignupCount,
-    officeHourReplayState: _officeHourReplayState,
-    officeHourSignupState: _officeHourSignupState,
-    policiesApprovalState: _policiesApprovalState,
-    stripeTermsAcceptanceState: _stripeTermsAcceptanceState,
-    supportContactState: _supportContactState,
-    ...publicOperationalChecks
-  } = operationalChecks;
-  const checks = { ...configurationChecks, ...publicOperationalChecks };
+  const checks = {
+    ...configurationChecks,
+    launchContentOperational:
+      operationalChecks.launchContentOperational,
+    officeHoursOperational: operationalChecks.officeHoursOperational,
+    policiesApproved: operationalChecks.policiesApproved,
+    stripeMembershipPrices: operationalChecks.stripeMembershipPrices,
+    stripeTermsAcceptanceReady:
+      operationalChecks.stripeTermsAcceptanceReady,
+    supabasePublicOperational:
+      operationalChecks.supabasePublicOperational,
+    supabaseServiceRoleOperational:
+      operationalChecks.supabaseServiceRoleOperational,
+    supportContactConfigured:
+      operationalChecks.supportContactConfigured
+  };
   const details = {
-    launchContentCount,
-    officeHourReplayCount,
-    officeHourSignupCount
+    launchContentCount: operationalChecks.launchContentCount,
+    officeHourReplayCount: operationalChecks.officeHourReplayCount,
+    officeHourSignupCount: operationalChecks.officeHourSignupCount
   };
   const ok = Object.values(checks).every(Boolean);
 
