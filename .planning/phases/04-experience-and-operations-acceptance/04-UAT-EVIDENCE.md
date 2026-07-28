@@ -20,7 +20,7 @@ file locations, provider bodies, error detail, or complete provider identifiers.
 | PH4-ALERT-DELIVERY-SAFETY | PASS | automated | 2026-07-28T04:57:00Z | local-repository | Alert delivery is local-first, bounded, redirect-refusing, and non-recursive. | Timeout, redirect, ordering, and secondary-failure assertions completed successfully. | command: corepack pnpm --filter @soji/web test; commit: 74d8dad | Live delivery remains an owner observation. |
 | PH4-CRON-AUTH-AGGREGATE | PASS | automated | 2026-07-28T04:57:00Z | local-repository | Scheduled cleanup requires exact authorization and returns aggregate truth only. | Authorization and response projection assertions completed successfully. | command: corepack pnpm --filter @soji/web test; commit: 8837185 | No file target can be supplied by the caller. |
 | PH4-CLEANUP-LEASE-RETRY | PASS | automated | 2026-07-28T04:57:00Z | local-repository | Cleanup failure stays retryable and receipt loss cannot report success. | Lease, retry, and durable receipt assertions completed successfully. | command: corepack pnpm --filter @soji/web test; commit: c260635 | Production schedule remains an owner observation. |
-| PH4-RELEASE-REGRESSION | PENDING | automated | — | local-repository | Domain, Web, browser, database, generated types, docs, and evidence gates pass together. | Pending complete release regression. | pending automated command | Promote only after every named gate exits successfully. |
+| PH4-RELEASE-REGRESSION | PASS | automated | 2026-07-28T05:03:00Z | local-repository | Domain, Web, browser, database, generated types, docs, and evidence gates pass together. | Every named release gate completed successfully. | command: corepack pnpm domain and Web test, lint, typecheck, build, test:e2e, db:schema:check, db:test, db:types:check, docs:check, and phase4:uat:check; commit: 09cbf5a | No deployment or production mutation was performed. |
 | INFRA-01-READINESS | PENDING | owner | — | — | Production identity readiness reports every required service check true. | Pending owner observation. | pending owner observation | Carried from Phase 1. |
 | AUTH-01-SIGNUP | PENDING | owner | — | — | Signup confirmation arrives through two mailbox providers and returns canonically. | Pending owner observation. | pending owner observation | Carried from Phase 1. |
 | AUTH-01-RECOVERY | PENDING | owner | — | — | Password recovery completes and the new password signs in canonically. | Pending owner observation. | pending owner observation | Carried from Phase 1. |
@@ -62,5 +62,5 @@ file locations, provider bodies, error detail, or complete provider identifiers.
 | PH4-CLEANUP-SCHEDULER-LIVE | PENDING | owner | — | — | The production scheduler invokes cleanup and records aggregate truth. | Pending owner observation. | pending owner observation | Configure and observe once. |
 | PH4-ADMIN-BILLING-LIVE | PENDING | owner | — | — | Production Admin Billing shows representative receipt and processing states distinctly. | Pending owner observation. | pending owner observation | Inspect representative rows once. |
 
-`phase4:uat:ready` must remain nonzero until the complete release regression passes and
-all 40 owner/provider rows contain genuine redacted canonical observations.
+`phase4:uat:ready` must remain nonzero until all 40 owner/provider rows contain genuine
+redacted canonical observations.

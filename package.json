@@ -12,6 +12,7 @@
     "db:migrations": "corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 migration list --local",
     "db:reset": "corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 db reset --local --yes",
     "db:schema:check": "node scripts/check-schema-idempotence.mjs && corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 test db --local supabase/tests/subscription_billing_adjustments.sql",
+    "db:test": "corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 test db --local supabase/tests",
     "db:types": "node scripts/sync-supabase-types.mjs --write",
     "db:types:check": "node scripts/sync-supabase-types.mjs --check",
     "deploy:check": "node scripts/check-deploy-artifact.mjs",

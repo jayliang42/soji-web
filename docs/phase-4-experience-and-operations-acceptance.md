@@ -27,6 +27,24 @@ These checks prove local behavior only. Controlled browser data cannot prove a p
 receiver delivery, provider schedule, privileged Admin row, payment, mailbox delivery, or
 owner approval.
 
+## Recorded release result
+
+The complete local regression passed on 2026-07-28:
+
+- Domain: 3 tests passed.
+- Web: 81 files and 628 tests passed; ESLint, route types, TypeScript, and production build
+  passed; all 37 generated static pages completed.
+- Browser: 118 desktop/mobile tests passed, including five target widths, 200 percent text,
+  reduced motion, keyboard paths, overflow, protected-content omission, and zero gated axe
+  findings.
+- Database: repeatable schema passed, the focused 97-test adjustment suite passed, the full
+  374-test pgTAP suite passed, and generated database types matched.
+- Documentation: 29 API contracts and 44 local links passed.
+- Evidence: 7 validator tests and all 54 fixed evidence rows passed structure mode.
+
+The proof is recorded in `PH4-RELEASE-REGRESSION` against implementation commit `09cbf5a`.
+No deployment, production login, environment change, or production data mutation was used.
+
 ## Evidence handling
 
 - Keep each of the 54 fixed scenario IDs exactly once.
