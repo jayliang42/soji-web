@@ -21,10 +21,12 @@
     "phase1:uat:ready": "node scripts/check-phase1-uat-evidence.mjs --ready",
     "phase2:uat:check": "node scripts/check-phase2-uat-evidence.mjs",
     "phase2:uat:ready": "node scripts/check-phase2-uat-evidence.mjs --ready",
+    "phase3:uat:check": "node scripts/check-phase3-uat-evidence.mjs",
+    "phase3:uat:ready": "node scripts/check-phase3-uat-evidence.mjs --ready",
     "test": "corepack pnpm -r --if-present test",
     "test:db": "corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 test db --local supabase/tests",
     "test:e2e": "corepack pnpm --filter @soji/web test:e2e",
-    "test:uat": "node --test scripts/check-phase1-uat-evidence.test.mjs scripts/check-phase2-uat-evidence.test.mjs",
+    "test:uat": "node --test scripts/check-phase1-uat-evidence.test.mjs scripts/check-phase2-uat-evidence.test.mjs scripts/check-phase3-uat-evidence.test.mjs",
     "typecheck": "corepack pnpm -r --if-present typecheck"
   },
   "devDependencies": {

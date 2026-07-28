@@ -2,6 +2,20 @@
 
 这份清单用于把 Soji 从本地 demo preview 推到可收款、可登录、可运营的生产环境。
 
+## Phase 3：内容与客户政策
+
+- [x] 发布一篇带仓库自有封面的完整旗舰内容
+- [x] 验证 public、preview、locked、full、unavailable 和正文不泄漏状态
+- [x] Office Hours 目标校验、访客拒绝、缺少 replay 和失败状态通过自动化测试
+- [x] 五个政策页面、全局 footer、Pricing、Shop 和 Checkout Terms 合同通过自动化测试
+- [x] `/api/health/ready` 与 Admin 使用同一套安全启动状态
+- [ ] 完成 owner/provider 真实观察；在完成前不得把 Phase 3 标为生产就绪
+
+所有未完成输入与登录位置只在
+[Phase 3 consolidated owner checkpoint](./phase-3-launch-content-and-policy.md#consolidated-owner-checkpoint)
+列出一次。证据记录在
+[Phase 3 UAT ledger](../.planning/phases/03-launch-content-and-customer-policy/03-UAT-EVIDENCE.md)。
+
 ## 0. 当前结论
 
 - 项目可以部署到服务器。
