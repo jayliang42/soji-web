@@ -58,8 +58,10 @@ const degradedSession = {
 
 const restrictedContent = {
   body: "PRIVATE BODY THAT MUST NOT LEAK",
+  coverImageAlt: "",
   id: "content-id",
   publishedAt: "2026-07-15T12:00:00Z",
+  preview: "A safe public preview.",
   requiredEntitlements: ["content.basic"],
   slug: "restricted-guide",
   summary: "A safe public summary.",
@@ -140,7 +142,7 @@ describe("session failure pages", () => {
     );
 
     expect(html).toContain("Membership access is temporarily unavailable");
-    expect(html).toContain("A safe public summary.");
+    expect(html).toContain("A safe public preview.");
     expect(html).not.toContain("PRIVATE BODY THAT MUST NOT LEAK");
     expect(html).not.toContain("Locked by tier");
     expect(html).not.toContain("View membership");
@@ -151,7 +153,7 @@ describe("session failure pages", () => {
 
     expect(html).toContain("Membership access is temporarily unavailable");
     expect(html).toContain("Access unavailable");
-    expect(html).toContain("Replay unavailable");
+    expect(html).toContain("No member-only content or private links have been shown");
     expect(html).not.toContain("Upgrade to join");
     expect(html).not.toContain("https://example.com/private-signup");
     expect(html).not.toContain("https://example.com/private-replay");
