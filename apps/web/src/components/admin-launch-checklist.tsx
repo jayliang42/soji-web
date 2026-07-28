@@ -4,8 +4,10 @@ import type {
 } from "@/lib/admin-launch-checklist";
 
 const statusLabels: Record<LaunchChecklistStatus, string> = {
+  invalid: "Invalid",
   manual: "Confirm",
   missing: "Missing",
+  needs_owner_input: "Needs owner input",
   ready: "Ready"
 };
 
@@ -14,7 +16,7 @@ function statusClassName(status: LaunchChecklistStatus) {
     return "bg-success-muted text-success";
   }
 
-  if (status === "missing") {
+  if (status === "missing" || status === "invalid") {
     return "bg-accent-muted text-clay";
   }
 
@@ -27,8 +29,13 @@ export function AdminLaunchChecklist({
   items: LaunchChecklistItem[];
 }) {
   const readyCount = items.filter((item) => item.status === "ready").length;
-  const missingCount = items.filter((item) => item.status === "missing").length;
-  const manualCount = items.filter((item) => item.status === "manual").length;
+  const missingCount = items.filter(
+    (item) => item.status === "missing" || item.status === "invalid"
+  ).length;
+  const manualCount = items.filter(
+    (item) =>
+      item.status === "manual" || item.status === "needs_owner_input"
+  ).length;
 
   return (
     <section aria-labelledby="launch-checklist-heading" className="border-y border-dune py-5">

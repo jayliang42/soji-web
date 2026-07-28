@@ -185,7 +185,20 @@ export default async function AdminPage({
       view === "overview"
         ? getOperationalReadiness()
         : Promise.resolve({
+            launchContentCount: 0,
+            launchContentOperational: false,
+            officeHourReplayCount: 0,
+            officeHourReplayState: "needs_owner_input" as const,
+            officeHourSignupCount: 0,
+            officeHourSignupState: "needs_owner_input" as const,
+            officeHoursOperational: false,
+            policiesApprovalState: "needs_owner_input" as const,
+            policiesApproved: false,
             stripeMembershipPrices: false,
+            stripeTermsAcceptanceReady: false,
+            stripeTermsAcceptanceState: "needs_owner_input" as const,
+            supportContactConfigured: false,
+            supportContactState: "needs_owner_input" as const,
             supabasePublicOperational: false,
             supabaseServiceRoleOperational: false
           })

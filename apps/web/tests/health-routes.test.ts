@@ -99,9 +99,10 @@ describe("health routes", () => {
     });
 
     const response = await getReadiness();
+    const payload = await response.json();
 
     expect(response.status).toBe(503);
-    expect(await response.json()).toMatchObject({
+    expect(payload).toMatchObject({
       checks: {
         stripeMembershipPrices: false,
         launchContentOperational: false,
@@ -121,7 +122,7 @@ describe("health routes", () => {
       status: "not_ready"
     });
 
-    const serialized = JSON.stringify(await response.clone().json());
+    const serialized = JSON.stringify(payload);
     expect(serialized).not.toContain("needs_owner_input");
     expect(serialized).not.toContain("invalid");
   });

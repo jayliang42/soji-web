@@ -124,7 +124,7 @@ describe("operational readiness probes", () => {
       reason: "stripe_membership_price_missing"
     });
 
-    await expect(probeOperationalReadiness()).resolves.toEqual({
+    await expect(probeOperationalReadiness()).resolves.toMatchObject({
       stripeMembershipPrices: false,
       launchContentOperational: true,
       officeHoursOperational: true,

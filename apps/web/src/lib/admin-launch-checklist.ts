@@ -1,7 +1,15 @@
 import type { ProductOffer } from "@soji/types";
-import type { OperationalReadiness } from "@/lib/readiness";
+import type {
+  LaunchInputState,
+  OperationalReadiness
+} from "@/lib/readiness";
 
-export type LaunchChecklistStatus = "ready" | "missing" | "manual";
+export type LaunchChecklistStatus =
+  | "invalid"
+  | "manual"
+  | "missing"
+  | "needs_owner_input"
+  | "ready";
 
 export interface LaunchChecklistItem {
   detail: string;
@@ -18,6 +26,10 @@ export interface LaunchChecklistConfig {
   stripeWebhook: boolean;
   supabasePublic: boolean;
   supabaseServiceRole: boolean;
+}
+
+function launchInputStatus(state: LaunchInputState): LaunchChecklistStatus {
+  return state;
 }
 
 export function buildLaunchChecklist({
@@ -147,9 +159,73 @@ export function buildLaunchChecklist({
             : "manual"
     },
     {
-      detail: "Replace demo office hour signup and replay links with live URLs.",
-      label: "Office hour links",
-      status: "manual"
+      detail: operationalReadiness.launchContentOperational
+        ? `${operationalReadiness.launchContentCount} owned flagship item passed content and access checks.`
+        : "Publish the flagship with an owned cover, preview, body, tags, and content.basic access rule.",
+      label: "Flagship launch content",
+      status: operationalReadiness.launchContentOperational
+        ? "ready"
+        : "invalid"
+    },
+    {
+      detail:
+        operationalReadiness.officeHourSignupState === "ready"
+          ? `${operationalReadiness.officeHourSignupCount} valid signup destination(s) passed validation.`
+          : operationalReadiness.officeHourSignupState === "invalid"
+            ? "Replace malformed or placeholder signup destinations in Admin → Office Hours."
+            : "Provide a real signup destination in Admin → Office Hours.",
+      label: "Office Hours signup destination",
+      status: launchInputStatus(
+        operationalReadiness.officeHourSignupState
+      )
+    },
+    {
+      detail:
+        operationalReadiness.officeHourReplayState === "ready"
+          ? `${operationalReadiness.officeHourReplayCount} valid replay destination(s) passed validation.`
+          : operationalReadiness.officeHourReplayState === "invalid"
+            ? "Replace malformed or placeholder replay destinations in Admin → Office Hours."
+            : "Provide a real replay destination in Admin → Office Hours.",
+      label: "Office Hours replay destination",
+      status: launchInputStatus(
+        operationalReadiness.officeHourReplayState
+      )
+    },
+    {
+      detail:
+        operationalReadiness.supportContactState === "ready"
+          ? "The public support destination passed production validation."
+          : operationalReadiness.supportContactState === "invalid"
+            ? "Replace NEXT_PUBLIC_SUPPORT_URL with a safe non-placeholder HTTPS or mailto destination."
+            : "Set NEXT_PUBLIC_SUPPORT_URL to the durable support destination.",
+      label: "Customer support destination",
+      status: launchInputStatus(
+        operationalReadiness.supportContactState
+      )
+    },
+    {
+      detail:
+        operationalReadiness.policiesApprovalState === "ready"
+          ? "The owner approval flag is explicitly enabled."
+          : operationalReadiness.policiesApprovalState === "invalid"
+            ? "Set SOJI_POLICIES_APPROVED to true only after owner/legal review; remove unsupported values."
+            : "Complete owner/legal review, then set SOJI_POLICIES_APPROVED=true.",
+      label: "Customer policies approved",
+      status: launchInputStatus(
+        operationalReadiness.policiesApprovalState
+      )
+    },
+    {
+      detail:
+        operationalReadiness.stripeTermsAcceptanceState === "ready"
+          ? "Stripe-hosted Terms acceptance is explicitly marked ready."
+          : operationalReadiness.stripeTermsAcceptanceState === "invalid"
+            ? "Confirm Stripe Dashboard Terms configuration, then set STRIPE_TERMS_ACCEPTANCE_READY=true; remove unsupported values."
+            : "Configure canonical policy links and Terms acceptance in Stripe, then set STRIPE_TERMS_ACCEPTANCE_READY=true.",
+      label: "Stripe Terms acceptance",
+      status: launchInputStatus(
+        operationalReadiness.stripeTermsAcceptanceState
+      )
     },
     {
       detail: config.operationsAlerts

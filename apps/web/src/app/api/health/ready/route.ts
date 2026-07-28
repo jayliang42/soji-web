@@ -21,11 +21,27 @@ export async function GET() {
     supabaseAdmin: hasSupabaseAdminConfig()
   };
   const operationalChecks = await getOperationalReadiness();
-  const checks = { ...configurationChecks, ...operationalChecks };
+  const {
+    launchContentCount,
+    officeHourReplayCount,
+    officeHourSignupCount,
+    officeHourReplayState: _officeHourReplayState,
+    officeHourSignupState: _officeHourSignupState,
+    policiesApprovalState: _policiesApprovalState,
+    stripeTermsAcceptanceState: _stripeTermsAcceptanceState,
+    supportContactState: _supportContactState,
+    ...publicOperationalChecks
+  } = operationalChecks;
+  const checks = { ...configurationChecks, ...publicOperationalChecks };
+  const details = {
+    launchContentCount,
+    officeHourReplayCount,
+    officeHourSignupCount
+  };
   const ok = Object.values(checks).every(Boolean);
 
   return NextResponse.json(
-    { checks, ok, status: ok ? "ready" : "not_ready" },
+    { checks, details, ok, status: ok ? "ready" : "not_ready" },
     {
       headers: { "Cache-Control": "no-store" },
       status: ok ? 200 : 503
