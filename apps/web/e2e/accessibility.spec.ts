@@ -8,6 +8,11 @@ const auditedPages = [
   "/library",
   "/library/wealth-without-drift",
   "/office-hours",
+  "/support",
+  "/privacy",
+  "/terms",
+  "/refund-policy",
+  "/financial-disclaimer",
   "/login",
   "/reset-password",
   "/account"
@@ -48,4 +53,39 @@ test("reduced-motion preference minimizes decorative transitions", async ({ page
     .first()
     .evaluate((element) => getComputedStyle(element).transitionDuration);
   expect(Number.parseFloat(transitionDuration)).toBeLessThanOrEqual(0.001);
+});
+
+test("keyboard order reaches the flagship action after the skip target", async ({
+  page
+}) => {
+  await page.goto("/library");
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("link", { name: "Skip to main content" })
+  ).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#main-content")).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("link", { exact: true, name: "View access" }).first()
+  ).toBeFocused();
+});
+
+test("policy copy remains readable without overflow at 200 percent text scale", async ({
+  page
+}) => {
+  await page.setViewportSize({ height: 900, width: 1280 });
+  await page.goto("/terms");
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = "200%";
+  });
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Terms" })
+  ).toBeVisible();
+  const layout = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth
+  }));
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
 });

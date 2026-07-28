@@ -734,3 +734,93 @@ test("public responses include baseline browser security headers", async ({ page
   expect(policy).toContain("frame-ancestors 'none'");
   expect(policy).toContain("object-src 'none'");
 });
+
+test("Phase 3 launch surfaces fit every acceptance viewport", async ({ page }) => {
+  const widths = [320, 375, 768, 1024, 1440] as const;
+  const paths = [
+    "/library",
+    "/library/wealth-without-drift",
+    "/pricing",
+    "/products",
+    "/office-hours",
+    "/terms"
+  ] as const;
+
+  for (const width of widths) {
+    await page.setViewportSize({ height: 900, width });
+
+    for (const path of paths) {
+      await page.goto(path);
+      const dimensions = await page.evaluate(() => ({
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth
+      }));
+      expect(dimensions.scrollWidth, `${path} overflowed at ${width}px`).toBeLessThanOrEqual(
+        dimensions.clientWidth
+      );
+    }
+
+    await page.goto("/library");
+    await expect(
+      page.getByRole("img", {
+        name:
+          "Paper decision map, pencil, linen ledger, and ceramic dish in warm window light."
+      })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { exact: true, name: "View access" }).first()
+    ).toBeVisible();
+  }
+});
+
+test("Phase 3 policy and purchase trust path is visible before action", async ({
+  page
+}) => {
+  await page.goto("/pricing");
+  await expect(
+    page.getByText("$29 billed monthly until canceled.", { exact: true })
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole("contentinfo")
+      .getByRole("link", { exact: true, name: "Terms" })
+  ).toBeVisible();
+
+  await page.goto("/products");
+  await expect(
+    page.getByText("Delivered to your Soji account.", { exact: false }).first()
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { exact: true, name: "Refund policy" }).first()
+  ).toBeVisible();
+
+  for (const policyPage of [
+    { heading: "Support", path: "/support" },
+    { heading: "Privacy", path: "/privacy" },
+    { heading: "Terms", path: "/terms" },
+    { heading: "Refund policy", path: "/refund-policy" },
+    { heading: "Financial disclaimer", path: "/financial-disclaimer" }
+  ]) {
+    await page.goto(policyPage.path);
+    await expect(
+      page.getByRole("heading", { level: 1, name: policyPage.heading })
+    ).toBeVisible();
+  }
+});
+
+test("unauthorized responses contain neither member body nor Office Hours targets", async ({
+  request
+}) => {
+  const articleResponse = await request.get("/library/wealth-without-drift");
+  expect(articleResponse.ok()).toBe(true);
+  const articleBody = await articleResponse.text();
+  expect(articleBody).not.toContain(
+    "Each item seems manageable alone. Together, they create a background feeling"
+  );
+
+  const officeHoursResponse = await request.get("/office-hours");
+  expect(officeHoursResponse.ok()).toBe(true);
+  const officeHoursBody = await officeHoursResponse.text();
+  expect(officeHoursBody).not.toContain("https://example.com/office-hour");
+  expect(officeHoursBody).not.toContain("https://example.com/replay");
+});
