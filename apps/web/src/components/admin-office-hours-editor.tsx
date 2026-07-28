@@ -3,12 +3,28 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { EntitlementKey, OfficeHourSession } from "@soji/types";
 import { formatEntitlementList } from "@/lib/entitlements";
+import {
+  validateOfficeHourDestination,
+  type OfficeHourDestinationReason
+} from "@/lib/launch-inputs";
 
 const entitlementOptions: Array<{ value: EntitlementKey; label: string }> = [
   { value: "office_hours.join", label: "Office hours" },
   { value: "community.vip_access", label: "VIP community" },
   { value: "contact.unlock", label: "Contact unlock" }
 ];
+
+const destinationMessages: Record<OfficeHourDestinationReason, string> = {
+  office_hour_url_credentials_forbidden:
+    "Remove the username or password from this URL.",
+  office_hour_url_https_required: "Use an HTTPS destination on a real service.",
+  office_hour_url_invalid: "Enter a complete HTTPS destination.",
+  office_hour_url_local_host: "Replace the local hostname before publishing.",
+  office_hour_url_placeholder_host: "Replace the example address before publishing.",
+  office_hour_url_private_host: "Use a public provider destination, not a private address.",
+  office_hour_url_required: "Add the signup destination before saving.",
+  office_hour_url_too_long: "Use a destination shorter than 2,049 characters."
+};
 
 type EditableOfficeHour = {
   expectedRevision: number | null;
@@ -103,6 +119,8 @@ export function AdminOfficeHoursEditor({
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const allowNavigationRef = useRef(false);
+  const replayUrlRef = useRef<HTMLInputElement>(null);
+  const signupUrlRef = useRef<HTMLInputElement>(null);
   const persistedDraft = useMemo(() => {
     if (!draft.id) {
       return emptyOfficeHour();
@@ -192,6 +210,22 @@ export function AdminOfficeHoursEditor({
     if (!canMutate) {
       setMessage("Connect Supabase and use an editor/admin account before editing.");
       return;
+    }
+
+    const signupValidation = validateOfficeHourDestination(draft.signupUrl);
+    if (!signupValidation.ok) {
+      setMessage(destinationMessages[signupValidation.reason]);
+      signupUrlRef.current?.focus();
+      return;
+    }
+
+    if (draft.replayUrl.trim()) {
+      const replayValidation = validateOfficeHourDestination(draft.replayUrl);
+      if (!replayValidation.ok) {
+        setMessage(destinationMessages[replayValidation.reason]);
+        replayUrlRef.current?.focus();
+        return;
+      }
     }
 
     const payload = toPayload(draft);
@@ -329,6 +363,7 @@ export function AdminOfficeHoursEditor({
         <label className="grid gap-2 text-sm text-cocoa/75">
           Signup URL
           <input
+            ref={signupUrlRef}
             value={draft.signupUrl}
             onChange={(event) => updateDraft("signupUrl", event.target.value)}
             className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"
@@ -337,6 +372,7 @@ export function AdminOfficeHoursEditor({
         <label className="grid gap-2 text-sm text-cocoa/75">
           Replay URL
           <input
+            ref={replayUrlRef}
             value={draft.replayUrl}
             onChange={(event) => updateDraft("replayUrl", event.target.value)}
             className="rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none"

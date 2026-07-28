@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import type { EntitlementKey } from "@soji/types";
+import { validateOfficeHourDestination } from "@/lib/launch-inputs";
 import { reportOperationalError } from "@/lib/observability";
 import { getPublisherContext } from "@/lib/publisher";
 import type { Database } from "@/lib/supabase/database.types";
@@ -20,29 +21,58 @@ const entitlementKeys = [
   "product.digital"
 ] as const satisfies readonly EntitlementKey[];
 
-const webUrlSchema = z
-  .string()
-  .trim()
-  .max(2_048)
-  .url()
-  .refine((value) => ["http:", "https:"].includes(new URL(value).protocol), {
-    message: "URL must use http or https"
-  });
+const signupUrlSchema = z.string().trim().superRefine((value, context) => {
+  const validation = validateOfficeHourDestination(value);
+  if (!validation.ok) {
+    context.addIssue({
+      code: "custom",
+      message: validation.reason
+    });
+  }
+});
 
-const payloadSchema = z
+const replayUrlSchema = z.string().trim().superRefine((value, context) => {
+  if (!value) {
+    return;
+  }
+
+  const validation = validateOfficeHourDestination(value);
+  if (!validation.ok) {
+    context.addIssue({
+      code: "custom",
+      message: validation.reason
+    });
+  }
+});
+
+const payloadObjectSchema = z
   .object({
-    replayUrl: webUrlSchema.optional().or(z.literal("")),
+    replayUrl: replayUrlSchema.optional().default(""),
     requiredEntitlement: z.enum(entitlementKeys),
-    signupUrl: webUrlSchema,
+    signupUrl: signupUrlSchema,
     startsAt: z.string().datetime(),
     title: z.string().trim().min(3).max(200)
   })
   .strict();
 
-const updatePayloadSchema = payloadSchema.extend({
+function normalizeDestinations<
+  T extends { replayUrl: string; signupUrl: string }
+>(payload: T) {
+  return {
+    ...payload,
+    replayUrl: payload.replayUrl
+      ? new URL(payload.replayUrl).toString()
+      : "",
+    signupUrl: new URL(payload.signupUrl).toString()
+  };
+}
+
+const payloadSchema = payloadObjectSchema.transform(normalizeDestinations);
+
+const updatePayloadSchema = payloadObjectSchema.extend({
   expectedRevision: z.number().int().positive(),
   id: z.string().uuid()
-});
+}).transform(normalizeDestinations);
 
 const deletePayloadSchema = z.object({
   expectedRevision: z.number().int().positive(),

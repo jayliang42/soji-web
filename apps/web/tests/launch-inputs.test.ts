@@ -45,6 +45,8 @@ describe("Office Hours launch destinations", () => {
     const result = validateOfficeHourDestination(value);
 
     expect(result).toEqual({ ok: false, reason });
-    expect(JSON.stringify(result)).not.toContain(value);
+    if (value) {
+      expect(JSON.stringify(result)).not.toContain(value);
+    }
   });
 });
