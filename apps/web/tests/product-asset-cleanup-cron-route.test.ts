@@ -43,6 +43,10 @@ describe("scheduled product asset cleanup route", () => {
 
     expect(response.status).toBe(401);
     expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toEqual({
+      ok: false,
+      reason: "cron_unauthorized"
+    });
     expect(cronMocks.createSupabaseAdminClient).not.toHaveBeenCalled();
   });
 
@@ -68,6 +72,47 @@ describe("scheduled product asset cleanup route", () => {
       limit: 50,
       supabase: { client: "service-role" }
     });
+    expect(await response.json()).toEqual({
+      claimed: 0,
+      cleaned: 0,
+      failed: 0,
+      ok: true,
+      status: "complete"
+    });
+  });
+
+  it("returns aggregate cleanup truth without item or storage detail", async () => {
+    cronMocks.processDueProductAssetCleanupJobs.mockResolvedValue({
+      attempted: 2,
+      cleaned: 1,
+      failed: 1,
+      items: [
+        {
+          id: "job-id",
+          storagePath:
+            "private/customer@example.com/guide.pdf?token=service-secret"
+        }
+      ],
+      ok: true
+    });
+
+    const response = await GET(
+      new Request(
+        "http://localhost:3000/api/cron/product-asset-cleanup?storagePath=attacker.pdf"
+      )
+    );
+    const body = await response.json();
+
+    expect(body).toEqual({
+      claimed: 2,
+      cleaned: 1,
+      failed: 1,
+      ok: true,
+      status: "partial"
+    });
+    expect(JSON.stringify(body)).not.toMatch(
+      /storagePath|customer@example|service-secret|attacker\.pdf|items/
+    );
   });
 
   it("returns 500 when scheduled cleanup cannot complete safely", async () => {
@@ -80,9 +125,13 @@ describe("scheduled product asset cleanup route", () => {
     const response = await GET(request);
 
     expect(response.status).toBe(500);
-    expect(await response.json()).toMatchObject({
+    expect(await response.json()).toEqual({
+      claimed: 0,
+      cleaned: 0,
+      failed: 0,
       ok: false,
-      reason: "product_asset_cleanup_claim_failed"
+      reason: "product_asset_cleanup_claim_failed",
+      status: "failed"
     });
   });
 });

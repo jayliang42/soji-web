@@ -40,6 +40,19 @@ describe("cron authorization", () => {
     ).toBe(false);
   });
 
+  it.each([
+    undefined,
+    "",
+    "Basic 0123456789abcdef0123456789abcdef",
+    "bearer 0123456789abcdef0123456789abcdef",
+    "Bearer  0123456789abcdef0123456789abcdef",
+    "Bearer x0123456789abcdef0123456789abcdef",
+    "Bearer 0123456789abcdef0123456789abcdefx"
+  ])("rejects missing or malformed authorization %s", (authorization) => {
+    env.CRON_SECRET = "0123456789abcdef0123456789abcdef";
+    expect(isAuthorizedCronRequest(request(authorization))).toBe(false);
+  });
+
   it("accepts the exact configured bearer value", () => {
     env.CRON_SECRET = "0123456789abcdef0123456789abcdef";
     expect(
