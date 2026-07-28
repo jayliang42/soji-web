@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-28T02:52:10.773Z"
+last_updated: "2026-07-28T03:08:44.866Z"
 last_activity: 2026-07-28
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 17
-  completed_plans: 10
+  completed_plans: 11
   percent: 20
 ---
 
@@ -25,11 +25,11 @@ See: `.planning/PROJECT.md` (updated 2026-07-21)
 ## Current Position
 
 Phase: 03 (Launch Content and Customer Policy) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-07-28
 
-Progress: [██████░░░░] 59%
+Progress: [███████░░░] 65%
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Progress: [██████░░░░] 59%
 | Phase 02 P05 | 28min | 2 tasks | 5 files |
 | Phase 03 P01 | 7min | 3 tasks | 14 files |
 | Phase 03 P03 | 7min | 2 tasks | 10 files |
+| Phase 03 P04 | 9min | 3 tasks | 21 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,10 @@ Progress: [██████░░░░] 59%
 - [Phase 02]: Reconciliation closure uses a database-issued, customer-bound, expiring, single-use token. — Application clock skew cannot authorize stale subscription closure.
 - [Phase 02]: The committed Web release is self-contained and verified from an exact detached revision. — Release gates must never borrow untracked files from the mutable working tree.
 - [Phase 02]: Both reviewed billing migrations are one ordered evidence scope. — Production parity must end at `20260726010000` before provider UAT begins.
+- [Phase 03]: Checkout requires a durable support destination, explicit policy approval, and Stripe Terms readiness. — Repository structure can be complete while external owner and provider truth remains pending.
+- [Phase 03]: Policy readiness runs immediately after strict request validation and before provider or checkout-claim work. — Malformed input stays a 400, while a valid request cannot consume resources or contact Stripe when the customer trust path is incomplete.
+- [Phase 03]: Every purchase action shows concise terms locally while Stripe Checkout owns required Terms acceptance. — Customers see material terms before redirect and acceptance remains canonical at the hosted payment boundary.
+- [Phase 03]: Customer policy drafts describe current system behavior without invented entity, address, jurisdiction, arbitration, or service promises. — Production truth and later owner/legal review take precedence over false completeness.
 
 ### Pending Todos
 
@@ -114,6 +119,6 @@ Progress: [██████░░░░] 59%
 
 ## Session Continuity
 
-Last session: 2026-07-28T02:52:10.770Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-07-28T03:07:07.396Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
