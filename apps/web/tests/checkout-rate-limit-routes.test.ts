@@ -5,6 +5,7 @@ const routeMocks = vi.hoisted(() => ({
   consumeCheckoutRateLimit: vi.fn(),
   createSupabaseServerClient: vi.fn(),
   getBillingDeliveryReadiness: vi.fn(),
+  getCustomerPolicyReadiness: vi.fn(),
   getExistingStripeCustomerId: vi.fn(),
   getStripeClient: vi.fn(),
   reportOperationalError: vi.fn(),
@@ -24,6 +25,9 @@ vi.mock("@/lib/billing-readiness", () => ({
 vi.mock("@/lib/rate-limit", () => ({
   consumeCheckoutRateLimit: routeMocks.consumeCheckoutRateLimit,
   getRetryAfterSeconds: vi.fn(() => 300)
+}));
+vi.mock("@/lib/customer-policy", () => ({
+  getCustomerPolicyReadiness: routeMocks.getCustomerPolicyReadiness
 }));
 vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: routeMocks.createSupabaseServerClient
@@ -78,6 +82,11 @@ describe("checkout route rate limiting", () => {
     routeMocks.getBillingDeliveryReadiness.mockResolvedValue({
       stripeWebhookConfigured: true,
       supabaseServiceRoleOperational: true
+    });
+    routeMocks.getCustomerPolicyReadiness.mockReturnValue({
+      ready: true,
+      reasons: [],
+      supportUrl: "https://support.soji.co/help"
     });
     routeMocks.getExistingStripeCustomerId.mockResolvedValue(null);
     routeMocks.claimProductCheckout.mockResolvedValue({

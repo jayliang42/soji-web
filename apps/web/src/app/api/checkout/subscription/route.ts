@@ -6,6 +6,7 @@ import {
   isBillingDeliveryReady
 } from "@/lib/billing-readiness";
 import { subscriptionCheckoutPayloadSchema } from "@/lib/checkout";
+import { getCustomerPolicyReadiness } from "@/lib/customer-policy";
 import { getSiteUrl } from "@/lib/env";
 import { reportOperationalError } from "@/lib/observability";
 import {
@@ -42,6 +43,13 @@ export async function POST(request: NextRequest) {
 
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+
+  if (!getCustomerPolicyReadiness().ready) {
+    return NextResponse.json(
+      { error: "customer_policy_not_ready" },
+      { status: 503 }
+    );
   }
 
   const stripe = getStripeClient();
@@ -201,12 +209,21 @@ export async function POST(request: NextRequest) {
       {
         allow_promotion_codes: true,
         client_reference_id: user.id,
+        consent_collection: {
+          terms_of_service: "required"
+        },
         mode: "subscription",
         ...(customerId
           ? { customer: customerId }
           : { customer_email: user.email }),
         line_items: [{ price: priceId, quantity: 1 }],
         metadata,
+        custom_text: {
+          submit: {
+            message:
+              "By subscribing, you agree to the Soji Terms. Your membership renews monthly until canceled."
+          }
+        },
         expires_at: checkoutExpiresAt,
         subscription_data: {
           metadata
