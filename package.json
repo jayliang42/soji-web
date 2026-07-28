@@ -26,6 +26,8 @@
     "phase3:uat:ready": "node scripts/check-phase3-uat-evidence.mjs --ready",
     "phase4:uat:check": "node scripts/check-phase4-uat-evidence.mjs",
     "phase4:uat:ready": "node scripts/check-phase4-uat-evidence.mjs --ready",
+    "phase5:container:drill": "node scripts/check-phase5-container.mjs --drill --prior-image soji-web:prior-0000000000000000000000000000000000000000 --candidate-image soji-web:candidate-1111111111111111111111111111111111111111",
+    "phase5:container:test": "node --test scripts/check-phase5-container.test.mjs",
     "test": "corepack pnpm -r --if-present test",
     "test:db": "corepack pnpm --config.registry=https://registry.npmjs.org dlx supabase@2.109.1 test db --local supabase/tests",
     "test:e2e": "corepack pnpm --filter @soji/web test:e2e",
