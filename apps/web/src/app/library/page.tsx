@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ContentCard } from "@/components/content-card";
 import { ContentSourceBadge } from "@/components/content-source-badge";
 import { DataEmpty, DataUnavailable } from "@/components/data-state";
@@ -25,12 +26,14 @@ export default async function LibraryPage() {
       <SectionShell
         eyebrow="Library"
         headingLevel={1}
-        title="Content, templates, and member-only drops"
-        description="Each content item declares the entitlements required to unlock it."
+        title="Guides for making clearer money decisions"
+        description="Read useful public guides alongside deeper member editions, templates, and practical tools."
       >
-        <div className="mb-6">
-          <ContentSourceBadge source={snapshot.source} />
-        </div>
+        {snapshot.source === "demo" ? (
+          <div className="mb-6">
+            <ContentSourceBadge source={snapshot.source} />
+          </div>
+        ) : null}
         {snapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
@@ -47,25 +50,41 @@ export default async function LibraryPage() {
             />
           </div>
         ) : null}
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {snapshot.items.map((item) => (
-            <ContentCard
-              key={item.id}
-              item={item}
-              accessMode={getContentAccessMode(item, {
-                accessUnavailable: Boolean(session.error),
-                entitlements: session.entitlements,
-                isAuthenticated: Boolean(session.user)
-              })}
-            />
-          ))}
-        </div>
+        <ul
+          className="grid list-none gap-6 p-0 md:grid-cols-2 xl:grid-cols-3"
+          aria-label="Published guides"
+        >
+          {snapshot.items.map((item, index) => {
+            const featured = item.slug === "wealth-without-drift" || index === 0;
+
+            return (
+              <li key={item.id} className={featured ? "lg:col-span-2" : undefined}>
+                <ContentCard
+                  item={item}
+                  featured={featured}
+                  isAuthenticated={Boolean(session.user)}
+                  accessMode={getContentAccessMode(item, {
+                    accessUnavailable: Boolean(session.error),
+                    entitlements: session.entitlements,
+                    isAuthenticated: Boolean(session.user)
+                  })}
+                />
+              </li>
+            );
+          })}
+        </ul>
         {!snapshot.error && snapshot.items.length === 0 ? (
-          <div className="mt-6">
+          <div className="mt-6 space-y-4">
             <DataEmpty
-              title="No published content yet"
-              description="New essays, templates, and member drops will appear here."
+              title="The first guide is being prepared"
+              description="Browse membership details now, then return when the first guide is published."
             />
+            <Link
+              href="/pricing"
+              className="inline-flex min-h-11 items-center font-semibold text-clay underline decoration-clay/40 underline-offset-4 hover:decoration-clay"
+            >
+              Compare membership
+            </Link>
           </div>
         ) : null}
       </SectionShell>

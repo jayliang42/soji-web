@@ -11,7 +11,7 @@ const publicPages = [
     path: "/products"
   },
   {
-    heading: "Content, templates, and member-only drops",
+    heading: "Guides for making clearer money decisions",
     path: "/library"
   },
   {
@@ -30,7 +30,9 @@ for (const publicPage of publicPages) {
       page.getByRole("heading", { level: 1, name: publicPage.heading })
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { exact: true, name: "Account" })
+      page
+        .getByRole("navigation", { name: "Primary" })
+        .getByRole("link", { exact: true, name: "Account" })
     ).toBeVisible();
 
     const hasHorizontalOverflow = await page.evaluate(() => {
@@ -47,11 +49,8 @@ for (const publicPage of publicPages) {
       ).toBeVisible();
       await expect(page.getByText("Canceled", { exact: true })).toBeVisible();
       await expect(
-        page.getByText("Billing management is temporarily unavailable")
-      ).toBeVisible();
-      await expect(
-        page.getByRole("button", { name: "Billing unavailable" })
-      ).toBeDisabled();
+        page.getByRole("button", { name: "Manage billing" })
+      ).toHaveCount(0);
     }
   });
 }
@@ -88,7 +87,7 @@ test("primary navigation identifies the current section", async ({ page }) => {
     navigation.getByRole("link", { name: "Office hours" })
   ).toHaveAttribute("aria-current", "page");
   await expect(
-    navigation.getByRole("link", { name: "Pricing" })
+    navigation.getByRole("link", { name: "Subscriptions" })
   ).not.toHaveAttribute("aria-current", "page");
 });
 
@@ -156,7 +155,7 @@ test("demo admin preview is clearly identified", async ({ page }) => {
 
   await page.goto("/admin?view=billing");
   await expect(page.getByText("Received and stored", { exact: true })).toBeVisible();
-  await expect(page.getByText("Processing failed", { exact: true })).toHaveCount(2);
+  await expect(page.getByText("Processing · Failed", { exact: true })).toBeVisible();
   await expect(page.getByText("evt_demo_received_failed", { exact: false })).toBeVisible();
   await expect(page.getByText("Attempts", { exact: true })).toBeVisible();
 });
@@ -172,6 +171,19 @@ test("billing recovery reports only the operation that is actually running", asy
     await retryGate;
     await route.fulfill({
       body: JSON.stringify({
+        event: {
+          attemptCount: 3,
+          createdAt: "2026-07-14T14:00:00.000Z",
+          eventType: "checkout.session.completed",
+          id: "00000000-0000-4000-8000-000000000501",
+          lastAttemptedAt: "2026-07-15T15:00:00.000Z",
+          processedAt: "2026-07-15T15:00:00.000Z",
+          processingError: null,
+          processingStartedAt: null,
+          provider: "stripe",
+          providerEventId: "evt_demo_received_failed",
+          status: "ignored"
+        },
         ok: true,
         processedAt: "2026-07-15T15:00:00.000Z",
         result: { action: "ignored" }
@@ -184,14 +196,16 @@ test("billing recovery reports only the operation that is actually running", asy
   await page.goto("/admin?view=billing");
   await page.getByRole("button", { name: "Retry processing" }).click();
 
-  await expect(page.getByRole("button", { name: "Retrying..." })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Retrying…" })).toBeVisible();
   await expect(
     page.getByRole("button", { exact: true, name: "Reconcile billing" })
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Reconciling..." })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Reconciling…" })).toHaveCount(0);
 
   releaseRetry?.();
-  await expect(page.getByText("Billing event processed successfully.")).toBeVisible();
+  await expect(
+    page.getByText("Billing event stored; this event type has no Soji handler.")
+  ).toBeVisible();
 
   let releaseReconciliation: (() => void) | undefined;
   const reconciliationGate = new Promise<void>((resolve) => {
@@ -226,8 +240,8 @@ test("billing recovery reports only the operation that is actually running", asy
     .fill("cus_test123");
   await page.getByRole("button", { exact: true, name: "Reconcile billing" }).click();
 
-  await expect(page.getByRole("button", { name: "Reconciling..." })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Retrying..." })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Reconciling…" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Retrying…" })).toHaveCount(0);
 
   releaseReconciliation?.();
   await expect(page.getByText(/Reconciled 1 subscription/)).toBeVisible();
@@ -270,14 +284,16 @@ test("billing evidence remains discoverable across pages", async ({ page }) => {
 
   await page.goto("/admin?view=billing");
   await page.getByRole("button", { name: "Search events" }).click();
-  await expect(page.getByText("Showing 1-50 of 51")).toBeVisible();
+  await expect(page.getByText("Showing 1–50 of 51")).toBeVisible();
   await expect(page.getByText("Page 1 of 2")).toBeVisible();
   await page.getByRole("button", { exact: true, name: "Next" }).click();
   await expect(page.getByText("evt_page_2", { exact: false })).toBeVisible();
-  await expect(page.getByText("Stored, no handler", { exact: true })).toHaveCount(2);
+  await expect(
+    page.getByText("Processing · No handler", { exact: true })
+  ).toBeVisible();
   await expect(page.getByText(/this type does not change Soji state/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Retry processing" })).toHaveCount(0);
-  await expect(page.getByText("Showing 51-51 of 51")).toBeVisible();
+  await expect(page.getByText("Showing 51–51 of 51")).toBeVisible();
   await expect(
     page.getByRole("button", { exact: true, name: "Next" })
   ).toBeDisabled();
@@ -321,7 +337,9 @@ test("content editor protects unsaved changes when switching items", async ({ pa
   await page.goto("/admin?view=content");
 
   const contentRegion = page.getByRole("region", { name: "Content" });
-  const firstItem = contentRegion.getByRole("button", { name: /The First Money Audit/ });
+  const firstItem = contentRegion.getByRole("button", {
+    name: /Wealth Without Drift/
+  });
   const secondItem = contentRegion.getByRole("button", { name: /Money Reset Ritual/ });
   const title = contentRegion.getByRole("textbox", { exact: true, name: "Title" }).last();
 
@@ -414,27 +432,48 @@ test("office-hour editor protects changes before starting a new draft", async ({
 });
 
 test("member article preview never renders private body text", async ({ page }) => {
-  await page.goto("/library/money-reset-ritual");
+  await page.goto("/library/wealth-without-drift");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Money Reset Ritual" })
+    page.getByRole("heading", {
+      level: 1,
+      name: "Wealth Without Drift: A 90-Minute Decision Reset"
+    })
   ).toBeVisible();
-  await expect(page.getByText("Preview available", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Included with Tier 1 membership", { exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("img", {
+      name:
+        "Paper decision map, pencil, linen ledger, and ceramic dish in warm window light."
+    })
+  ).toBeVisible();
   await expect(
     page.getByText(
-      "The reset starts with a simple rule: every dollar should either support the life you are building or teach you something about the life you do not want.",
+      "Each item seems manageable alone. Together, they create a background feeling that money is happening to you instead of being directed by you.",
       { exact: true }
     )
   ).toHaveCount(0);
+  await expect(
+    page.getByRole("link", {
+      name: "See the membership that includes this"
+    })
+  ).toBeVisible();
 });
 
 test("customer surfaces never expose entitlement identifiers", async ({ page }) => {
   await page.goto("/office-hours");
-  await expect(page.getByText(/Live office hours/).first()).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      level: 3,
+      name: "June Office Hour: Family Money Decisions"
+    })
+  ).toBeVisible();
   await expect(page.locator("body")).not.toContainText("office_hours.join");
 
-  await page.goto("/library/money-reset-ritual");
+  await page.goto("/library/wealth-without-drift");
   await expect(
-    page.getByText(/Foundational monthly essays/).first()
+    page.getByText("Included with Tier 1 membership", { exact: true })
   ).toBeVisible();
   await expect(page.locator("body")).not.toContainText("content.basic");
 });

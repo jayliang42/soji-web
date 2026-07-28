@@ -130,7 +130,7 @@ describe("session failure pages", () => {
 
     expect(html).toContain("Membership access is temporarily unavailable");
     expect(html).toContain("Your membership has not been changed");
-    expect(html).toContain("Access unavailable");
+    expect(html).toContain("Access temporarily unavailable");
     expect(html).not.toContain("Locked by tier");
   });
 
@@ -141,7 +141,10 @@ describe("session failure pages", () => {
       })
     );
 
-    expect(html).toContain("Membership access is temporarily unavailable");
+    expect(html).toContain("Access temporarily unavailable");
+    expect(html).toContain(
+      "No member-only content or private links have been shown"
+    );
     expect(html).toContain("A safe public preview.");
     expect(html).not.toContain("PRIVATE BODY THAT MUST NOT LEAK");
     expect(html).not.toContain("Locked by tier");

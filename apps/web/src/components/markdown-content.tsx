@@ -50,7 +50,7 @@ export function MarkdownContent({
   return (
     <div
       className={clsx(
-        "text-[1.05rem] leading-8 text-cocoa/85",
+        "text-lg leading-[1.8] text-cocoa/85",
         "[&_a]:font-semibold [&_a]:text-clay [&_a]:underline [&_a]:decoration-clay/40 [&_a]:underline-offset-4 hover:[&_a]:decoration-clay",
         "[&_blockquote]:my-7 [&_blockquote]:border-l-4 [&_blockquote]:border-clay [&_blockquote]:pl-5 [&_blockquote]:italic [&_blockquote]:text-cocoa/72",
         "[&_code]:rounded-sm [&_code]:bg-dune/45 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.9em]",

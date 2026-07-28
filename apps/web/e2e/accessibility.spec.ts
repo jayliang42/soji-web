@@ -6,7 +6,7 @@ const auditedPages = [
   "/pricing",
   "/products",
   "/library",
-  "/library/money-reset-ritual",
+  "/library/wealth-without-drift",
   "/office-hours",
   "/login",
   "/reset-password",

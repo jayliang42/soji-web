@@ -1,22 +1,20 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ContentCover } from "@/components/content-cover";
 import { ContentPreviewCta } from "@/components/content-preview-cta";
 import { ContentSourceBadge } from "@/components/content-source-badge";
 import { DataUnavailable } from "@/components/data-state";
 import { MarkdownContent } from "@/components/markdown-content";
 import { SectionShell } from "@/components/section-shell";
 import { getContentAccessMode, getVisibleContentBody } from "@/lib/content-access";
-import { formatContentType } from "@/lib/content-presentation";
+import { getContentAccessPresentation } from "@/lib/content-access-presentation";
+import {
+  formatContentType,
+  formatPublishedDate
+} from "@/lib/content-presentation";
 import { getContentBySlug } from "@/lib/content";
-import { formatEntitlementList } from "@/lib/entitlements";
 import { getSessionSnapshot } from "@/lib/session";
-
-const accessLabels = {
-  full: "Available now",
-  locked: "Locked by tier",
-  preview: "Preview available",
-  unavailable: "Access unavailable"
-} as const;
 
 export async function generateMetadata({
   params
@@ -44,7 +42,14 @@ export async function generateMetadata({
       description: result.item.summary,
       url: canonical,
       ...(result.item.coverImage
-        ? { images: [{ alt: result.item.title, url: result.item.coverImage }] }
+        ? {
+            images: [
+              {
+                alt: result.item.coverImageAlt || result.item.title,
+                url: result.item.coverImage
+              }
+            ]
+          }
         : {})
     }
   };
@@ -89,59 +94,106 @@ export default async function ContentDetailPage({
     entitlements: session.entitlements,
     isAuthenticated: Boolean(session.user)
   });
+  const isAuthenticated = Boolean(session.user);
+  const access = getContentAccessPresentation(
+    item,
+    accessMode,
+    isAuthenticated
+  );
   const displayBody = getVisibleContentBody(item, accessMode);
+  const publishedDate = formatPublishedDate(item.publishedAt);
 
   return (
     <main>
-      <SectionShell
-        eyebrow={formatContentType(item.type)}
-        headingLevel={1}
-        title={item.title}
-        description={item.summary}
-      >
-        <div className="mb-6">
-          <ContentSourceBadge source={source} />
+      <section className="mx-auto max-w-6xl px-6 py-16 md:py-20">
+        <header className="max-w-4xl">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-clay">
+            Library
+          </p>
+          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-cocoa/70">
+            <span>{formatContentType(item.type)}</span>
+            {publishedDate ? (
+              <>
+                <span aria-hidden="true">·</span>
+                <time dateTime={item.publishedAt}>{publishedDate}</time>
+              </>
+            ) : null}
+          </div>
+          <h1 className="mt-5 max-w-4xl font-display text-5xl font-bold leading-[0.98] text-cocoa md:text-7xl">
+            {item.title}
+          </h1>
+          <p className="mt-6 max-w-3xl text-xl font-semibold leading-8 text-cocoa/72">
+            {item.summary}
+          </p>
+        </header>
+
+        <ContentCover
+          src={item.coverImage}
+          alt={item.coverImageAlt}
+          eager
+          className="mt-10 max-w-5xl border border-dune"
+        />
+
+        <div className="mt-7 flex flex-wrap items-center gap-3">
+          <span
+            className={
+              access.tone === "success"
+                ? "rounded-full bg-success-muted px-3 py-1 text-sm font-semibold text-success"
+                : access.tone === "accent"
+                  ? "rounded-full bg-accent-muted px-3 py-1 text-sm font-semibold text-clay"
+                  : "rounded-full bg-cream px-3 py-1 text-sm font-semibold text-cocoa/75"
+            }
+          >
+            {access.label}
+          </span>
+          {source === "demo" ? (
+            <ContentSourceBadge source={source} />
+          ) : null}
         </div>
+
         {accessMode === "unavailable" ? (
-          <div className="mb-6">
-            <DataUnavailable
-              title="Membership access is temporarily unavailable"
-              description="We could not verify access to this restricted piece. Your membership has not been changed, and no private body content has been shown. Please try again shortly."
-            />
+          <div
+            role="alert"
+            className="mt-7 max-w-[72ch] rounded-lg border border-clay/30 bg-accent-muted px-5 py-5 text-cocoa"
+          >
+            <p className="font-semibold">Access temporarily unavailable</p>
+            <p className="mt-2 leading-7 text-cocoa/75">
+              We could not verify access right now. No member-only content or
+              private links have been shown. Try again or contact{" "}
+              <Link
+                href="/support"
+                className="font-semibold text-clay underline decoration-clay/40 underline-offset-4"
+              >
+                Support
+              </Link>
+              .
+            </p>
           </div>
         ) : null}
-        <article className="rounded-lg border border-dune bg-shell p-8">
-          <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
-            <span className="rounded-full bg-sand px-3 py-1 font-semibold text-cocoa">
-              {accessLabels[accessMode]}
-            </span>
-            {item.requiredEntitlements.length > 0 ? (
-              <span className="text-cocoa/70">
-                Includes {formatEntitlementList(item.requiredEntitlements)}
-              </span>
-            ) : (
-              <span className="text-cocoa/70">
-                {item.visibility === "public" ? "Free public piece" : "Member account required"}
-              </span>
-            )}
-          </div>
+
+        <article className="mt-8 max-w-[72ch] rounded-lg border border-dune bg-shell px-5 py-8 sm:px-8 md:py-10">
           {displayBody ? (
             <MarkdownContent content={displayBody} />
           ) : (
             <div className="space-y-4">
               <p className="text-lg text-cocoa/80">
-                This piece is reserved for members with the right access.
+                This guide is reserved for readers with the right access.
               </p>
               <p className="text-sm text-cocoa/70">
-                Choose a membership that includes {formatEntitlementList(item.requiredEntitlements)}.
+                Review the available membership or purchase options to continue.
               </p>
             </div>
           )}
           {accessMode === "preview" || accessMode === "locked" ? (
-            <ContentPreviewCta mode={accessMode} nextPath={`/library/${item.slug}`} />
+            <ContentPreviewCta
+              mode={accessMode}
+              isAuthenticated={isAuthenticated}
+              membershipName={access.membershipName}
+              nextPath={`/library/${item.slug}`}
+            />
           ) : null}
         </article>
-      </SectionShell>
+      </section>
     </main>
   );
 }

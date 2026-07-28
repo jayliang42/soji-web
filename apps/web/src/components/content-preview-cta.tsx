@@ -1,39 +1,62 @@
 import Link from "next/link";
 
 export function ContentPreviewCta({
+  isAuthenticated,
+  membershipName,
   mode,
   nextPath = "/library"
 }: {
+  isAuthenticated: boolean;
+  membershipName: string | null;
   mode: "preview" | "locked";
   nextPath?: string;
 }) {
+  const requiresDifferentAccess = isAuthenticated || mode === "locked";
+
   return (
-    <div className="mt-8 border-t border-dune pt-7">
-      <p className="text-sm uppercase text-clay">Member Access</p>
-      <h3 className="mt-3 font-display text-3xl text-cocoa">
-        {mode === "preview"
-          ? "Keep reading with a member account"
-          : "Unlock the full library"}
-      </h3>
-      <p className="mt-3 text-cocoa/75">
-        {mode === "preview"
-          ? "You are seeing the public preview. Sign up or upgrade to unlock the rest of this piece and the full member library."
-          : "This item is reserved for paying members or purchasers. Create an account to continue."}
+    <aside className="mt-10 border-t-2 border-clay bg-accent-muted px-5 py-7 sm:px-7">
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-clay">
+        {requiresDifferentAccess ? "Member edition" : "Public preview"}
       </p>
-      <div className="mt-6 flex flex-wrap gap-4">
-        <Link
-          href={{ pathname: "/login", query: { next: nextPath } }}
-          className="rounded-md bg-cocoa px-5 py-3 text-sm font-semibold text-white"
-        >
-          Create account
-        </Link>
+      <h2 className="mt-3 font-display text-3xl font-bold leading-tight text-cocoa">
+        {requiresDifferentAccess
+          ? membershipName
+            ? `The full guide is included with ${membershipName} membership`
+            : "This guide needs additional access"
+          : "Continue with Soji membership"}
+      </h2>
+      <p className="mt-3 max-w-2xl leading-7 text-cocoa/75">
+        {requiresDifferentAccess
+          ? membershipName
+            ? "Your current access includes this public opening. Compare membership options to continue with the complete guide."
+            : "Your account does not include the complete guide. Review the available access options to continue."
+          : "You are reading the public opening. Compare membership for the complete guide, or sign in to check access you may already have."}
+      </p>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Link
           href="/pricing"
-          className="rounded-md border border-cocoa px-5 py-3 text-sm font-semibold text-cocoa"
+          className="inline-flex min-h-11 items-center justify-center rounded-md bg-cocoa px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-charcoal"
         >
-          View membership
+          {requiresDifferentAccess
+            ? "See the membership that includes this"
+            : "Compare membership"}
         </Link>
+        {isAuthenticated ? (
+          <Link
+            href="/account"
+            className="inline-flex min-h-11 items-center justify-center rounded-md border border-cocoa px-5 py-3 text-sm font-semibold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
+          >
+            Review your account
+          </Link>
+        ) : (
+          <Link
+            href={{ pathname: "/login", query: { next: nextPath } }}
+            className="inline-flex min-h-11 items-center justify-center rounded-md border border-cocoa px-5 py-3 text-sm font-semibold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
+          >
+            Sign in to check access
+          </Link>
+        )}
       </div>
-    </div>
+    </aside>
   );
 }
