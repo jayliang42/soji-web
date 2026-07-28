@@ -11,8 +11,10 @@ import {
   DEPLOYMENT_OWNER_SCENARIOS,
   OWNER_SCENARIOS,
   PHASE5_OWNER_SCENARIOS,
+  RELEASE_COMMANDS,
   REQUIRED_SCENARIOS,
   parseEvidence,
+  validateReleaseDocumentation,
   validateEvidence
 } from "./check-phase5-uat-evidence.mjs";
 
@@ -236,4 +238,17 @@ test("module import is silent; structure CLI passes and ready CLI fails", () => 
   assert.equal(imported.stderr, "");
   assert.equal(runCli(artifact()).status, 0);
   assert.notEqual(runCli(artifact(), ["--ready"]).status, 0);
+});
+
+test("release command inventory is fixed, local-only, and docs preserve one checkpoint", () => {
+  assert.equal(RELEASE_COMMANDS.length, 16);
+  const serialized = JSON.stringify(RELEASE_COMMANDS);
+  assert.doesNotMatch(
+    serialized,
+    /\b(?:vercel|promote|instant rollback|supabase\s+(?:link|db push)|stripe\s+(?:listen|trigger))\b/i
+  );
+  assert.deepEqual(validateReleaseDocumentation(process.cwd()), {
+    checkpointCount: 1,
+    documents: 3
+  });
 });
