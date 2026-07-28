@@ -31,7 +31,24 @@ export async function GET(request: Request) {
     supabase
   });
 
-  return NextResponse.json(result, {
+  const response = result.ok
+    ? {
+        claimed: result.attempted,
+        cleaned: result.cleaned,
+        failed: result.failed,
+        ok: true as const,
+        status: result.failed > 0 ? ("partial" as const) : ("complete" as const)
+      }
+    : {
+        claimed: result.attempted,
+        cleaned: "cleaned" in result ? result.cleaned : 0,
+        failed: "failed" in result ? result.failed : result.attempted,
+        ok: false as const,
+        reason: result.reason,
+        status: "failed" as const
+      };
+
+  return NextResponse.json(response, {
     headers: noStoreHeaders,
     status: result.ok ? 200 : 500
   });
