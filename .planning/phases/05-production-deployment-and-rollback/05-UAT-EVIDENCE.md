@@ -15,7 +15,7 @@ diagnostic output.
 | PH5-STANDALONE-ARTIFACT | PASS | automated | 2026-07-28T05:30:00Z | local-repository | The exact commit builds a portable standalone artifact without environment files. | Clean-commit production build and artifact check passed. | command: docker build and corepack pnpm deploy:check; commit: ee2aaff | Docker is a fallback artifact only. |
 | PH5-NONROOT-IMAGE | PASS | automated | 2026-07-28T05:30:00Z | local-repository | Final image user, entry, port, healthcheck, env, labels, and history satisfy the secret-safe contract. | Final image inspection passed. | command: node scripts/check-phase5-container.mjs --inspect; commit: ee2aaff | No runtime secret value was used. |
 | PH5-LOCAL-ROLLBACK-DRILL | PASS | automated | 2026-07-28T05:30:00Z | local-repository | Prior and candidate containers switch and restore with exact owned cleanup. | Four health transitions passed and no drill container remained. | command: corepack pnpm phase5:container:drill; commit: 53882d0 | This does not prove Vercel or database rollback. |
-| PH5-RELEASE-REGRESSION | PENDING | automated | — | local-repository | One exact-commit command passes every local release gate. | Pending repository regression. | pending repository command | Promoted only after the complete command passes. |
+| PH5-RELEASE-REGRESSION | PASS | automated | 2026-07-28T05:36:36Z | local-repository | One exact-commit command passes every local release gate. | All nineteen exact-commit local release gates completed successfully. | command: corepack pnpm phase5:release:check; commit: 9a02675 | No production provider or canonical account mutation occurred. |
 | PH5-DOCS | PASS | automated | 2026-07-28T05:29:11Z | local-repository | Release and owner procedures have valid local links and one authoritative checkpoint. | Documentation and sole-checkpoint validation passed. | command: corepack pnpm docs:check and exact checkpoint search; commit: c3d990e | No second login list is permitted. |
 | PH5-PRIVACY-VALIDATION | PASS | automated | 2026-07-28T05:29:11Z | local-repository | Evidence rejects private release and provider material. | Adversarial whole-file privacy cases passed. | command: node --test scripts/check-phase5-uat-evidence.test.mjs; commit: c3d990e | Generated targets and private material remain excluded. |
 | INFRA-01-READINESS | PENDING | owner | — | — | Production identity readiness reports every required service check true. | Pending owner observation. | pending owner observation | Carried from Phase 1. |
@@ -67,5 +67,5 @@ diagnostic output.
 | PH5-PRIOR-SMOKE | PENDING | owner | — | — | The restored prior deployment passes liveness, readiness, canonical, and schedule checks. | Pending owner observation. | pending owner observation | Stop if the known-good state is not healthy. |
 | PH5-REPROMOTE-SMOKE | PENDING | owner | — | — | Re-promoting the candidate restores normal production state and all final smoke checks pass. | Pending owner observation. | pending owner observation | Release remains closed until this row passes. |
 
-`phase5:uat:ready` must remain nonzero until the pending release regression has passed locally
-and all 48 owner/provider rows contain genuine redacted canonical observations.
+`phase5:uat:ready` must remain nonzero until all 48 owner/provider rows contain genuine
+redacted canonical observations.

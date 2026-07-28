@@ -33,6 +33,22 @@ The first command covers unit, route, browser, database, type, build, standalone
 exact-input, image, and local rollback checks. It must run against the exact committed source.
 The ready command is expected to remain nonzero until all direct external observations are done.
 
+### Recorded local result
+
+The complete command passed on 2026-07-28 against exact detached commit `9a02675`:
+
+- Phase 5 gate tests: 26 passed; Phase 1–5 evidence structure passed.
+- Domain: 3 passed; Web: 81 files and 628 tests passed.
+- ESLint, route types, TypeScript, production build, 37 static pages, and standalone artifact
+  passed.
+- Desktop/mobile Playwright: 118 passed across the locked responsive, accessibility, authority,
+  and workflow contracts.
+- Database: repeatable schema, 97 focused pgTAP, 374 full pgTAP, and generated types passed.
+- Final image inspection and four-transition local rollback drill passed.
+
+No provider deployment, environment change, canonical account, production schema, payment, or
+other production mutation was used.
+
 ## Staged production candidate
 
 Only after the coordinated owner checkpoint confirms all carried prerequisites:
