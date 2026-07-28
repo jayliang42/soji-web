@@ -75,6 +75,26 @@ describe("product asset cleanup executor", () => {
     );
   });
 
+  it("reports a successful empty run when no jobs are due", async () => {
+    cleanupMocks.rpc.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await processDueProductAssetCleanupJobs({
+      actor: "cron",
+      eventPrefix: "test.cleanup",
+      limit: 50,
+      supabase: supabase()
+    });
+
+    expect(result).toEqual({
+      attempted: 0,
+      cleaned: 0,
+      failed: 0,
+      items: [],
+      ok: true
+    });
+    expect(cleanupMocks.remove).not.toHaveBeenCalled();
+  });
+
   it("fails before Storage when durable job claiming is unavailable", async () => {
     cleanupMocks.rpc.mockResolvedValueOnce({
       data: null,
@@ -121,7 +141,7 @@ describe("product asset cleanup executor", () => {
     );
   });
 
-  it("counts a missing receipt as failed even after Storage removal", async () => {
+  it("fails the run when an attempt receipt cannot be recorded", async () => {
     cleanupMocks.rpc
       .mockResolvedValueOnce({ data: [job], error: null })
       .mockResolvedValueOnce({ data: null, error: { message: "receipt unavailable" } });
@@ -133,7 +153,13 @@ describe("product asset cleanup executor", () => {
       supabase: supabase()
     });
 
-    expect(result).toMatchObject({ attempted: 1, cleaned: 0, failed: 1, ok: true });
+    expect(result).toEqual({
+      attempted: 1,
+      cleaned: 0,
+      failed: 1,
+      ok: false,
+      reason: "product_asset_cleanup_attempt_record_failed"
+    });
     expect(cleanupMocks.reportOperationalError).toHaveBeenCalledWith(
       "test.cleanup.receipt_failed",
       expect.anything(),
@@ -141,7 +167,7 @@ describe("product asset cleanup executor", () => {
     );
   });
 
-  it("treats an expired lease receipt as failed instead of claiming success", async () => {
+  it("fails the run when the attempt lease is lost before recording", async () => {
     cleanupMocks.rpc
       .mockResolvedValueOnce({ data: [job], error: null })
       .mockResolvedValueOnce({ data: [], error: null });
@@ -153,7 +179,13 @@ describe("product asset cleanup executor", () => {
       supabase: supabase()
     });
 
-    expect(result).toMatchObject({ attempted: 1, cleaned: 0, failed: 1, ok: true });
+    expect(result).toEqual({
+      attempted: 1,
+      cleaned: 0,
+      failed: 1,
+      ok: false,
+      reason: "product_asset_cleanup_attempt_record_failed"
+    });
     expect(cleanupMocks.reportOperationalError).toHaveBeenCalledWith(
       "test.cleanup.lease_lost",
       expect.anything(),

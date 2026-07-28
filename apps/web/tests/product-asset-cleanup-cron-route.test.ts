@@ -134,4 +134,26 @@ describe("scheduled product asset cleanup route", () => {
       status: "failed"
     });
   });
+
+  it("does not report success when attempt recording fails", async () => {
+    cronMocks.processDueProductAssetCleanupJobs.mockResolvedValue({
+      attempted: 2,
+      cleaned: 1,
+      failed: 1,
+      ok: false,
+      reason: "product_asset_cleanup_attempt_record_failed"
+    });
+
+    const response = await GET(request);
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({
+      claimed: 2,
+      cleaned: 1,
+      failed: 1,
+      ok: false,
+      reason: "product_asset_cleanup_attempt_record_failed",
+      status: "failed"
+    });
+  });
 });
