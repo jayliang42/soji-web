@@ -19,9 +19,9 @@ import { DELETE, PATCH, POST } from "@/app/api/admin/office-hours/route";
 
 const officeHourId = "00000000-0000-4000-8000-000000000601";
 const validPayload = {
-  replayUrl: "https://meet.example.com/replay",
+  replayUrl: "https://vimeo.com/showcase/123/video/456",
   requiredEntitlement: "office_hours.join",
-  signupUrl: "https://meet.example.com/signup",
+  signupUrl: "https://cal.com/soji/office-hours?month=2026-08",
   startsAt: "2026-08-01T18:00:00.000Z",
   title: "August portfolio office hours"
 };
@@ -80,6 +80,41 @@ describe("admin office-hour writes", () => {
     expect(malformed.status).toBe(400);
     expect(overPosted.status).toBe(400);
     expect(unsafeUrl.status).toBe(400);
+  });
+
+  it.each([
+    ["http", "http://cal.com/soji", "office_hour_url_https_required"],
+    ["credentials", "https://user:secret@cal.com/soji", "office_hour_url_credentials_forbidden"],
+    ["placeholder", "https://events.example.com/soji", "office_hour_url_placeholder_host"],
+    ["loopback", "https://127.0.0.1/soji", "office_hour_url_private_host"],
+    ["private", "https://192.168.1.2/soji", "office_hour_url_private_host"],
+    ["local", "https://booking.soji.local/soji", "office_hour_url_local_host"]
+  ])("rejects %s signup destinations with a stable, redacted reason", async (
+    _label,
+    signupUrl,
+    reason
+  ) => {
+    const response = await POST(
+      request({ ...validPayload, signupUrl }, "POST")
+    );
+    const responseText = await response.text();
+
+    expect(response.status).toBe(400);
+    expect(responseText).toContain(reason);
+    expect(responseText).not.toContain(signupUrl);
+    expect(routeMocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("permits an empty replay destination without weakening signup validation", async () => {
+    const response = await POST(
+      request({ ...validPayload, replayUrl: "" }, "POST")
+    );
+
+    expect(response.status).toBe(200);
+    expect(routeMocks.rpc).toHaveBeenCalledWith(
+      "upsert_office_hour",
+      expect.objectContaining({ p_replay_url: null })
+    );
   });
 
   it("creates and updates a normalized office-hour record", async () => {
