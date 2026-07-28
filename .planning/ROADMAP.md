@@ -8,7 +8,7 @@ This milestone converts an extensively implemented and tested brownfield applica
 
 - [ ] **Phase 1: Production Identity and Admin** - Establish the real Supabase, auth, SMTP, and publisher control plane.
 - [ ] **Phase 2: Billing and Fulfillment UAT** - Prove Stripe catalog, receipt, subscription, product, refund, and dispute behavior with real test credentials.
-- [ ] **Phase 3: Launch Content and Customer Policy** - Replace demo operational inputs with real content, office-hour links, support, and policies.
+- [x] **Phase 3: Launch Content and Customer Policy** - Replace demo operational inputs with real content, office-hour links, support, and policies. (completed 2026-07-28)
 - [ ] **Phase 4: Experience and Operations Acceptance** - Close final UI/UX regressions and verify alerts and scheduled maintenance.
 - [ ] **Phase 5: Production Deployment and Rollback** - Ship the standalone Web service through readiness, smoke, update, and rollback gates.
 
@@ -90,7 +90,7 @@ This milestone converts an extensively implemented and tested brownfield applica
 | 1. Production Identity and Admin | 3/3 | Human UAT gaps carried |  |
 | 2. Billing and Fulfillment UAT | 5/9 | Production/provider UAT gaps carried |  |
 | 2. Billing and Fulfillment UAT | 5/9 | In Progress|  |
-| 3. Launch Content and Customer Policy | 4/5 | In Progress|  |
+| 3. Launch Content and Customer Policy | 5/5 | Complete   | 2026-07-28 |
 | 4. Experience and Operations Acceptance | 0/TBD | Not started | - |
 | 5. Production Deployment and Rollback | 0/TBD | Not started | - |
 
