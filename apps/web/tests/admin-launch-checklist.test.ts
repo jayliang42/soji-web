@@ -18,7 +18,20 @@ const configured: LaunchChecklistConfig = {
 };
 
 const operational: OperationalReadiness = {
+  launchContentCount: 1,
+  launchContentOperational: true,
+  officeHourReplayCount: 1,
+  officeHourReplayState: "ready",
+  officeHourSignupCount: 1,
+  officeHourSignupState: "ready",
+  officeHoursOperational: true,
+  policiesApprovalState: "ready",
+  policiesApproved: true,
   stripeMembershipPrices: true,
+  stripeTermsAcceptanceReady: true,
+  stripeTermsAcceptanceState: "ready",
+  supportContactConfigured: true,
+  supportContactState: "ready",
   supabasePublicOperational: true,
   supabaseServiceRoleOperational: true
 };
@@ -94,5 +107,57 @@ describe("admin launch checklist", () => {
     expect(itemStatus(items, "Billing event access")?.status).toBe("ready");
     expect(itemStatus(items, "Product Stripe price IDs")?.status).toBe("ready");
     expect(itemStatus(items, "Product delivery assets")?.status).toBe("ready");
+    expect(itemStatus(items, "Flagship launch content")?.status).toBe("ready");
+    expect(itemStatus(items, "Office Hours signup destination")?.status).toBe(
+      "ready"
+    );
+    expect(itemStatus(items, "Office Hours replay destination")?.status).toBe(
+      "ready"
+    );
+    expect(itemStatus(items, "Customer support destination")?.status).toBe(
+      "ready"
+    );
+    expect(itemStatus(items, "Customer policies approved")?.status).toBe(
+      "ready"
+    );
+    expect(itemStatus(items, "Stripe Terms acceptance")?.status).toBe("ready");
+  });
+
+  it("gives actionable owner-input and invalid launch states", () => {
+    const items = build({
+      operationalReadiness: {
+        ...operational,
+        officeHourReplayCount: 0,
+        officeHourReplayState: "needs_owner_input",
+        officeHourSignupCount: 0,
+        officeHourSignupState: "invalid",
+        officeHoursOperational: false,
+        policiesApprovalState: "needs_owner_input",
+        policiesApproved: false,
+        stripeTermsAcceptanceReady: false,
+        stripeTermsAcceptanceState: "invalid",
+        supportContactConfigured: false,
+        supportContactState: "invalid"
+      }
+    });
+
+    expect(itemStatus(items, "Office Hours signup destination")).toMatchObject({
+      detail: expect.stringContaining("Admin"),
+      status: "invalid"
+    });
+    expect(itemStatus(items, "Office Hours replay destination")).toMatchObject({
+      detail: expect.stringContaining("Admin"),
+      status: "needs_owner_input"
+    });
+    expect(itemStatus(items, "Customer support destination")).toMatchObject({
+      detail: expect.stringContaining("NEXT_PUBLIC_SUPPORT_URL"),
+      status: "invalid"
+    });
+    expect(itemStatus(items, "Customer policies approved")?.status).toBe(
+      "needs_owner_input"
+    );
+    expect(itemStatus(items, "Stripe Terms acceptance")?.status).toBe(
+      "invalid"
+    );
   });
 });

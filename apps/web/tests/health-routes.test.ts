@@ -26,7 +26,20 @@ describe("health routes", () => {
     }
     healthMocks.isExplicitDemoModeEnabled.mockReturnValue(false);
     readinessMocks.getOperationalReadiness.mockResolvedValue({
+      launchContentCount: 1,
+      launchContentOperational: true,
+      officeHourReplayCount: 1,
+      officeHourReplayState: "ready",
+      officeHourSignupCount: 1,
+      officeHourSignupState: "ready",
+      officeHoursOperational: true,
+      policiesApprovalState: "ready",
+      policiesApproved: true,
       stripeMembershipPrices: true,
+      stripeTermsAcceptanceReady: true,
+      stripeTermsAcceptanceState: "ready",
+      supportContactConfigured: true,
+      supportContactState: "ready",
       supabasePublicOperational: true,
       supabaseServiceRoleOperational: true
     });
@@ -67,7 +80,20 @@ describe("health routes", () => {
 
   it("fails readiness when configured dependencies are not operational", async () => {
     readinessMocks.getOperationalReadiness.mockResolvedValue({
+      launchContentCount: 0,
+      launchContentOperational: false,
+      officeHourReplayCount: 0,
+      officeHourReplayState: "needs_owner_input",
+      officeHourSignupCount: 0,
+      officeHourSignupState: "invalid",
+      officeHoursOperational: false,
+      policiesApprovalState: "needs_owner_input",
+      policiesApproved: false,
       stripeMembershipPrices: false,
+      stripeTermsAcceptanceReady: false,
+      stripeTermsAcceptanceState: "needs_owner_input",
+      supportContactConfigured: false,
+      supportContactState: "invalid",
       supabasePublicOperational: true,
       supabaseServiceRoleOperational: false
     });
@@ -78,11 +104,25 @@ describe("health routes", () => {
     expect(await response.json()).toMatchObject({
       checks: {
         stripeMembershipPrices: false,
+        launchContentOperational: false,
+        officeHoursOperational: false,
+        policiesApproved: false,
+        stripeTermsAcceptanceReady: false,
+        supportContactConfigured: false,
         supabasePublicOperational: true,
         supabaseServiceRoleOperational: false
+      },
+      details: {
+        launchContentCount: 0,
+        officeHourReplayCount: 0,
+        officeHourSignupCount: 0
       },
       ok: false,
       status: "not_ready"
     });
+
+    const serialized = JSON.stringify(await response.clone().json());
+    expect(serialized).not.toContain("needs_owner_input");
+    expect(serialized).not.toContain("invalid");
   });
 });
