@@ -102,7 +102,7 @@ This milestone converts an extensively implemented and tested brownfield applica
 | 2. Billing and Fulfillment UAT | 5/9 | In Progress|  |
 | 3. Launch Content and Customer Policy | 5/5 | Complete   | 2026-07-28 |
 | 4. Experience and Operations Acceptance | 4/4 | Complete   | 2026-07-28 |
-| 5. Production Deployment and Rollback | 1/4 | In Progress|  |
+| 5. Production Deployment and Rollback | 2/4 | In Progress|  |
 
 ## Coverage
 
