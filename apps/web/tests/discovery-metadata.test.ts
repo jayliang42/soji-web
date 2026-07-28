@@ -25,6 +25,15 @@ describe("public discovery metadata", () => {
 
     const urls = sitemap().map((entry) => entry.url);
     expect(urls).toContain("https://soji.example/library");
+    expect(urls).toEqual(
+      expect.arrayContaining([
+        "https://soji.example/support",
+        "https://soji.example/privacy",
+        "https://soji.example/terms",
+        "https://soji.example/refund-policy",
+        "https://soji.example/financial-disclaimer"
+      ])
+    );
     expect(urls).not.toContain("https://soji.example/account");
     expect(urls).not.toContain("https://soji.example/admin");
   });

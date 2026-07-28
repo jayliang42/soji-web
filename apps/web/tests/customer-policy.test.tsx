@@ -1,18 +1,28 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import FinancialDisclaimerPage, {
   metadata as financialDisclaimerMetadata
 } from "@/app/financial-disclaimer/page";
+import RootLayout from "@/app/layout";
 import PrivacyPage, { metadata as privacyMetadata } from "@/app/privacy/page";
 import RefundPolicyPage, {
   metadata as refundPolicyMetadata
 } from "@/app/refund-policy/page";
 import SupportPage, { metadata as supportMetadata } from "@/app/support/page";
 import TermsPage, { metadata as termsMetadata } from "@/app/terms/page";
+import { PurchaseDisclosure } from "@/components/purchase-disclosure";
 import {
   customerPolicyRoutes,
   getCustomerPolicyReadiness
 } from "@/lib/customer-policy";
+
+vi.mock("@/lib/session", () => ({
+  getSessionSnapshot: vi.fn(async () => ({
+    entitlements: [],
+    source: "supabase",
+    user: null
+  }))
+}));
 
 const readyConfiguration = {
   policiesApproved: "true",
@@ -129,5 +139,50 @@ describe("public customer policy pages", () => {
     expect(html).not.toMatch(
       /guaranteed returns|licensed financial advice|response within \d+|Soji LLC|binding arbitration/iu
     );
+  });
+});
+
+describe("customer trust links", () => {
+  it("groups Explore and all five support links in the global footer", async () => {
+    const html = renderToStaticMarkup(
+      await RootLayout({ children: <main>Page</main> })
+    );
+
+    expect(html).toContain("Explore");
+    expect(html).toContain("Support &amp; policies");
+    for (const href of [
+      "/library",
+      "/pricing",
+      "/products",
+      "/office-hours",
+      "/account",
+      ...Object.values(customerPolicyRoutes)
+    ]) {
+      expect(html).toContain(`href="${href}"`);
+    }
+    expect(html).toContain("min-h-11");
+  });
+
+  it("renders exact membership and product purchase disclosures without local consent", () => {
+    const membership = renderToStaticMarkup(
+      <PurchaseDisclosure priceLabel="$128" variant="membership" />
+    );
+    const product = renderToStaticMarkup(
+      <PurchaseDisclosure variant="product" />
+    );
+
+    expect(membership).toContain("$128 billed monthly until canceled");
+    expect(membership).toContain("Stripe Customer Portal");
+    expect(membership).toContain("paid period and billing status");
+    expect(product).toContain("One-time purchase");
+    expect(product).toContain("Delivered to your Soji account");
+    expect(product).toContain("digital-product refund policy");
+
+    for (const html of [membership, product]) {
+      for (const href of ["/terms", "/refund-policy", "/privacy", "/support"]) {
+        expect(html).toContain(`href="${href}"`);
+      }
+      expect(html).not.toMatch(/type="checkbox"|prechecked|pre-checked/iu);
+    }
   });
 });

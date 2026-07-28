@@ -126,4 +126,20 @@ describe("products page purchase safety", () => {
     expect(html).toContain('/account#purchases-heading');
     expect(html).not.toContain("Buy once");
   });
+
+  it("places one-time delivery and refund terms beside every product action", async () => {
+    pageMocks.getAccountPurchases.mockResolvedValue({ items: [] });
+
+    const html = renderToStaticMarkup(
+      await ProductsPage({ searchParams: Promise.resolve({}) })
+    );
+
+    expect(html).toContain("One-time purchase");
+    expect(html).toContain("Delivered to your Soji account");
+    expect(html).toContain("digital-product refund policy");
+    for (const href of ["/terms", "/refund-policy", "/privacy", "/support"]) {
+      expect(html).toContain(`href="${href}"`);
+    }
+    expect(html).not.toMatch(/type="checkbox"/u);
+  });
 });

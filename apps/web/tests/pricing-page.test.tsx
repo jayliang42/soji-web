@@ -79,4 +79,19 @@ describe("pricing membership safety", () => {
     expect(html).toContain("Checkout unavailable");
     expect(pricingMocks.getBillingDeliveryReadiness).not.toHaveBeenCalled();
   });
+
+  it("places exact renewal, cancellation, and policy terms by every plan", async () => {
+    pricingMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
+
+    const html = renderToStaticMarkup(
+      await PricingPage({ searchParams: Promise.resolve({}) })
+    );
+
+    for (const amount of ["$29", "$128", "$299"]) {
+      expect(html).toContain(`${amount} billed monthly until canceled`);
+    }
+    expect(html.match(/Stripe Customer Portal/gu)).toHaveLength(3);
+    expect(html.split('href="/refund-policy"')).toHaveLength(4);
+    expect(html).not.toMatch(/type="checkbox"/u);
+  });
 });
