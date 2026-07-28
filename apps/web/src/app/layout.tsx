@@ -1,24 +1,24 @@
 import Link from "next/link";
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import { PublicNavigation } from "@/components/public-navigation";
 import { getSiteUrl } from "@/lib/env";
 import { getSessionSnapshot } from "@/lib/session";
 import "./globals.css";
 
 const siteUrl = getSiteUrl() ?? "http://localhost:3000";
-const exploreLinks = [
+const exploreLinks: ReadonlyArray<readonly [string, Route]> = [
   ["Library", "/library"],
   ["Membership", "/pricing"],
   ["Shop", "/products"],
   ["Office Hours", "/office-hours"],
   ["Account", "/account"]
 ] as const;
-const supportPolicyLinks = [
-  ["Support", "/support"],
-  ["Privacy", "/privacy"],
-  ["Terms", "/terms"],
-  ["Refund policy", "/refund-policy"],
-  ["Financial disclaimer", "/financial-disclaimer"]
+const supportPolicyLinks: ReadonlyArray<readonly [string, Route]> = [
+  ["Support", "/support" as Route],
+  ["Privacy", "/privacy" as Route],
+  ["Terms", "/terms" as Route],
+  ["Refund policy", "/refund-policy" as Route],
+  ["Financial disclaimer", "/financial-disclaimer" as Route]
 ] as const;
 
 export const metadata: Metadata = {
