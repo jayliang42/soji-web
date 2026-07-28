@@ -7,6 +7,7 @@ vi.mock("@/lib/env", () => ({
 }));
 
 import {
+  createOperationsAlertEnvelope,
   createOperationalLog,
   reportOperationalError
 } from "@/lib/observability";
@@ -47,30 +48,80 @@ describe("operational logging", () => {
     expect(consoleError).toHaveBeenCalledOnce();
   });
 
-  it("delivers the same structured record to a configured webhook", async () => {
+  it("builds a versioned allowlisted alert envelope", () => {
+    const envelope = createOperationsAlertEnvelope({
+      environment: "preview",
+      event: "stripe.webhook.processing_failed",
+      level: "error",
+      timestamp: "2026-07-28T04:45:00.000Z"
+    });
+
+    expect(envelope).toEqual({
+      environment: "preview",
+      eventCode: "stripe.webhook.processing_failed",
+      occurredAt: "2026-07-28T04:45:00.000Z",
+      retryable: true,
+      schemaVersion: 1,
+      severity: "error",
+      subsystem: "payments"
+    });
+    expect(Object.keys(envelope).sort()).toEqual(
+      [
+        "environment",
+        "eventCode",
+        "occurredAt",
+        "retryable",
+        "schemaVersion",
+        "severity",
+        "subsystem"
+      ].sort()
+    );
+  });
+
+  it("delivers only the allowlisted alert envelope to a configured webhook", async () => {
     alertConfig.url = new URL("https://alerts.example/hooks/soji");
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 });
     vi.stubGlobal("fetch", fetchMock);
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const result = await reportOperationalError(
       "stripe.webhook.processing_failed",
-      new Error("processing failed"),
-      { eventId: "evt_123" }
+      new Error(
+        "customer@example.com sk_test_secret cookie=session-token https://signed.example/file"
+      ),
+      {
+        authorization: "Bearer private-token",
+        eventId: "evt_123",
+        payload: '{"provider":"raw"}',
+        responseBody: "database unavailable"
+      }
     );
 
     expect(result.alerted).toBe(true);
+    expect(consoleError.mock.invocationCallOrder[0]).toBeLessThan(
+      fetchMock.mock.invocationCallOrder[0]
+    );
     expect(fetchMock).toHaveBeenCalledWith(
       alertConfig.url,
       expect.objectContaining({
         headers: { "Content-Type": "application/json" },
-        method: "POST"
+        method: "POST",
+        redirect: "error",
+        signal: expect.any(AbortSignal)
       })
     );
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
-      event: "stripe.webhook.processing_failed",
-      context: { eventId: "evt_123" }
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body));
+    expect(body).toMatchObject({
+      eventCode: "stripe.webhook.processing_failed",
+      schemaVersion: 1,
+      severity: "error",
+      subsystem: "payments"
     });
+    expect(body).not.toHaveProperty("context");
+    expect(body).not.toHaveProperty("error");
+    expect(JSON.stringify(body)).not.toMatch(
+      /customer@example|sk_test_secret|session-token|signed\.example|evt_123|provider|database unavailable/
+    );
   });
 
   it("logs a separate warning when the alert endpoint rejects delivery", async () => {
@@ -93,9 +144,11 @@ describe("operational logging", () => {
         sourceEvent: "stripe.checkout.session_create_failed",
         status: 503
       },
+      error: null,
       event: "operations.alert_delivery_failed",
       level: "warn"
     });
+    expect(consoleWarn).toHaveBeenCalledOnce();
   });
 
   it("logs a separate warning when alert delivery times out", async () => {
@@ -112,8 +165,29 @@ describe("operational logging", () => {
     expect(result.alerted).toBe(false);
     expect(JSON.parse(String(consoleWarn.mock.calls[0][0]))).toMatchObject({
       context: { sourceEvent: "stripe.webhook.receipt_failed" },
-      error: { message: "request timed out" },
+      error: null,
       event: "operations.alert_delivery_failed"
     });
+    expect(consoleWarn).toHaveBeenCalledOnce();
+  });
+
+  it("treats redirect rejection as a bounded secondary delivery failure", async () => {
+    alertConfig.url = new URL("https://alerts.example/hooks/soji");
+    const fetchMock = vi.fn().mockRejectedValue(new TypeError("redirect mode is error"));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const result = await reportOperationalError(
+      "stripe.checkout.session_create_failed",
+      new Error("Stripe unavailable")
+    );
+
+    expect(result.alerted).toBe(false);
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ redirect: "error" });
+    expect(consoleWarn).toHaveBeenCalledOnce();
+    expect(String(consoleWarn.mock.calls[0][0])).not.toContain(
+      "redirect mode is error"
+    );
   });
 });
