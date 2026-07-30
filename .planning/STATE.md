@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-30T19:41:23Z"
+last_updated: "2026-07-30T19:53:05Z"
 last_activity: 2026-07-30
 progress:
   total_phases: 5
@@ -127,6 +127,7 @@ Progress: [████████░░] 81%
 | 260730-j74 | Add a device-local Saved reading list for Library guides | 2026-07-30 | `f78accb` |
 | 260730-jk6 | Add accessible Office Hours calendar downloads | 2026-07-30 | `9496d6a` |
 | 260730-jwd | Add device-local guide reading progress and Resume | 2026-07-30 | `0a619a2` |
+| 260730-khu | Add a responsive homepage Continue reading card | 2026-07-30 | `394d003` |
 
 ## Session Continuity
 
