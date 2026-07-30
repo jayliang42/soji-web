@@ -1,8 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ProductCheckoutButton } from "@/components/product-checkout-button";
-import { PurchaseDisclosure } from "@/components/purchase-disclosure";
 import { DataEmpty, DataUnavailable } from "@/components/data-state";
+import { ProductCatalog } from "@/components/product-catalog";
 import { SectionShell } from "@/components/section-shell";
 import { getAccountPurchases } from "@/lib/account-purchases";
 import {
@@ -127,46 +126,18 @@ export default async function ProductsPage({
           </div>
         ) : null}
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {productSnapshot.items.map((product) => (
-            <article
-              key={product.id}
-              className="flex h-full flex-col rounded-lg border border-dune bg-shell p-6 sm:p-8"
-            >
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase text-cocoa/70">
-                    Digital product
-                  </p>
-                  <h2 className="mt-4 font-display text-3xl leading-[1.05] text-cocoa sm:text-4xl">
-                    {product.title}
-                  </h2>
-                </div>
-                <p className="font-display text-4xl text-cocoa">{product.priceLabel}</p>
-              </div>
-              <p className="mt-5 text-lg leading-8 text-cocoa/76">{product.summary}</p>
-              <ul className="mt-6 space-y-3 text-cocoa/78">
-                {product.bullets.map((bullet) => (
-                  <li key={bullet} className="flex gap-3">
-                    <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-clay" />
-                    <span>{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-auto pt-8">
-                <ProductCheckoutButton
-                  alreadyPurchased={purchasedProductIds.has(product.id)}
-                  accessPaused={pausedProductIds.has(product.id)}
-                  checkoutEnabled={checkoutEnabled}
-                  customerEmail={customerEmail}
-                  purchaseStateAvailable={purchaseStateAvailable}
-                  productSlug={product.slug}
-                />
-                <PurchaseDisclosure variant="product" />
-              </div>
-            </article>
-          ))}
-        </div>
+        {!productSnapshot.error && productSnapshot.items.length > 0 ? (
+          <ProductCatalog
+            checkoutEnabled={checkoutEnabled}
+            customerEmail={customerEmail}
+            entries={productSnapshot.items.map((product) => ({
+              accessPaused: pausedProductIds.has(product.id),
+              alreadyPurchased: purchasedProductIds.has(product.id),
+              product
+            }))}
+            purchaseStateAvailable={purchaseStateAvailable}
+          />
+        ) : null}
 
         <div className="mt-8 border-l-4 border-clay bg-white px-6 py-5 text-sm text-cocoa/75">
           Want ongoing access instead?{" "}
