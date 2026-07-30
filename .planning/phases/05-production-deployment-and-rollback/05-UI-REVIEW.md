@@ -78,6 +78,12 @@ responsive, and accessibility requirements while accepting purposeful UI improve
 
 - Added goal chips, keyword search, format filtering, live result counts, clear filters,
   and a one-action empty state.
+- Persisted focus, format, and keyword state in compact Library URLs. Filtered views now
+  survive reload, can be shared, and restore through browser Back/Forward without
+  reloading the catalog.
+- Converted visible public topic pills on Library cards and article details into
+  44-pixel links that open the matching filtered Library view; internal tags remain
+  excluded.
 - Improved cover placeholders so catalog items remain visually intentional when they do
   not have an uploaded image.
 - Added reusable recovery-action support to unavailable-state cards and enabled it on
@@ -260,6 +266,12 @@ and the full responsive navigation suite retains active state and target sizing.
 - Ghost keeps internal tags out of reader-facing tag output by default, matching Soji's
   separation between editorial topics and fixture taxonomy:
   <https://ghost.org/docs/themes/helpers/tags/>
+- Ghost gives each public tag its own content-collection URL and links post topics to
+  those durable archives:
+  <https://ghost.org/help/tags/>
+- Next.js supports native `pushState` and `replaceState` for filter state that updates
+  the URL without reloading and remains integrated with App Router navigation:
+  <https://nextjs.org/docs/app/getting-started/linking-and-navigating#native-history-api>
 
 Soji borrows those information-architecture patterns, not their branding. The visual
 system remains Soji's restrained editorial serif, warm neutrals, clay accent, and owned
@@ -267,7 +279,7 @@ book imagery.
 
 ## Verification Evidence
 
-- Web Vitest: 93 files and 670 tests passed.
+- Web Vitest: 93 files and 673 tests passed.
 - ESLint and generated-route typecheck passed.
 - Next.js production build passed and generated 37 routes.
 - Focused Playwright membership comparison checks passed 7 tests across desktop and
@@ -289,7 +301,8 @@ book imagery.
   workspaces and the new product-detail route at 320, 375, 768, 1024, and 1440 pixels,
   plus the blocking axe scan.
 - Focused Playwright navigation/home checks passed 6/6 on desktop and mobile.
-- Focused library discovery, keyboard, and axe checks passed 12/12 on desktop and mobile.
+- Focused durable Library discovery checks passed 8/8 on desktop and mobile.
+- Focused Library and article keyboard/axe checks passed 6/6 on desktop and mobile.
 - The prior full CI-style Playwright regression remains recorded at 124/124 on desktop
   and mobile.
 
@@ -317,3 +330,10 @@ the document retained zero horizontal overflow, and the public recommendation op
 correct durable article URL. DOM inspection confirmed that none of the related article
 bodies was included on the current page; the focused Reading suite then passed on desktop
 and mobile, including explicit 320- and 390-pixel checks.
+
+The public `family` topic was followed from the article rail into
+`/library?q=family`. The search control and result count matched immediately, the query
+survived reload, and adding the Article format produced a compact combined URL. Browser
+Back restored the prior focus while preserving the remaining query and format controls;
+all topic links remained 44 pixels high and the desktop document retained zero horizontal
+overflow.

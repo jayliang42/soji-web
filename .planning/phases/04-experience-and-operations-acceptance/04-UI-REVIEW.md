@@ -87,6 +87,9 @@ before they can be visually confirmed against live accounts.
 
 - Search, format filtering, and goal-based focus chips provide multiple
   discovery paths without exposing protected content bodies.
+- Focus, format, and keyword state now lives in the Library URL, so a filtered
+  view survives refresh, can be shared, and restores correctly through browser
+  Back/Forward navigation without a full-page reload.
 - Result counts update as filters change and are announced through an
   `aria-live` region.
 - Empty results include a direct reset action.
@@ -95,10 +98,14 @@ before they can be visually confirmed against live accounts.
   unavailable.
 - Internal fixture tags such as `demo` and `supporting` are not presented to
   visitors.
+- Public topic pills are now 44-pixel links into the matching durable Library
+  query rather than decorative labels.
 
 ### Focused library (`/library?focus=family`)
 
 - Deep links initialize the relevant focus state.
+- Combined focus, format, and keyword URLs initialize all three controls before
+  hydration; invalid values fall back to the complete Library.
 - Filter controls wrap without horizontal overflow on narrow screens.
 - Interactive controls meet the 44-pixel minimum target size.
 
@@ -112,6 +119,8 @@ before they can be visually confirmed against live accounts.
 - A sticky guide-details rail groups format, publication date, access level,
   visible reading time, and public topics without showing internal fixture
   tags.
+- Visible article topics now link directly to a filtered Library view while
+  retaining the existing internal-tag boundary.
 - Long visible guides now generate an `In this guide` navigation from their
   Markdown headings, with numbered links and stable section anchors that stop
   below the fixed site navigation.
@@ -273,10 +282,14 @@ before they can be visually confirmed against live accounts.
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 93 files, 670 tests passed.
+- Unit tests: 93 files, 673 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
+- Targeted Playwright durable Library discovery suite: 8 tests passed across
+  desktop and mobile.
+- Targeted Library and article axe/keyboard suite: 6 tests passed across
+  desktop and mobile.
 - Targeted Playwright Account suite: 5 tests passed across desktop and mobile;
   one desktop-only instance of the mobile touch-target check was intentionally
   skipped.
@@ -352,7 +365,10 @@ before they can be visually confirmed against live accounts.
   related-reading section was then checked in the normal signed-in preview
   state: its three desktop cards were equal-height, every action was at least
   44 pixels high, the page had no horizontal overflow, the public article link
-  opened the correct durable URL, and text from related bodies was absent.
+  opened the correct durable URL, and text from related bodies was absent. A
+  public `family` topic was then followed into `/library?q=family`; the query
+  survived reload, combined with the Article format, and browser Back restored
+  the prior focus while keeping the remaining controls and zero overflow.
 
 ## Follow-up Note
 
