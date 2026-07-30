@@ -10,9 +10,11 @@ routes:
   - /account
   - /library
   - /library?focus=family
+  - /login
   - /office-hours
   - /pricing
   - /products
+  - /reset-password
 ---
 
 # Phase 04 UI Review
@@ -33,6 +35,9 @@ search, price sorting, and clear no-result recovery while retaining the
 existing purchase-state authority. The homepage now separates browsing,
 one-time tools, membership, and live guidance into four explicit starting
 paths and keeps transaction-specific actions on their authoritative pages.
+The sign-in entry now adapts to the task that brought a visitor there, states
+the post-authentication destination, and presents password recovery as a
+focused step instead of an immediate side effect of the sign-in form.
 
 The remaining note is operational rather than a local UI defect: authenticated
 production-provider states still require the consolidated owner checkpoint
@@ -98,6 +103,25 @@ before they can be visually confirmed against live accounts.
 - The loading skeleton now mirrors the three-card overview and panel geometry,
   reducing layout shift during account retrieval.
 
+### Login and recovery (`/login`, `/reset-password`)
+
+- A direct visit to Login now describes the Account destination that the
+  existing safe-return behavior actually uses.
+- Library, membership, product, Office Hours, Account, password-recovery, and
+  Admin destinations each receive task-specific sign-in copy; query strings
+  and anchors no longer erase the relevant intent.
+- Guest visitors see the destination, a three-step account journey, and a
+  public-library alternative before authenticating.
+- `Forgot password?` now opens a focused email-only recovery step, preserves
+  the entered email, moves keyboard focus to the new heading, and provides a
+  clear return to sign in.
+- An expired or incomplete recovery callback opens the recovery step directly
+  and explains that no password was changed.
+- Existing email, Google, sign-up, recovery, redirect, and safe-failure
+  mechanics remain unchanged.
+- Recovery controls maintain 44-pixel targets with no horizontal overflow at
+  both 320- and 390-pixel widths.
+
 ### Office Hours (`/office-hours`)
 
 - A three-step participation model explains how to prepare without promising
@@ -144,7 +168,7 @@ before they can be visually confirmed against live accounts.
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 86 files, 643 tests passed.
+- Unit tests: 86 files, 644 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -162,6 +186,9 @@ before they can be visually confirmed against live accounts.
 - Targeted Playwright Home decision suite: 5 tests passed across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally
   skipped.
+- Targeted Playwright Auth Entry suite: 7 tests passed across desktop and
+  mobile; one desktop-only instance of the narrow-width check was intentionally
+  skipped.
 - Manual browser review: home and library flows checked at desktop and mobile
   widths; search, focus filters, reset behavior, overflow, and control sizing
   were verified. Account overview, loading, membership-option, and anchored
@@ -174,7 +201,10 @@ before they can be visually confirmed against live accounts.
   desktop page composition were visually checked before and after the catalog
   redesign. The homepage starting-point matrix and compact membership overview
   were reviewed in a signed-in browser state, including their anchored
-  transitions into Pricing.
+  transitions into Pricing. Login and failed password-recovery entry states
+  were reviewed in the browser, including account-specific intent, error
+  hierarchy, recovery-only controls, and the absence of authentication-method
+  distractions during recovery.
 
 ## Follow-up Note
 
