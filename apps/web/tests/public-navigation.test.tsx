@@ -16,6 +16,9 @@ describe("primary navigation", () => {
     expect(html).toContain(">Menu<");
     expect(html).toContain('href="/pricing"');
     expect(html).toContain(">Pricing<");
+    expect(html).toContain('href="/login"');
+    expect(html).toContain(">Sign in<");
+    expect(html).not.toContain(">Account<");
     expect(html).not.toContain(">Subscriptions<");
   });
 
@@ -31,6 +34,8 @@ describe("primary navigation", () => {
 
     expect(html).toContain('href="/account?view=subscriptions"');
     expect(html).toContain(">Subscriptions<");
+    expect(html).toContain(">Account<");
+    expect(html).not.toContain(">Sign in<");
     expect(html).not.toContain(">Pricing<");
   });
 });

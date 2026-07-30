@@ -11,7 +11,7 @@ const guestNavigation = [
   { href: "/library" as Route, label: "Library" },
   { href: "/products" as Route, label: "Shop" },
   { href: "/office-hours" as Route, label: "Office hours" },
-  { href: "/account" as Route, label: "Account" }
+  { href: "/login" as Route, label: "Sign in" }
 ] as const satisfies ReadonlyArray<{ href: Route; label: string }>;
 
 const memberNavigation = [
