@@ -30,7 +30,9 @@ session and replay states. Membership pricing now begins with a need-led plan
 finder that recommends a starting tier without changing price or checkout
 behavior. The standalone Shop now supports need-led browsing, full-text
 search, price sorting, and clear no-result recovery while retaining the
-existing purchase-state authority.
+existing purchase-state authority. The homepage now separates browsing,
+one-time tools, membership, and live guidance into four explicit starting
+paths and keeps transaction-specific actions on their authoritative pages.
 
 The remaining note is operational rather than a local UI defect: authenticated
 production-provider states still require the consolidated owner checkpoint
@@ -54,6 +56,14 @@ before they can be visually confirmed against live accounts.
 - The existing hero and editorial sections remain the strongest entry point.
 - Outcome cards now link directly into relevant library focus views, reducing
   the distance between a visitor's goal and useful content.
+- A four-card starting-point matrix now distinguishes free previews, one-time
+  tools, recurring membership, and guided Office Hours by both purpose and
+  commitment.
+- The former full checkout-capable plan grid has been replaced by a compact
+  membership overview that links to the Plan Finder, complete comparison, and
+  each exact tier.
+- Signed-in visitors no longer encounter `Create account to join` actions on
+  the homepage; account and checkout behavior remains on Pricing.
 - Desktop and mobile layouts preserve readable measure and touch targets.
 
 ### Library (`/library`)
@@ -134,7 +144,7 @@ before they can be visually confirmed against live accounts.
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 85 files, 641 tests passed.
+- Unit tests: 86 files, 643 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -149,6 +159,9 @@ before they can be visually confirmed against live accounts.
   skipped.
 - Targeted Playwright Shop suite: 7 tests passed across desktop and mobile; one
   desktop-only instance of the narrow-width check was intentionally skipped.
+- Targeted Playwright Home decision suite: 5 tests passed across desktop and
+  mobile; one desktop-only instance of the narrow-width check was intentionally
+  skipped.
 - Manual browser review: home and library flows checked at desktop and mobile
   widths; search, focus filters, reset behavior, overflow, and control sizing
   were verified. Account overview, loading, membership-option, and anchored
@@ -159,7 +172,9 @@ before they can be visually confirmed against live accounts.
   hierarchy, fallback state, and plan comparison transition confirmed. Shop
   search controls, editorial product covers, price hierarchy, and complete
   desktop page composition were visually checked before and after the catalog
-  redesign.
+  redesign. The homepage starting-point matrix and compact membership overview
+  were reviewed in a signed-in browser state, including their anchored
+  transitions into Pricing.
 
 ## Follow-up Note
 
