@@ -13,10 +13,11 @@ export default function AccountLoading() {
   return (
     <main aria-busy="true">
       <SectionShell
+        compact
         eyebrow="Account"
         headingLevel={1}
         title="Account"
-        description="Your membership and purchase record is loading."
+        description="Your membership, benefits, and purchase record are loading."
       >
         <p className="sr-only" role="status">
           Loading account billing…
@@ -24,27 +25,34 @@ export default function AccountLoading() {
 
         <div
           aria-hidden="true"
-          className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]"
+          className="grid gap-4 lg:grid-cols-[1.15fr_0.9fr_0.95fr]"
           data-loading-section="current-tier"
         >
-          <div className="rounded-lg border border-dune bg-shell p-6">
-            <LoadingBar className="h-4 w-24" />
-            <LoadingBar className="mt-4 h-9 w-40" />
+          <div className="rounded-xl bg-cocoa p-6">
+            <LoadingBar className="h-4 w-24 bg-white/20" />
+            <LoadingBar className="mt-5 h-9 w-40 bg-white/20" />
+            <LoadingBar className="mt-4 h-4 w-56 max-w-full bg-white/20" />
+            <LoadingBar className="mt-6 h-11 w-44 bg-white/20" />
+          </div>
+          <div className="rounded-xl border border-dune bg-shell p-6">
+            <LoadingBar className="h-4 w-28" />
+            <LoadingBar className="mt-4 h-9 w-20" />
             <LoadingBar className="mt-4 h-4 w-56 max-w-full" />
             <LoadingBar className="mt-3 h-4 w-44 max-w-full" />
           </div>
-          <div className="rounded-lg border border-dune bg-shell p-6">
+          <div className="rounded-xl border border-dune bg-cream p-6">
             <LoadingBar className="h-4 w-36" />
-            <div className="mt-4 flex flex-wrap gap-3">
-              <LoadingBar className="h-9 w-28" />
-              <LoadingBar className="h-9 w-36" />
+            <div className="mt-4 grid gap-2">
+              <LoadingBar className="h-11 w-full" />
+              <LoadingBar className="h-11 w-full" />
+              <LoadingBar className="h-11 w-full" />
             </div>
           </div>
         </div>
 
         <section
           aria-labelledby="loading-subscriptions-heading"
-          className="mt-6 border-t border-dune pt-6"
+          className="mt-6 rounded-xl border border-dune bg-shell p-5 sm:p-7"
           data-loading-section="subscriptions"
         >
           <p className="text-sm font-semibold uppercase text-cocoa/70">
@@ -73,7 +81,7 @@ export default function AccountLoading() {
 
         <section
           aria-labelledby="loading-purchases-heading"
-          className="mt-6 border-t border-dune pt-6"
+          className="mt-6 rounded-xl border border-dune bg-shell p-5 sm:p-7"
           data-loading-section="purchases"
         >
           <p className="text-sm font-semibold uppercase text-cocoa/70">

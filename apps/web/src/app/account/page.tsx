@@ -298,14 +298,25 @@ export default async function AccountPage({
     !hasExistingMembership &&
     hasStripeConfig() &&
     billingDeliveryReady;
+  const currentPlanName = accountTruthUnavailable
+    ? "Membership unavailable"
+    : plan?.name ?? "Free";
+  const accessSummary = accountTruthUnavailable
+    ? "Access needs verification"
+    : entitlements.length > 0
+      ? `${entitlements.length} active ${
+          entitlements.length === 1 ? "benefit" : "benefits"
+        }`
+      : "Preview access";
 
   return (
     <main>
       <SectionShell
+        compact
         eyebrow="Account"
         headingLevel={1}
         title={user?.fullName ?? user?.email ?? "Guest"}
-        description="Your account shows the membership tier and benefits that unlock the library across web and app."
+        description="See what is active, manage billing, and return to the parts of Soji that matter next."
       >
         {params.setup === "failed" && user ? (
           <ProfileSetupRetry nextPath={params.next} />
@@ -318,75 +329,183 @@ export default async function AccountPage({
             />
           </div>
         ) : null}
-        <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-          <div className="rounded-lg border border-dune bg-shell p-6">
-            <p className="text-sm uppercase text-cocoa/70">Current tier</p>
-            <h3 className="mt-3 font-display text-4xl text-cocoa">
-              {accountTruthUnavailable
-                ? "Membership unavailable"
-                : plan?.name ?? "Free"}
-            </h3>
-            <p className="mt-3 text-cocoa/75">{user?.email ?? "No active session"}</p>
-            <p className="mt-2 text-sm text-cocoa/70">
-              {user ? `Sign-in methods: ${user.providers.join(", ") || "email"}` : "Create an account to start checkout and save access."}
-            </p>
-            {user && !accountTruthUnavailable ? (
-              <Link
-                href="/account?view=subscriptions#membership-options"
-                className="mt-5 inline-flex min-h-11 items-center rounded-md border border-cocoa px-5 py-3 text-sm font-semibold text-cocoa transition-colors hover:bg-cocoa hover:text-white motion-reduce:transition-none"
+
+        {user ? (
+          <nav
+            aria-label="Account sections"
+            className="mb-5 flex flex-wrap gap-2 rounded-xl border border-dune bg-shell p-2"
+          >
+            {[
+              { href: "#account-overview", label: "Overview" },
+              { href: "#account-membership", label: "Membership" },
+              { href: "#account-purchases", label: "Purchases" },
+              { href: "#account-profile", label: "Profile" }
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg px-4 text-sm font-bold text-cocoa transition-colors hover:bg-cream hover:text-clay sm:flex-none"
               >
-                Upgrade membership
-              </Link>
-            ) : null}
-            {!user ? (
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Link
-                  href="/login?next=/account"
-                  className="rounded-md bg-cocoa px-5 py-3 text-sm font-semibold text-white"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="rounded-md border border-cocoa px-5 py-3 text-sm font-semibold text-cocoa"
-                >
-                  View pricing
-                </Link>
-              </div>
-            ) : null}
-          </div>
-          <div className="rounded-lg border border-dune bg-shell p-6">
-            <p className="text-sm uppercase text-cocoa/70">
-              Active entitlements
-            </p>
-            {accountTruthUnavailable ? (
-              <div className="mt-4 border-l-4 border-dune bg-sand px-4 py-3 text-sm text-cocoa/72">
-                Benefits could not be verified. Refresh Account before relying
-                on membership access.
-              </div>
-            ) : entitlements.length > 0 ? (
-              <div className="mt-4 flex flex-wrap gap-3">
-                {entitlements.map((entitlement) => (
-                  <span
-                    key={entitlement}
-                    className="rounded-md bg-sand px-4 py-2 text-sm text-cocoa"
-                  >
-                      {getEntitlementLabel(entitlement)}
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        ) : null}
+
+        <section
+          aria-labelledby="account-overview-heading"
+          className="scroll-mt-28"
+          id="account-overview"
+        >
+          <h2 className="sr-only" id="account-overview-heading">
+            Account overview
+          </h2>
+          <div className="grid gap-4 lg:grid-cols-[1.15fr_0.9fr_0.95fr]">
+            <article className="relative overflow-hidden rounded-xl bg-cocoa p-6 text-white sm:p-7">
+              <div
+                aria-hidden="true"
+                className="absolute -right-12 -top-14 h-40 w-40 rounded-full border border-white/15"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute -bottom-20 right-8 h-40 w-40 rounded-full bg-white/5"
+              />
+              <div className="relative">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/65">
+                    Current tier
+                  </p>
+                  <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white/85">
+                    {accessSummary}
                   </span>
-                ))}
+                </div>
+                <p className="mt-5 font-display text-4xl font-semibold">
+                  {currentPlanName}
+                </p>
+                <p className="mt-3 break-words text-sm text-white/75">
+                  {user?.email ?? "No active session"}
+                </p>
+                <p className="mt-1 text-sm text-white/60">
+                  {user
+                    ? `Signed in with ${user.providers.join(" and ") || "email"}`
+                    : "Create an account to save access and start checkout."}
+                </p>
               </div>
-            ) : (
-              <div className="mt-4 border-l-4 border-dune bg-sand px-4 py-3 text-sm text-cocoa/72">
-                No paid benefits are active yet. Browse previews first or choose a membership tier.
+              {user && !accountTruthUnavailable ? (
+                <Link
+                  href="/account?view=subscriptions#membership-options"
+                  className="relative mt-6 inline-flex min-h-11 items-center rounded-md bg-white px-5 py-3 text-sm font-bold text-cocoa transition-colors hover:bg-cream motion-reduce:transition-none"
+                >
+                  Upgrade membership
+                </Link>
+              ) : null}
+              {!user ? (
+                <div className="relative mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/login?next=/account"
+                    className="inline-flex min-h-11 items-center rounded-md bg-white px-5 py-3 text-sm font-bold text-cocoa"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="inline-flex min-h-11 items-center rounded-md border border-white/35 px-5 py-3 text-sm font-bold text-white"
+                  >
+                    View pricing
+                  </Link>
+                </div>
+              ) : null}
+            </article>
+
+            <article className="rounded-xl border border-dune bg-shell p-6 sm:p-7">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
+                Active benefits
+              </p>
+              <p className="mt-4 font-display text-3xl font-semibold text-cocoa">
+                {accountTruthUnavailable
+                  ? "Check again"
+                  : entitlements.length > 0
+                    ? entitlements.length
+                    : "Preview"}
+              </p>
+              {accountTruthUnavailable ? (
+                <p className="mt-3 text-sm leading-6 text-cocoa/70">
+                  Benefits could not be verified. Refresh Account before
+                  relying on membership access.
+                </p>
+              ) : entitlements.length > 0 ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {entitlements.map((entitlement) => (
+                    <span
+                      key={entitlement}
+                      className="rounded-full bg-sand px-3 py-1.5 text-xs font-semibold text-cocoa"
+                    >
+                      {getEntitlementLabel(entitlement)}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-sm leading-6 text-cocoa/70">
+                  Read public guides and member previews before choosing a
+                  membership.
+                </p>
+              )}
+            </article>
+
+            <article className="rounded-xl border border-dune bg-cream p-6 sm:p-7">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
+                Continue with Soji
+              </p>
+              <div className="mt-4 grid gap-2">
+                <Link
+                  href="/library"
+                  className="group flex min-h-11 items-center justify-between rounded-lg bg-shell px-4 text-sm font-bold text-cocoa transition-colors hover:text-clay"
+                >
+                  Browse your library
+                  <span
+                    aria-hidden="true"
+                    className="transition-transform group-hover:translate-x-1 motion-reduce:transform-none"
+                  >
+                    →
+                  </span>
+                </Link>
+                <Link
+                  href="/office-hours"
+                  className="group flex min-h-11 items-center justify-between rounded-lg bg-shell px-4 text-sm font-bold text-cocoa transition-colors hover:text-clay"
+                >
+                  Check office hours
+                  <span
+                    aria-hidden="true"
+                    className="transition-transform group-hover:translate-x-1 motion-reduce:transform-none"
+                  >
+                    →
+                  </span>
+                </Link>
+                <Link
+                  href="/products"
+                  className="group flex min-h-11 items-center justify-between rounded-lg bg-shell px-4 text-sm font-bold text-cocoa transition-colors hover:text-clay"
+                >
+                  Find practical tools
+                  <span
+                    aria-hidden="true"
+                    className="transition-transform group-hover:translate-x-1 motion-reduce:transform-none"
+                  >
+                    →
+                  </span>
+                </Link>
               </div>
-            )}
+            </article>
           </div>
-        </div>
+        </section>
         {!accountTruthUnavailable ? (
           <CheckoutBanner status={checkoutReturn} />
         ) : null}
         {user ? (
-          <section className="mt-6 border-t border-dune pt-6" aria-labelledby="subscriptions-heading">
+          <section
+            aria-labelledby="subscriptions-heading"
+            className="mt-6 scroll-mt-28 rounded-xl border border-dune bg-shell p-5 sm:p-7"
+            id="account-membership"
+          >
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="text-sm font-bold uppercase text-cocoa/70">Membership billing</p>
@@ -401,7 +520,7 @@ export default async function AccountPage({
                       ? "/account#subscriptions-heading"
                       : "/account?view=subscriptions#membership-options"
                   }
-                  className="text-sm font-semibold text-clay"
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-clay"
                 >
                   {showMembershipOptions
                     ? "Hide membership options"
@@ -498,7 +617,7 @@ export default async function AccountPage({
         {user && showMembershipOptions && !accountTruthUnavailable ? (
           <section
             id="membership-options"
-            className="mt-6 border-t border-dune pt-6"
+            className="mt-6 scroll-mt-28 rounded-xl border border-dune bg-shell p-5 sm:p-7"
             aria-labelledby="membership-options-heading"
           >
             <div className="mb-7 max-w-3xl">
@@ -523,7 +642,11 @@ export default async function AccountPage({
           </section>
         ) : null}
         {user ? (
-          <section className="mt-6 border-t border-dune pt-6" aria-labelledby="purchases-heading">
+          <section
+            aria-labelledby="purchases-heading"
+            className="mt-6 scroll-mt-28 rounded-xl border border-dune bg-shell p-5 sm:p-7"
+            id="account-purchases"
+          >
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="text-sm font-bold uppercase text-cocoa/70">Billing record</p>
@@ -532,7 +655,10 @@ export default async function AccountPage({
                 </h2>
               </div>
               {!accountTruthUnavailable ? (
-                <Link href="/products" className="text-sm font-semibold text-clay">
+                <Link
+                  href="/products"
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-clay"
+                >
                   Browse products
                 </Link>
               ) : null}
@@ -597,19 +723,31 @@ export default async function AccountPage({
                 })}
               </div>
             ) : (
-              <p className="mt-4 text-sm text-cocoa/70">
-                No standalone purchases have been recorded for this account.
-              </p>
+              <div className="mt-4 rounded-lg bg-cream p-5">
+                <p className="font-semibold text-cocoa">
+                  No standalone purchases yet
+                </p>
+                <p className="mt-2 max-w-[62ch] text-sm leading-6 text-cocoa/70">
+                  Practical workbooks and conversation tools you purchase will
+                  appear here with their download status.
+                </p>
+                <Link
+                  href="/products"
+                  className="mt-4 inline-flex min-h-11 items-center rounded-md border border-cocoa px-4 text-sm font-bold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
+                >
+                  Browse practical tools
+                </Link>
+              </div>
             )}
           </section>
         ) : null}
         {canManage ? (
-          <section className="mt-6 flex flex-col gap-4 border-y border-dune py-5 sm:flex-row sm:items-center sm:justify-between">
+          <section className="mt-6 flex flex-col gap-4 rounded-xl border border-clay/25 bg-accent-muted p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div>
-              <p className="text-sm font-bold uppercase text-cocoa/70">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
                 Publishing workspace
               </p>
-              <p className="mt-1 text-sm text-cocoa/70">
+              <p className="mt-2 text-sm leading-6 text-cocoa/70">
                 Manage content, products, members, and billing operations.
               </p>
             </div>
@@ -621,7 +759,7 @@ export default async function AccountPage({
             </Link>
           </section>
         ) : null}
-        <div className="mt-6">
+        <div className="mt-6 scroll-mt-28" id="account-profile">
           <AuthStatus user={snapshot.user} source={snapshot.source} />
         </div>
       </SectionShell>

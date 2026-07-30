@@ -217,6 +217,23 @@ describe("account billing management readiness", () => {
     expect(html).not.toContain("Upgrade your membership");
   });
 
+  it("provides account wayfinding and useful next-step links", async () => {
+    pageMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
+
+    const html = await renderAccount();
+
+    expect(html).toContain('aria-label="Account sections"');
+    expect(html).toContain('href="#account-overview"');
+    expect(html).toContain('href="#account-membership"');
+    expect(html).toContain('href="#account-purchases"');
+    expect(html).toContain('href="#account-profile"');
+    expect(html).toContain('href="/library"');
+    expect(html).toContain(">Browse your library<");
+    expect(html).toContain('href="/office-hours"');
+    expect(html).toContain(">Check office hours<");
+    expect(html).toContain(">Browse practical tools<");
+  });
+
   it("shows plan choices inside Account for the subscriptions view", async () => {
     pageMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
 
