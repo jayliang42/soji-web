@@ -41,6 +41,9 @@ test("office hours explains the participation flow and truthful session state", 
   ).toBeVisible();
   await expect(status.getByText("Access temporarily unavailable")).toBeVisible();
   await expect(status.getByRole("button", { name: /copy/iu })).toHaveCount(0);
+  await expect(
+    status.getByRole("button", { name: /calendar/iu })
+  ).toHaveCount(0);
   await expect(page.locator("body")).not.toContainText("office_hours.join");
 
   await expectNoHorizontalOverflow(page);
@@ -86,4 +89,3 @@ test("office hours actions remain usable at narrow widths", async ({
     await expectNoHorizontalOverflow(page);
   }
 });
-

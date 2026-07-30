@@ -70,6 +70,10 @@ describe("Office Hours page", () => {
     expect(html).toContain("Bring the context");
     expect(html).toContain("Leave with direction");
     expect(html).toContain("Copy date and title");
+    expect(html).toContain(
+      'aria-label="Add Upcoming family decisions to calendar"'
+    );
+    expect(html.match(/>Add to calendar</gu)).toHaveLength(1);
     expect(html).toContain("Prepare before the room opens");
   });
 

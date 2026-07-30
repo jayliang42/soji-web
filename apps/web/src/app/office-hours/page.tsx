@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CopySessionDetailsButton } from "@/components/copy-session-details-button";
+import { OfficeHourCalendarButton } from "@/components/office-hour-calendar-button";
 import { SectionShell } from "@/components/section-shell";
 import { DataEmpty, DataUnavailable } from "@/components/data-state";
 import { getOfficeHourSnapshot } from "@/lib/office-hours";
@@ -184,10 +185,17 @@ function OfficeHourCard({
               </span>
             )}
             {isUpcoming ? (
-              <CopySessionDetailsButton
-                details={`${presentation.title}\n${presentation.startsAtLabel}\nSoji Office Hours`}
-                tone="dark"
-              />
+              <>
+                <OfficeHourCalendarButton
+                  id={presentation.id}
+                  startsAt={presentation.startsAt}
+                  title={presentation.title}
+                />
+                <CopySessionDetailsButton
+                  details={`${presentation.title}\n${presentation.startsAtLabel}\nSoji Office Hours`}
+                  tone="dark"
+                />
+              </>
             ) : null}
           </div>
         </div>
