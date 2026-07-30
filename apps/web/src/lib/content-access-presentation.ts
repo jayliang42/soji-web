@@ -1,5 +1,5 @@
 import { membershipPlans } from "@soji/domain";
-import type { ContentItem } from "@soji/types";
+import type { ContentItem, MembershipPlan } from "@soji/types";
 import type { ContentAccessMode } from "@/lib/content-access";
 
 type AccessTone = "accent" | "neutral" | "success";
@@ -12,20 +12,19 @@ export interface ContentAccessPresentation {
   action: "Read article" | "Read preview" | "View access";
   label: string;
   membershipName: string | null;
+  membershipPlanId: MembershipPlan["id"] | null;
   tone: AccessTone;
 }
 
-function getMinimumMembershipName(item: AccessContentItem) {
+function getMinimumMembership(item: AccessContentItem) {
   if (item.requiredEntitlements.length === 0) {
     return null;
   }
 
-  return (
-    membershipPlans.find((plan) =>
-      item.requiredEntitlements.every((entitlement) =>
-        plan.entitlements.includes(entitlement)
-      )
-    )?.name ?? null
+  return membershipPlans.find((plan) =>
+    item.requiredEntitlements.every((entitlement) =>
+      plan.entitlements.includes(entitlement)
+    )
   );
 }
 
@@ -34,13 +33,16 @@ export function getContentAccessPresentation(
   accessMode: ContentAccessMode,
   isAuthenticated: boolean
 ): ContentAccessPresentation {
-  const membershipName = getMinimumMembershipName(item);
+  const membership = getMinimumMembership(item);
+  const membershipName = membership?.name ?? null;
+  const membershipPlanId = membership?.id ?? null;
 
   if (accessMode === "unavailable") {
     return {
       action: "View access",
       label: "Access temporarily unavailable",
       membershipName,
+      membershipPlanId,
       tone: "neutral"
     };
   }
@@ -53,6 +55,7 @@ export function getContentAccessPresentation(
           ? "Public · Full article"
           : "Included in your membership",
       membershipName,
+      membershipPlanId,
       tone: "success"
     };
   }
@@ -62,6 +65,7 @@ export function getContentAccessPresentation(
       action: "Read preview",
       label: "Public preview",
       membershipName,
+      membershipPlanId,
       tone: "accent"
     };
   }
@@ -72,6 +76,7 @@ export function getContentAccessPresentation(
       ? `Included with ${membershipName} membership`
       : "Additional access required",
     membershipName,
+    membershipPlanId,
     tone: "neutral"
   };
 }

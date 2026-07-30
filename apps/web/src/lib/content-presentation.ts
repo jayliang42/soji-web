@@ -16,3 +16,9 @@ export function formatPublishedDate(value: string): string | null {
 
   return Number.isNaN(date.getTime()) ? null : publishedDateFormatter.format(date);
 }
+
+export function estimateReadingMinutes(value: string | null | undefined) {
+  const wordCount = value?.trim().split(/\s+/u).filter(Boolean).length ?? 0;
+
+  return wordCount > 0 ? Math.max(1, Math.ceil(wordCount / 220)) : null;
+}
