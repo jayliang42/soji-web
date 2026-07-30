@@ -116,4 +116,14 @@ describe("content card", () => {
     expect(html).not.toContain(">demo<");
     expect(html).not.toContain(">supporting<");
   });
+
+  it("supports an h3 title when nested below a related-reading heading", () => {
+    const html = renderToStaticMarkup(
+      <ContentCard accessMode="full" headingLevel={3} item={item} />
+    );
+
+    expect(html).toContain(`<h3`);
+    expect(html).toContain(`>${item.title}</h3>`);
+    expect(html).not.toContain(`>${item.title}</h2>`);
+  });
 });

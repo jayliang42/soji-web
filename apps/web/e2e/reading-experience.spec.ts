@@ -45,6 +45,26 @@ test("article detail provides reading context and an exact access path", async (
   await expect(
     page.getByRole("navigation", { name: "In this guide" })
   ).not.toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      level: 2,
+      name: "Continue with a nearby question."
+    })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 3, name: "The First Money Audit" })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Browse complete library" })
+  ).toHaveAttribute("href", "/library");
+  await expect(
+    page.getByRole("link", { name: "Read article" })
+  ).toHaveAttribute("href", "/library/first-money-audit");
+  await expect(
+    page.getByRole("heading", {
+      name: "Wealth Without Drift: A 90-Minute Decision Reset"
+    })
+  ).toHaveCount(1);
 
   await expectNoHorizontalOverflow(page);
 });
@@ -64,7 +84,8 @@ test("article actions remain usable at narrow widths", async ({
         name: "See the membership that includes this"
       }),
       page.getByRole("link", { name: "Review your account" }),
-      page.getByRole("link", { name: "Return to Library" })
+      page.getByRole("link", { name: "Return to Library" }),
+      page.getByRole("link", { name: "Browse complete library" })
     ];
 
     for (const control of controls) {

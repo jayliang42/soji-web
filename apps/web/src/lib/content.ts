@@ -121,6 +121,7 @@ export const getContentBySlug = cache(async function getContentBySlug(slug: stri
   const snapshot = await getContentSnapshot();
   return {
     item: snapshot.items.find((item) => item.slug === slug) ?? null,
+    items: snapshot.items,
     source: snapshot.source,
     error: snapshot.error
   };

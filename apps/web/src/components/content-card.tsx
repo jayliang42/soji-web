@@ -31,13 +31,16 @@ export function ContentCard({
   item,
   accessMode,
   featured = false,
+  headingLevel = 2,
   isAuthenticated = false
 }: {
   item: ContentCardItem;
   accessMode: ContentAccessMode;
   featured?: boolean;
+  headingLevel?: 2 | 3;
   isAuthenticated?: boolean;
 }) {
+  const Heading = headingLevel === 3 ? "h3" : "h2";
   const publishedDate = formatPublishedDate(item.publishedAt);
   const access = getContentAccessPresentation(
     item,
@@ -74,14 +77,14 @@ export function ContentCard({
             <time dateTime={item.publishedAt}>{publishedDate}</time>
           ) : null}
         </div>
-        <h2
+        <Heading
           className={clsx(
             "mt-4 font-display text-3xl font-bold leading-[1.05] text-cocoa",
             featured && "md:text-4xl"
           )}
         >
           {item.title}
-        </h2>
+        </Heading>
         <p className="mt-4 leading-7 text-cocoa/75">{item.summary}</p>
         {visibleTags.length > 0 ? (
           <div className="mt-5 flex flex-wrap gap-2" aria-label="Topics">

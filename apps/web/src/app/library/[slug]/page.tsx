@@ -1,13 +1,22 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import type { ContentItem } from "@soji/types";
+import {
+  ContentCard,
+  type ContentCardItem
+} from "@/components/content-card";
 import { ContentCover } from "@/components/content-cover";
 import { ContentPreviewCta } from "@/components/content-preview-cta";
 import { ContentSourceBadge } from "@/components/content-source-badge";
 import { DataUnavailable } from "@/components/data-state";
 import { MarkdownContent } from "@/components/markdown-content";
 import { SectionShell } from "@/components/section-shell";
-import { getContentAccessMode, getVisibleContentBody } from "@/lib/content-access";
+import {
+  getContentAccessMode,
+  getVisibleContentBody,
+  type ContentAccessMode
+} from "@/lib/content-access";
 import { getContentAccessPresentation } from "@/lib/content-access-presentation";
 import {
   estimateReadingMinutes,
@@ -16,6 +25,7 @@ import {
 } from "@/lib/content-presentation";
 import { getContentBySlug } from "@/lib/content";
 import { getMarkdownOutline } from "@/lib/markdown-outline";
+import { getRelatedContentItems } from "@/lib/related-content";
 import { getSessionSnapshot } from "@/lib/session";
 
 const accessToneClasses = {
@@ -23,6 +33,22 @@ const accessToneClasses = {
   neutral: "bg-cream text-cocoa/75",
   success: "bg-success-muted text-success"
 } as const;
+
+function toContentCardItem(item: ContentItem): ContentCardItem {
+  return {
+    coverImage: item.coverImage,
+    coverImageAlt: item.coverImageAlt,
+    id: item.id,
+    publishedAt: item.publishedAt,
+    requiredEntitlements: item.requiredEntitlements,
+    slug: item.slug,
+    summary: item.summary,
+    tags: item.tags,
+    title: item.title,
+    type: item.type,
+    visibility: item.visibility
+  };
+}
 
 function getReadingLabel(
   minutes: number | null,
@@ -132,6 +158,18 @@ export default async function ContentDetailPage({
   const visibleTags = item.tags
     .filter((tag) => !["demo", "supporting"].includes(tag.toLocaleLowerCase()))
     .slice(0, 4);
+  const accessContext = {
+    accessUnavailable: Boolean(session.error),
+    entitlements: session.entitlements,
+    isAuthenticated
+  };
+  const relatedItems: Array<{
+    accessMode: ContentAccessMode;
+    item: ContentItem;
+  }> = getRelatedContentItems(item, result.items ?? []).map((relatedItem) => ({
+    accessMode: getContentAccessMode(relatedItem, accessContext),
+    item: relatedItem
+  }));
 
   return (
     <main>
@@ -376,6 +414,51 @@ export default async function ContentDetailPage({
             </Link>
           </aside>
         </div>
+
+        {relatedItems.length > 0 ? (
+          <section
+            aria-labelledby="related-reading-heading"
+            className="mt-16 border-t border-dune pt-12 md:mt-20 md:pt-16"
+          >
+            <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
+                  Keep reading
+                </p>
+                <h2
+                  className="mt-3 max-w-3xl font-display text-4xl font-bold leading-tight text-cocoa md:text-5xl"
+                  id="related-reading-heading"
+                >
+                  Continue with a nearby question.
+                </h2>
+                <p className="mt-4 max-w-2xl text-lg leading-8 text-cocoa/72">
+                  Explore guides connected by topic, with the access level
+                  shown before you open each one.
+                </p>
+              </div>
+              <Link
+                className="inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
+                href="/library"
+              >
+                Browse complete library
+              </Link>
+            </div>
+
+            <div className="mt-8 grid gap-6 lg:grid-cols-3">
+              {relatedItems.map(
+                ({ accessMode: relatedAccessMode, item: relatedItem }) => (
+                  <ContentCard
+                    accessMode={relatedAccessMode}
+                    headingLevel={3}
+                    isAuthenticated={isAuthenticated}
+                    item={toContentCardItem(relatedItem)}
+                    key={relatedItem.id}
+                  />
+                )
+              )}
+            </div>
+          </section>
+        ) : null}
       </section>
     </main>
   );

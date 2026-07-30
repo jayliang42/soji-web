@@ -42,6 +42,47 @@ const guide = {
   visibility: "members_only"
 } satisfies ContentItem;
 
+const relatedGuides = [
+  {
+    ...guide,
+    body: "RELATED PUBLIC BODY should never render on the current page.",
+    id: "related-public",
+    preview: "Related public preview.",
+    publishedAt: "2026-07-27T00:00:00.000Z",
+    requiredEntitlements: [],
+    slug: "related-public",
+    summary: "A public guide connected by a family decision.",
+    tags: ["family"],
+    title: "A Shared Family Question",
+    visibility: "public"
+  },
+  {
+    ...guide,
+    body: "RELATED MEMBER BODY should never render on the current page.",
+    id: "related-member",
+    preview: "Related member preview.",
+    publishedAt: "2026-07-26T00:00:00.000Z",
+    slug: "related-member",
+    summary: "A member guide connected by decision-making.",
+    tags: ["decision-making"],
+    title: "The Next Decision",
+  },
+  {
+    ...guide,
+    body: "RELATED TEMPLATE BODY should never render on the current page.",
+    id: "related-template",
+    preview: "Related template preview.",
+    publishedAt: "2026-07-29T00:00:00.000Z",
+    requiredEntitlements: ["library.templates"],
+    slug: "related-template",
+    summary: "A template for a later planning step.",
+    tags: ["planning"],
+    title: "A Planning Template",
+    type: "template",
+    visibility: "purchase_required"
+  }
+] satisfies ContentItem[];
+
 const guestSession = {
   entitlements: [],
   source: "supabase" as const,
@@ -54,6 +95,7 @@ describe("content detail reading experience", () => {
     detailMocks.getSessionSnapshot.mockReset();
     detailMocks.getContentBySlug.mockResolvedValue({
       item: guide,
+      items: [guide, ...relatedGuides],
       source: "supabase"
     });
     detailMocks.getSessionSnapshot.mockResolvedValue(guestSession);
@@ -79,6 +121,19 @@ describe("content detail reading experience", () => {
     expect(html).not.toContain("PRIVATE MEMBER BODY");
     expect(html).not.toContain("In this guide");
     expect(html).not.toContain("Choose a next move");
+    expect(html).toContain("Keep reading");
+    expect(html).toContain("Continue with a nearby question.");
+    expect(html).toContain("A Shared Family Question");
+    expect(html).toContain("The Next Decision");
+    expect(html).toContain("A Planning Template");
+    expect(html).toContain("Public · Full article");
+    expect(html).toContain("Public preview");
+    expect(html).toContain('href="/library/related-public"');
+    expect(html).toContain('href="/library/related-member"');
+    expect(html).toContain('href="/library/related-template"');
+    expect(html).not.toContain("RELATED PUBLIC BODY");
+    expect(html).not.toContain("RELATED MEMBER BODY");
+    expect(html).not.toContain("RELATED TEMPLATE BODY");
   });
 
   it("gives an entitled reader useful next steps after the full guide", async () => {
@@ -112,6 +167,11 @@ describe("content detail reading experience", () => {
     expect(html).toContain('href="/library"');
     expect(html).toContain('href="/products"');
     expect(html).toContain('href="/office-hours"');
+    expect(html).toContain("Keep reading");
+    expect(html).toContain("Included in your membership");
+    expect(html).toContain("Included with Tier 2 membership");
+    expect(html).not.toContain("RELATED MEMBER BODY");
+    expect(html).not.toContain("RELATED TEMPLATE BODY");
     expect(html).not.toContain("Public opening complete");
     expect(html).not.toContain("Compare membership");
   });
