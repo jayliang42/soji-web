@@ -6,6 +6,7 @@ import { DataUnavailable } from "@/components/data-state";
 import { ProductArtwork } from "@/components/product-artwork";
 import { ProductCheckoutButton } from "@/components/product-checkout-button";
 import { PurchaseDisclosure } from "@/components/purchase-disclosure";
+import { ShareButton } from "@/components/share-button";
 import { getAccountPurchases } from "@/lib/account-purchases";
 import {
   getBillingDeliveryReadiness,
@@ -259,6 +260,9 @@ export default async function ProductDetailPage({
               />
             </div>
             <PurchaseDisclosure variant="product" />
+            <div className="mt-5 border-t border-dune pt-5">
+              <ShareButton label="Share tool" title={product.title} />
+            </div>
           </aside>
         </div>
 

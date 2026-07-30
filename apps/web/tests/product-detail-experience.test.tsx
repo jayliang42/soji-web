@@ -78,6 +78,7 @@ describe("product detail experience", () => {
       "next=%2Fproducts%2Fwealth-dashboard"
     );
     expect(html).toContain("One-time purchase");
+    expect(html).toContain("Share tool");
     expect(html).toContain("Compare membership");
   });
 

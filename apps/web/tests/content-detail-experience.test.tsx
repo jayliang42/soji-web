@@ -110,6 +110,7 @@ describe("content detail reading experience", () => {
 
     expect(html).toContain("Back to Library");
     expect(html).toContain("Guide details");
+    expect(html).toContain("Share guide");
     expect(html).toContain("1 min public opening");
     expect(html).toContain("Public opening complete");
     expect(html).toContain('href="/pricing#plan-tier_1"');

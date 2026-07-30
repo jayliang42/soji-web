@@ -12,6 +12,7 @@ import { ContentSourceBadge } from "@/components/content-source-badge";
 import { DataUnavailable } from "@/components/data-state";
 import { MarkdownContent } from "@/components/markdown-content";
 import { SectionShell } from "@/components/section-shell";
+import { ShareButton } from "@/components/share-button";
 import {
   getContentAccessMode,
   getVisibleContentBody,
@@ -408,6 +409,10 @@ export default async function ContentDetailPage({
                 </ul>
               </div>
             ) : null}
+
+            <div className="mt-6 border-t border-dune pt-6">
+              <ShareButton label="Share guide" title={item.title} />
+            </div>
 
             <Link
               className="mt-6 inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
