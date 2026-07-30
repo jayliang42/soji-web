@@ -29,7 +29,7 @@ const publicPages = [
     heading: "Closer support for higher-stakes decisions.",
     path: "/office-hours"
   },
-  { heading: "Sign in to continue reading", path: "/login" },
+  { heading: "Sign in to your Soji account", path: "/login" },
   { heading: "Choose a new password", path: "/reset-password" },
   { heading: "Soji Demo Member", path: "/account" }
 ] as const;

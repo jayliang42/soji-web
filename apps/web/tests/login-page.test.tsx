@@ -18,7 +18,10 @@ describe("login page", () => {
       })
     );
 
+    expect(html).toContain("Sign in to your Soji account");
     expect(html).toContain("Open your account");
+    expect(html).toContain("Continue to your account.");
+    expect(html).toContain("Browse public guides instead");
     expect(html).toContain("Continue with Google");
     expect(html).toContain("or continue with email");
     expect(html).toContain("Sign in with email");
@@ -58,6 +61,12 @@ describe("login page", () => {
     );
 
     expect(html).toContain("The password reset link could not be completed.");
+    expect(html).toContain("Request a new password link");
+    expect(html).toContain("Reset your password");
+    expect(html).toContain("Send reset link");
+    expect(html).toContain("Back to sign in");
+    expect(html).not.toContain("Continue with Google");
+    expect(html).not.toContain(">Password<");
     expect(html).not.toContain("Google sign-in could not be completed.");
   });
 });

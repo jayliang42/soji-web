@@ -7,7 +7,7 @@ const acceptanceWidths = [320, 375, 768, 1024, 1440] as const;
 
 const customerWorkflows = [
   { heading: "Well Endowed", path: "/" },
-  { heading: "Sign in to continue reading", path: "/login" },
+  { heading: "Sign in to your Soji account", path: "/login" },
   { heading: "Choose a new password", path: "/reset-password" },
   { heading: "Choose your membership", path: "/pricing" },
   {

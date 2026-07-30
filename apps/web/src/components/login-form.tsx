@@ -8,7 +8,7 @@ import { getSafeNextPath } from "@/lib/navigation";
 import { getPublicAuthFailureMessage } from "@/lib/supabase/auth-errors";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-type AuthMode = "sign_in" | "sign_up";
+type AuthMode = "recovery" | "sign_in" | "sign_up";
 type PendingOperation =
   | "email_sign_in"
   | "email_sign_up"
@@ -30,14 +30,16 @@ export function LoginForm({
   description,
   enabled,
   heading,
+  initialMode = "sign_in",
   nextPath
 }: {
   description: string;
   enabled: boolean;
   heading: string;
+  initialMode?: Extract<AuthMode, "recovery" | "sign_in">;
   nextPath: string;
 }) {
-  const [mode, setMode] = useState<AuthMode>("sign_in");
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<AuthMessage | null>(null);
@@ -48,6 +50,7 @@ export function LoginForm({
     useState<PendingOperation | null>(null);
   const [isPending, startTransition] = useTransition();
   const confirmationHeadingRef = useRef<HTMLHeadingElement>(null);
+  const formHeadingRef = useRef<HTMLHeadingElement>(null);
   const safeNextPath = getSafeNextPath(nextPath);
   const controlsDisabled = isPending || pendingOperation !== null;
 
@@ -56,6 +59,12 @@ export function LoginForm({
       confirmationHeadingRef.current?.focus();
     }
   }, [confirmationEmail]);
+
+  useEffect(() => {
+    if (mode === "recovery") {
+      formHeadingRef.current?.focus();
+    }
+  }, [mode]);
 
   async function bootstrapProfile() {
     const response = await fetch("/api/auth/bootstrap", {
@@ -71,6 +80,10 @@ export function LoginForm({
   }
 
   function handleEmailAuth() {
+    if (mode === "recovery") {
+      return;
+    }
+
     if (!enabled) {
       setMessage({
         kind: "error",
@@ -293,63 +306,81 @@ export function LoginForm({
       className="max-w-2xl rounded-lg border border-dune bg-white p-6 shadow-sm md:p-8"
       onSubmit={(event) => {
         event.preventDefault();
-        handleEmailAuth();
+        if (mode === "recovery") {
+          handlePasswordRecovery();
+        } else {
+          handleEmailAuth();
+        }
       }}
     >
-      <h2 className="font-display text-3xl leading-tight text-cocoa md:text-4xl">
-        {heading}
+      <h2
+        className="font-display text-3xl leading-tight text-cocoa md:text-4xl"
+        ref={formHeadingRef}
+        tabIndex={mode === "recovery" ? -1 : undefined}
+      >
+        {mode === "recovery" ? "Reset your password" : heading}
       </h2>
-      <p className="mt-3 max-w-xl text-cocoa/75">{description}</p>
+      <p className="mt-3 max-w-xl text-cocoa/75">
+        {mode === "recovery"
+          ? "Enter the email connected to your account. We will send a new link for choosing your password."
+          : description}
+      </p>
 
-      <button
-        className="mt-8 min-h-12 w-full rounded-md bg-cocoa px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
-        disabled={controlsDisabled}
-        onClick={handleGoogleAuth}
-        type="button"
-      >
-        {pendingOperation === "google"
-          ? pendingLabels.google
-          : "Continue with Google"}
-      </button>
+      {mode !== "recovery" ? (
+        <>
+          <button
+            className="mt-8 min-h-12 w-full rounded-md bg-cocoa px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+            disabled={controlsDisabled}
+            onClick={handleGoogleAuth}
+            type="button"
+          >
+            {pendingOperation === "google"
+              ? pendingLabels.google
+              : "Continue with Google"}
+          </button>
 
-      <div className="my-6 flex items-center gap-3 text-sm text-cocoa/75">
-        <span aria-hidden="true" className="h-px flex-1 bg-dune" />
-        <span>or continue with email</span>
-        <span aria-hidden="true" className="h-px flex-1 bg-dune" />
-      </div>
+          <div className="my-6 flex items-center gap-3 text-sm text-cocoa/75">
+            <span aria-hidden="true" className="h-px flex-1 bg-dune" />
+            <span>or continue with email</span>
+            <span aria-hidden="true" className="h-px flex-1 bg-dune" />
+          </div>
 
-      <div
-        aria-label="Authentication mode"
-        className="grid grid-cols-2 overflow-hidden rounded-md border border-dune text-sm"
-        role="group"
-      >
-        <button
-          type="button"
-          aria-pressed={mode === "sign_in"}
-          disabled={controlsDisabled}
-          onClick={() => {
-            setMode("sign_in");
-            setMessage(null);
-          }}
-          className={`min-h-11 border-r border-dune px-4 py-2 disabled:opacity-50 ${mode === "sign_in" ? "bg-clay text-white" : "bg-shell text-cocoa"}`}
-        >
-          Sign in
-        </button>
-        <button
-          type="button"
-          aria-pressed={mode === "sign_up"}
-          disabled={controlsDisabled}
-          onClick={() => {
-            setMode("sign_up");
-            setMessage(null);
-          }}
-          className={`min-h-11 px-4 py-2 disabled:opacity-50 ${mode === "sign_up" ? "bg-clay text-white" : "bg-shell text-cocoa"}`}
-        >
-          Create account
-        </button>
-      </div>
+          <div
+            aria-label="Authentication mode"
+            className="grid grid-cols-2 overflow-hidden rounded-md border border-dune text-sm"
+            role="group"
+          >
+            <button
+              type="button"
+              aria-pressed={mode === "sign_in"}
+              disabled={controlsDisabled}
+              onClick={() => {
+                setMode("sign_in");
+                setMessage(null);
+                setPassword("");
+              }}
+              className={`min-h-11 border-r border-dune px-4 py-2 disabled:opacity-50 ${mode === "sign_in" ? "bg-clay text-white" : "bg-shell text-cocoa"}`}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              aria-pressed={mode === "sign_up"}
+              disabled={controlsDisabled}
+              onClick={() => {
+                setMode("sign_up");
+                setMessage(null);
+                setPassword("");
+              }}
+              className={`min-h-11 px-4 py-2 disabled:opacity-50 ${mode === "sign_up" ? "bg-clay text-white" : "bg-shell text-cocoa"}`}
+            >
+              Create account
+            </button>
+          </div>
+        </>
+      ) : null}
 
-      <div className="mt-6 grid gap-4">
+      <div className={`${mode === "recovery" ? "mt-8" : "mt-6"} grid gap-4`}>
         <label className="grid gap-2 text-sm text-cocoa/75">
           Email
           <input
@@ -363,20 +394,28 @@ export function LoginForm({
             placeholder="you@example.com"
           />
         </label>
-        <label className="grid gap-2 text-sm text-cocoa/75">
-          Password
-          <input
-            autoComplete={mode === "sign_in" ? "current-password" : "new-password"}
-            disabled={controlsDisabled}
-            minLength={mode === "sign_up" ? 8 : 1}
-            required
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="min-h-12 rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none disabled:bg-shell disabled:opacity-70"
-            placeholder={mode === "sign_in" ? "Your password" : "Create a strong password"}
-          />
-        </label>
+        {mode !== "recovery" ? (
+          <label className="grid gap-2 text-sm text-cocoa/75">
+            Password
+            <input
+              autoComplete={
+                mode === "sign_in" ? "current-password" : "new-password"
+              }
+              disabled={controlsDisabled}
+              minLength={mode === "sign_up" ? 8 : 1}
+              required
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="min-h-12 rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none disabled:bg-shell disabled:opacity-70"
+              placeholder={
+                mode === "sign_in"
+                  ? "Your password"
+                  : "Create a strong password"
+              }
+            />
+          </label>
+        ) : null}
         {mode === "sign_up" ? (
           <p className="-mt-2 text-sm text-cocoa/65">Use at least 8 characters.</p>
         ) : null}
@@ -388,23 +427,42 @@ export function LoginForm({
         className="mt-6 min-h-12 w-full rounded-md bg-clay px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
       >
         {pendingOperation === "email_sign_in" ||
-        pendingOperation === "email_sign_up"
+        pendingOperation === "email_sign_up" ||
+        pendingOperation === "recovery"
           ? pendingLabels[pendingOperation]
-          : mode === "sign_in"
-            ? "Sign in with email"
-            : "Create account"}
+          : mode === "recovery"
+            ? "Send reset link"
+            : mode === "sign_in"
+              ? "Sign in with email"
+              : "Create account"}
       </button>
 
       {mode === "sign_in" ? (
         <button
           type="button"
           disabled={controlsDisabled}
-          onClick={handlePasswordRecovery}
+          onClick={() => {
+            setMode("recovery");
+            setMessage(null);
+            setPassword("");
+          }}
           className="mt-3 min-h-11 text-sm font-semibold text-clay disabled:opacity-50"
         >
-          {pendingOperation === "recovery"
-            ? pendingLabels.recovery
-            : "Forgot password?"}
+          Forgot password?
+        </button>
+      ) : null}
+
+      {mode === "recovery" ? (
+        <button
+          className="mt-3 min-h-11 text-sm font-semibold text-clay disabled:opacity-50"
+          disabled={controlsDisabled}
+          onClick={() => {
+            setMode("sign_in");
+            setMessage(null);
+          }}
+          type="button"
+        >
+          Back to sign in
         </button>
       ) : null}
 
