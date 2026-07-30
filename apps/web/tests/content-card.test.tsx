@@ -32,7 +32,8 @@ describe("content card", () => {
     expect(html).toContain('alt="Paper decision map beside a pencil and linen ledger."');
     expect(html).toContain('width="1200"');
     expect(html).toContain('height="900"');
-    expect(html).toContain("lg:col-span-2");
+    expect(html).toContain("lg:grid-cols-2");
+    expect(html).toContain("lg:border-r");
     expect(html).toContain("planning");
     expect(html).toContain("family");
     expect(html).toContain("cash flow");
@@ -101,5 +102,18 @@ describe("content card", () => {
     expect(html).toContain("Public · Full article");
     expect(html).toContain(">Read article</a>");
     expect(html).not.toContain("Included in your membership");
+  });
+
+  it("does not present internal demo taxonomy as reader-facing topics", () => {
+    const html = renderToStaticMarkup(
+      <ContentCard
+        accessMode="full"
+        item={{ ...item, tags: ["demo", "supporting", "family"] }}
+      />
+    );
+
+    expect(html).toContain(">family<");
+    expect(html).not.toContain(">demo<");
+    expect(html).not.toContain(">supporting<");
   });
 });

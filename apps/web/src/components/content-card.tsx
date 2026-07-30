@@ -12,13 +12,28 @@ const accessClasses = {
   success: "bg-success-muted text-success"
 } as const;
 
+export type ContentCardItem = Pick<
+  ContentItem,
+  | "coverImage"
+  | "coverImageAlt"
+  | "id"
+  | "publishedAt"
+  | "requiredEntitlements"
+  | "slug"
+  | "summary"
+  | "tags"
+  | "title"
+  | "type"
+  | "visibility"
+>;
+
 export function ContentCard({
   item,
   accessMode,
   featured = false,
   isAuthenticated = false
 }: {
-  item: ContentItem;
+  item: ContentCardItem;
   accessMode: ContentAccessMode;
   featured?: boolean;
   isAuthenticated?: boolean;
@@ -29,12 +44,15 @@ export function ContentCard({
     accessMode,
     isAuthenticated
   );
+  const visibleTags = item.tags
+    .filter((tag) => !["demo", "supporting"].includes(tag.toLocaleLowerCase()))
+    .slice(0, 3);
 
   return (
     <article
       className={clsx(
         "flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-dune bg-shell",
-        featured && "lg:col-span-2"
+        featured && "lg:grid lg:grid-cols-2"
       )}
       data-featured={featured ? "true" : undefined}
     >
@@ -42,7 +60,12 @@ export function ContentCard({
         src={item.coverImage}
         alt={item.coverImageAlt}
         eager={featured}
-        className="rounded-none border-b border-dune"
+        label={formatContentType(item.type)}
+        title={item.title}
+        className={clsx(
+          "rounded-none border-b border-dune",
+          featured && "lg:aspect-auto lg:h-full lg:border-b-0 lg:border-r"
+        )}
       />
       <div className="flex flex-1 flex-col p-6 md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-medium text-cocoa/70">
@@ -60,9 +83,9 @@ export function ContentCard({
           {item.title}
         </h2>
         <p className="mt-4 leading-7 text-cocoa/75">{item.summary}</p>
-        {item.tags.length > 0 ? (
+        {visibleTags.length > 0 ? (
           <div className="mt-5 flex flex-wrap gap-2" aria-label="Topics">
-            {item.tags.slice(0, 3).map((tag) => (
+            {visibleTags.map((tag) => (
               <span
                 key={tag}
                 className="rounded-full bg-sand px-3 py-1 text-xs font-semibold text-cocoa/75"

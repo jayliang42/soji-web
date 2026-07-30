@@ -3,6 +3,10 @@ import type { ContentItem } from "@soji/types";
 import type { ContentAccessMode } from "@/lib/content-access";
 
 type AccessTone = "accent" | "neutral" | "success";
+type AccessContentItem = Pick<
+  ContentItem,
+  "requiredEntitlements" | "visibility"
+>;
 
 export interface ContentAccessPresentation {
   action: "Read article" | "Read preview" | "View access";
@@ -11,7 +15,7 @@ export interface ContentAccessPresentation {
   tone: AccessTone;
 }
 
-function getMinimumMembershipName(item: ContentItem) {
+function getMinimumMembershipName(item: AccessContentItem) {
   if (item.requiredEntitlements.length === 0) {
     return null;
   }
@@ -26,7 +30,7 @@ function getMinimumMembershipName(item: ContentItem) {
 }
 
 export function getContentAccessPresentation(
-  item: ContentItem,
+  item: AccessContentItem,
   accessMode: ContentAccessMode,
   isAuthenticated: boolean
 ): ContentAccessPresentation {

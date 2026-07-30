@@ -4,13 +4,28 @@ export function ContentCover({
   alt,
   className,
   eager = false,
-  src
+  label = "Soji library",
+  src,
+  title = "A clearer next decision"
 }: {
   alt: string;
   className?: string;
   eager?: boolean;
+  label?: string;
   src?: string;
+  title?: string;
 }) {
+  const placeholderStyles = [
+    "bg-[linear-gradient(145deg,#f5e9e2_0%,#f3efe7_52%,#dce6db_100%)]",
+    "bg-[linear-gradient(145deg,#e2e9df_0%,#f4f0e8_52%,#ead7cc_100%)]",
+    "bg-[linear-gradient(145deg,#eee2d9_0%,#f7f3ec_50%,#d9e2e4_100%)]"
+  ] as const;
+  const placeholderStyle =
+    placeholderStyles[
+      [...title].reduce((total, character) => total + character.charCodeAt(0), 0) %
+        placeholderStyles.length
+    ];
+
   return (
     <div
       className={clsx(
@@ -33,10 +48,22 @@ export function ContentCover({
       ) : (
         <div
           aria-hidden="true"
-          className="relative h-full w-full bg-[linear-gradient(145deg,rgba(155,67,43,0.08),transparent_56%),linear-gradient(25deg,rgba(32,31,28,0.06),transparent_50%)]"
+          className={`relative flex h-full w-full flex-col justify-between overflow-hidden p-6 sm:p-8 ${placeholderStyle}`}
         >
-          <div className="absolute bottom-5 left-5 h-px w-16 bg-clay/50" />
-          <div className="absolute bottom-5 left-24 h-px w-8 bg-cocoa/20" />
+          <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full border border-cocoa/10 bg-white/25" />
+          <div className="absolute -bottom-16 -left-10 h-40 w-40 rounded-full border border-clay/15 bg-clay/5" />
+          <span className="relative text-[11px] font-bold uppercase tracking-[0.18em] text-cocoa/60">
+            {label}
+          </span>
+          <div className="relative max-w-[18rem]">
+            <div className="mb-4 flex items-center gap-2">
+              <span className="h-px w-12 bg-clay/60" />
+              <span className="h-px w-5 bg-cocoa/25" />
+            </div>
+            <span className="font-display text-2xl font-bold leading-[1.05] text-cocoa sm:text-3xl">
+              {title}
+            </span>
+          </div>
         </div>
       )}
     </div>
