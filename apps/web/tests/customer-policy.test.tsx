@@ -10,6 +10,7 @@ import RefundPolicyPage, {
 } from "@/app/refund-policy/page";
 import SupportPage, { metadata as supportMetadata } from "@/app/support/page";
 import TermsPage, { metadata as termsMetadata } from "@/app/terms/page";
+import { MembershipTerms } from "@/components/membership-terms";
 import { PurchaseDisclosure } from "@/components/purchase-disclosure";
 import {
   customerPolicyRoutes,
@@ -166,15 +167,16 @@ describe("customer trust links", () => {
     expect(html).toContain("min-h-11");
   });
 
-  it("renders exact membership and product purchase disclosures without local consent", () => {
+  it("renders shared membership terms and product disclosures without local consent", () => {
     const membership = renderToStaticMarkup(
-      <PurchaseDisclosure priceLabel="$128" variant="membership" />
+      <MembershipTerms />
     );
     const product = renderToStaticMarkup(
       <PurchaseDisclosure variant="product" />
     );
 
-    expect(membership).toContain("$128 billed monthly until canceled");
+    expect(membership).toContain("One billing rhythm across every plan");
+    expect(membership).toContain("renews monthly until canceled");
     expect(membership).toContain("Stripe Customer Portal");
     expect(membership).toContain("paid period and billing status");
     expect(product).toContain("One-time purchase");

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { MembershipTerms } from "@/components/membership-terms";
 import { MembershipPlanGrid } from "@/components/membership-plan-grid";
 import { PlanFinder } from "@/components/plan-finder";
 import { DataUnavailable } from "@/components/data-state";
@@ -97,6 +98,7 @@ export default async function PricingPage({
           customerEmail={customerEmail}
           hasExistingMembership={hasExistingMembership}
         />
+        <MembershipTerms />
       </section>
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-6">
         <div className="border-y border-dune py-10">

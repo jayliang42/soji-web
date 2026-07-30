@@ -80,7 +80,7 @@ describe("pricing membership safety", () => {
     expect(pricingMocks.getBillingDeliveryReadiness).not.toHaveBeenCalled();
   });
 
-  it("places exact renewal, cancellation, and policy terms by every plan", async () => {
+  it("keeps exact plan pricing nearby and groups shared policy terms once", async () => {
     pricingMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
 
     const html = renderToStaticMarkup(
@@ -90,8 +90,9 @@ describe("pricing membership safety", () => {
     for (const amount of ["$29", "$128", "$299"]) {
       expect(html).toContain(`${amount} billed monthly until canceled`);
     }
-    expect(html.match(/Stripe Customer Portal/gu)).toHaveLength(3);
-    expect(html.split('href="/refund-policy"')).toHaveLength(4);
+    expect(html.match(/Stripe Customer Portal/gu)).toHaveLength(1);
+    expect(html.split('href="/refund-policy"')).toHaveLength(2);
+    expect(html).toContain("One billing rhythm across every plan");
     expect(html).not.toMatch(/type="checkbox"/u);
   });
 });

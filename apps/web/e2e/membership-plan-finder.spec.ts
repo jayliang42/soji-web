@@ -79,6 +79,37 @@ test("plan finder deep-links to the recommended plan card", async ({ page }) => 
   await expectNoHorizontalOverflow(page);
 });
 
+test("comparison keeps plan prices local and groups shared terms once", async ({
+  page
+}) => {
+  await page.goto("/pricing");
+
+  const plans = [
+    { name: "Tier 1", price: "$29 billed monthly until canceled." },
+    { name: "Tier 2", price: "$128 billed monthly until canceled." },
+    { name: "Tier 3", price: "$299 billed monthly until canceled." }
+  ] as const;
+
+  for (const plan of plans) {
+    const card = page.getByRole("article", { name: plan.name });
+    await expect(card.getByText(plan.price, { exact: true })).toBeVisible();
+    await expect(card.getByRole("link", { name: "Refund policy" })).toHaveCount(0);
+  }
+
+  const sharedTerms = page.getByRole("complementary", {
+    name: "One billing rhythm across every plan."
+  });
+  await expect(sharedTerms).toBeVisible();
+  await expect(
+    sharedTerms.getByText("Stripe Customer Portal", { exact: false })
+  ).toBeVisible();
+  await expect(
+    sharedTerms.getByRole("link", { name: "Refund policy" })
+  ).toHaveAttribute("href", "/refund-policy");
+  await expect(page.locator('main a[href="/refund-policy"]')).toHaveCount(1);
+  await expectNoHorizontalOverflow(page);
+});
+
 test("plan finder controls remain usable at narrow widths", async ({
   page
 }, testInfo) => {

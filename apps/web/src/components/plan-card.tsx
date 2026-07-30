@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { MembershipPlan } from "@soji/types";
 import { PlanCheckoutButton } from "@/components/plan-checkout-button";
-import { PurchaseDisclosure } from "@/components/purchase-disclosure";
 import { getEntitlementLabel } from "@/lib/entitlements";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +43,8 @@ export function PlanCard({
   const guidance = planGuidance[plan.id];
 
   return (
-    <div
+    <article
+      aria-labelledby={`plan-${plan.id}-name`}
       id={`plan-${plan.id}`}
       className={cn(
         "flex h-full scroll-mt-28 flex-col rounded-lg border border-dune bg-shell p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl motion-reduce:transform-none sm:p-8",
@@ -53,15 +53,18 @@ export function PlanCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase text-cocoa/70">
+          <h3
+            className="text-xs font-bold uppercase text-cocoa/70"
+            id={`plan-${plan.id}-name`}
+          >
             {plan.name}
-          </p>
-          <h3 className="mt-4 font-display text-5xl font-bold leading-none text-cocoa">
+          </h3>
+          <p className="mt-4 font-display text-5xl font-bold leading-none text-cocoa">
             ${plan.monthlyPrice}
             <span className="ml-3 text-base font-medium text-cocoa/58">
               / month
             </span>
-          </h3>
+          </p>
         </div>
         {plan.featured ? (
           <span className="rounded-full bg-cocoa px-4 py-2 text-xs font-bold uppercase text-white">
@@ -125,16 +128,16 @@ export function PlanCard({
             Create account to join {plan.name}
           </Link>
         )}
-        <p className="mt-4 text-center text-xs font-medium text-cocoa/70">
-          {hasExistingMembership
-            ? "View billing status or manage your subscription from your account."
-            : "Billed monthly. Manage or cancel from your account."}
+        <p
+          aria-label={`${plan.name} billing summary`}
+          className="mt-4 text-center text-xs font-medium leading-5 text-cocoa/70"
+        >
+          <strong className="font-bold text-cocoa">
+            ${plan.monthlyPrice} billed monthly until canceled.
+          </strong>{" "}
+          Manage or cancel from Account.
         </p>
-        <PurchaseDisclosure
-          priceLabel={`$${plan.monthlyPrice}`}
-          variant="membership"
-        />
       </div>
-    </div>
+    </article>
   );
 }
