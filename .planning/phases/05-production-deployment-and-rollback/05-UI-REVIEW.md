@@ -96,16 +96,17 @@ topic overview, or alternate route inside the main section.
 **Next iteration:** provide a retry action plus a small static path to Membership or
 Support without presenting demo content as live.
 
-### UI-03 — Guest `Account` label is accurate but indirect
+### UI-03 — Guest sign-in entry clarified
 
-**Severity:** WARNING  
+**Severity:** RESOLVED  
 **Pillar:** Experience design
 
-Guests reach authentication through `Account`, which is safe and consistent, but a
-first-time visitor may not predict that it is the sign-in entry.
+Guests previously reached authentication through `Account`, which was safe but indirect.
+The public shell now labels that destination `Sign in`; authenticated readers retain
+`Account` and `Subscriptions`.
 
-**Next iteration:** test `Sign in` as the guest label while retaining `Account` for
-authenticated users, then verify the change against acquisition and account UAT.
+**Verification:** server-rendered guest/member navigation tests cover the distinct labels,
+and the full responsive navigation suite retains active state and target sizing.
 
 ## Reference Patterns
 
