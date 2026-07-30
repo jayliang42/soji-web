@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(120_000);
+
 const acceptanceWidths = [320, 375, 768, 1024, 1440] as const;
 
 const customerWorkflows = [

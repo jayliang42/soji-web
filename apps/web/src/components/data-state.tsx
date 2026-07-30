@@ -1,8 +1,12 @@
 export function DataUnavailable({
   description,
+  retryHref,
+  retryLabel = "Try loading again",
   title = "Temporarily unavailable"
 }: {
   description: string;
+  retryHref?: string;
+  retryLabel?: string;
   title?: string;
 }) {
   return (
@@ -12,6 +16,14 @@ export function DataUnavailable({
     >
       <p className="font-semibold">{title}</p>
       <p className="mt-1 text-sm text-cocoa/75">{description}</p>
+      {retryHref ? (
+        <a
+          href={retryHref}
+          className="mt-4 inline-flex min-h-11 items-center rounded-md border border-cocoa px-4 text-sm font-bold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
+        >
+          {retryLabel}
+        </a>
+      ) : null}
     </div>
   );
 }

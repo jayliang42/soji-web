@@ -46,7 +46,7 @@ export function PlanCard({
   return (
     <div
       className={cn(
-        "flex h-full flex-col rounded-lg border border-dune bg-shell p-8 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl",
+        "flex h-full flex-col rounded-lg border border-dune bg-shell p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl motion-reduce:transform-none sm:p-8",
         plan.featured && "border-cocoa bg-white ring-2 ring-clay/25"
       )}
     >
@@ -64,7 +64,7 @@ export function PlanCard({
         </div>
         {plan.featured ? (
           <span className="rounded-full bg-cocoa px-4 py-2 text-xs font-bold uppercase text-white">
-            Core
+            Most popular
           </span>
         ) : null}
       </div>

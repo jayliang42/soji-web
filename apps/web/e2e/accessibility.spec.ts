@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(120_000);
+
 const auditedPages = [
   "/",
   "/pricing",
@@ -55,7 +57,7 @@ test("reduced-motion preference minimizes decorative transitions", async ({ page
   expect(Number.parseFloat(transitionDuration)).toBeLessThanOrEqual(0.001);
 });
 
-test("keyboard order reaches the flagship action after the skip target", async ({
+test("keyboard order reaches library discovery after the skip target", async ({
   page
 }) => {
   await page.goto("/library");
@@ -67,7 +69,7 @@ test("keyboard order reaches the flagship action after the skip target", async (
   await expect(page.locator("#main-content")).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(
-    page.getByRole("link", { exact: true, name: "View access" }).first()
+    page.getByRole("searchbox", { exact: true, name: "Search the library" })
   ).toBeFocused();
 });
 

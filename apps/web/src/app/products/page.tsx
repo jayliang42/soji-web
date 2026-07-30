@@ -103,6 +103,7 @@ export default async function ProductsPage({
             <DataUnavailable
               title="Products could not be loaded"
               description="Purchasing is unavailable until the catalog connection recovers."
+              retryHref="/products"
             />
           </div>
         ) : null}
@@ -112,6 +113,7 @@ export default async function ProductsPage({
             <DataUnavailable
               title="Purchase status could not be verified"
               description="Checkout is paused until your account history can be checked, preventing an accidental duplicate purchase."
+              retryHref="/products"
             />
           </div>
         ) : null}

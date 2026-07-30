@@ -73,6 +73,7 @@ export default async function PricingPage({
             <DataUnavailable
               title="Membership status unavailable"
               description="We could not verify your current membership, so checkout is paused to prevent a duplicate subscription. Try again shortly or manage billing from your account."
+              retryHref="/pricing"
             />
           </div>
         ) : null}

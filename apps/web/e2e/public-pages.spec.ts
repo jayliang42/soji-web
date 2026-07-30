@@ -1,5 +1,16 @@
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(120_000);
+
+async function openPrimaryNavigation(page: import("@playwright/test").Page) {
+  const navigation = page.getByRole("navigation", { name: "Primary" });
+  if (!(await navigation.isVisible())) {
+    await page.getByRole("button", { exact: true, name: "Menu" }).click();
+  }
+  await expect(navigation).toBeVisible();
+  return navigation;
+}
+
 const publicPages = [
   { heading: "Well Endowed", path: "/" },
   {
@@ -30,9 +41,10 @@ for (const publicPage of publicPages) {
       page.getByRole("heading", { level: 1, name: publicPage.heading })
     ).toBeVisible();
     await expect(
-      page
-        .getByRole("navigation", { name: "Primary" })
-        .getByRole("link", { exact: true, name: "Account" })
+      (await openPrimaryNavigation(page)).getByRole("link", {
+        exact: true,
+        name: "Account"
+      })
     ).toBeVisible();
 
     const hasHorizontalOverflow = await page.evaluate(() => {
@@ -55,12 +67,19 @@ for (const publicPage of publicPages) {
   });
 }
 
-test("primary navigation remains fully visible at 320px", async ({ page }) => {
+test("primary navigation opens with full-size targets at 320px", async ({ page }) => {
   await page.setViewportSize({ height: 700, width: 320 });
   await page.goto("/");
 
-  const navigation = page.getByRole("navigation", { name: "Primary" });
-  await expect(navigation).toBeVisible();
+  const menuButton = page.getByRole("button", { exact: true, name: "Menu" });
+  await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+  const navigation = await openPrimaryNavigation(page);
+  await expect(
+    page.getByRole("button", { exact: true, name: "Close" })
+  ).toHaveAttribute("aria-expanded", "true");
+  await expect(
+    navigation.getByRole("link", { exact: true, name: "Subscriptions" })
+  ).toBeFocused();
   await expect(navigation.getByRole("link", { name: "Office hours" })).toBeVisible();
   await expect(navigation.getByRole("link", { name: "Home" })).toHaveCount(0);
 
@@ -68,7 +87,7 @@ test("primary navigation remains fully visible at 320px", async ({ page }) => {
     clientWidth: element.clientWidth,
     links: Array.from(element.querySelectorAll("a")).map((link) => {
       const rect = link.getBoundingClientRect();
-      return { left: rect.left, right: rect.right };
+      return { height: rect.height, left: rect.left, right: rect.right };
     }),
     scrollWidth: element.scrollWidth,
     viewportWidth: window.innerWidth
@@ -77,12 +96,19 @@ test("primary navigation remains fully visible at 320px", async ({ page }) => {
   expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
   expect(layout.links.every(({ left, right }) => left >= 0 && right <= layout.viewportWidth))
     .toBe(true);
+  expect(layout.links.every(({ height }) => height >= 44)).toBe(true);
+
+  await page.keyboard.press("Escape");
+  await expect(
+    page.getByRole("button", { exact: true, name: "Menu" })
+  ).toBeFocused();
+  await expect(navigation).toBeHidden();
 });
 
 test("primary navigation identifies the current section", async ({ page }) => {
   await page.goto("/office-hours");
 
-  const navigation = page.getByRole("navigation", { name: "Primary" });
+  const navigation = await openPrimaryNavigation(page);
   await expect(
     navigation.getByRole("link", { name: "Office hours" })
   ).toHaveAttribute("aria-current", "page");

@@ -66,8 +66,11 @@ export default async function RootLayout({
           Skip to main content
         </a>
         <header className="sticky top-0 z-20 border-b border-dune/70 bg-shell">
-          <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-6 py-4 md:flex-row md:items-center md:justify-between">
-            <Link href="/" className="text-2xl font-black text-darktext">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3.5 md:py-4">
+            <Link
+              href="/"
+              className="inline-flex min-h-11 items-center text-2xl font-black text-darktext"
+            >
               Soji
             </Link>
             <PublicNavigation signedIn={Boolean(snapshot.user)} />
