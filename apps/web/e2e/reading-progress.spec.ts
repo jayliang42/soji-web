@@ -39,7 +39,8 @@ test("guide progress persists locally and resumes an incomplete position only af
       start,
       targetTop + target.scrollHeight - window.innerHeight
     );
-    const next = start + (end - start) * 0.45;
+    const next =
+      end === start ? start + 1 : start + (end - start) * 0.45;
     window.scrollTo(0, next);
     return end === start ? 100 : 45;
   });

@@ -105,3 +105,8 @@ textarea {
 .reading-progress::-moz-progress-bar {
   background: var(--accent);
 }
+
+.guide-reading-body[data-reading-size="large"] > div {
+  font-size: 1.3125rem;
+  line-height: 1.85;
+}

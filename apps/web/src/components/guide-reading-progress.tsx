@@ -196,11 +196,17 @@ export function GuideReadingProgress({
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize);
     window.addEventListener("pagehide", handlePageHide);
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(() => scheduleMeasurement(false));
+    resizeObserver?.observe(readingTarget);
 
     return () => {
       active = false;
       window.cancelAnimationFrame(animationFrame);
       window.cancelAnimationFrame(resumeAnimationFrame);
+      resizeObserver?.disconnect();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("pagehide", handlePageHide);

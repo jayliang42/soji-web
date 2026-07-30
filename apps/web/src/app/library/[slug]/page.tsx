@@ -12,6 +12,7 @@ import { ContentSourceBadge } from "@/components/content-source-badge";
 import { DataUnavailable } from "@/components/data-state";
 import { GuideReadingProgress } from "@/components/guide-reading-progress";
 import { MarkdownContent } from "@/components/markdown-content";
+import { ReadingSizeControl } from "@/components/reading-size-control";
 import { SectionShell } from "@/components/section-shell";
 import { SavedGuideButton } from "@/components/saved-guide-button";
 import { ShareButton } from "@/components/share-button";
@@ -255,23 +256,26 @@ export default async function ContentDetailPage({
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/62">
                 Reading
               </p>
-              <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+              <div className="flex flex-wrap items-center justify-end gap-3">
                 <p className="text-sm font-semibold text-cocoa/62">
                   {readingLabel}
                 </p>
                 {displayBody ? (
-                  <GuideReadingProgress
-                    slug={item.slug}
-                    targetId="guide-reading-body"
-                    title={item.title}
-                  />
+                  <>
+                    <ReadingSizeControl targetId="guide-reading-body" />
+                    <GuideReadingProgress
+                      slug={item.slug}
+                      targetId="guide-reading-body"
+                      title={item.title}
+                    />
+                  </>
                 ) : null}
               </div>
             </header>
 
             <div className="px-5 py-8 sm:px-8 md:py-10">
               {displayBody ? (
-                <div id="guide-reading-body">
+                <div className="guide-reading-body" id="guide-reading-body">
                   <MarkdownContent content={displayBody} outline={outline} />
                 </div>
               ) : (
