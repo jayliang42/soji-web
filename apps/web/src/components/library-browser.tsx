@@ -8,13 +8,20 @@ import {
 } from "@/components/content-card";
 import type { ContentAccessMode } from "@/lib/content-access";
 import { formatContentType } from "@/lib/content-presentation";
+import {
+  getBrowserSavedGuidesStorage,
+  readSavedGuideSlugs,
+  SAVED_GUIDES_EVENT,
+  SAVED_GUIDES_STORAGE_KEY
+} from "@/lib/saved-guides";
 
 const focusOptions = [
   { id: "all", label: "All guides" },
   { id: "start", label: "Start here" },
   { id: "spending", label: "Spending & cash flow" },
   { id: "career", label: "Career & earning" },
-  { id: "family", label: "Family & legacy" }
+  { id: "family", label: "Family & legacy" },
+  { id: "saved", label: "Saved" }
 ] as const;
 
 type FocusId = (typeof focusOptions)[number]["id"];
@@ -79,13 +86,20 @@ function searchableText(item: ContentCardItem) {
     .toLocaleLowerCase();
 }
 
-function matchesFocus(item: ContentCardItem, focus: FocusId) {
+function matchesFocus(
+  item: ContentCardItem,
+  focus: FocusId,
+  savedSlugs: ReadonlySet<string>
+) {
   if (focus === "all") {
     return true;
   }
+  if (focus === "saved") {
+    return savedSlugs.has(item.slug);
+  }
 
   const source = searchableText(item);
-  const keywords: Record<Exclude<FocusId, "all">, string[]> = {
+  const keywords: Record<Exclude<FocusId, "all" | "saved">, string[]> = {
     career: ["career", "earning", "income", "negotiation", "salary"],
     family: ["family", "generation", "kids", "legacy", "partner"],
     spending: [
@@ -129,6 +143,7 @@ export function LibraryBrowser({
     normalizeFormat(initialFormat, formats)
   );
   const [query, setQuery] = useState(initialQuery ?? "");
+  const [savedSlugs, setSavedSlugs] = useState<string[] | null>(null);
 
   useEffect(() => {
     function restoreFiltersFromHistory() {
@@ -144,6 +159,26 @@ export function LibraryBrowser({
     return () =>
       window.removeEventListener("popstate", restoreFiltersFromHistory);
   }, [formats]);
+
+  useEffect(() => {
+    function refreshSavedGuides() {
+      setSavedSlugs(readSavedGuideSlugs(getBrowserSavedGuidesStorage()));
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (event.key === SAVED_GUIDES_STORAGE_KEY) {
+        refreshSavedGuides();
+      }
+    }
+
+    refreshSavedGuides();
+    window.addEventListener(SAVED_GUIDES_EVENT, refreshSavedGuides);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener(SAVED_GUIDES_EVENT, refreshSavedGuides);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
 
   function updateFilterUrl(
     nextFilters: LibraryFilterState,
@@ -164,16 +199,18 @@ export function LibraryBrowser({
   }
   const visibleEntries = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
+    const savedSlugSet = new Set(savedSlugs ?? []);
 
     return entries.filter(({ item }) => {
       return (
-        matchesFocus(item, focus) &&
+        matchesFocus(item, focus, savedSlugSet) &&
         (format === "all" || item.type === format) &&
         (!normalizedQuery || searchableText(item).includes(normalizedQuery))
       );
     });
-  }, [entries, focus, format, query]);
+  }, [entries, focus, format, query, savedSlugs]);
   const filtersActive = focus !== "all" || format !== "all" || query.trim();
+  const loadingSavedGuides = focus === "saved" && savedSlugs === null;
 
   function clearFilters() {
     setFocus("all");
@@ -201,7 +238,7 @@ export function LibraryBrowser({
             </h2>
             <p className="mt-3 max-w-lg text-sm font-medium leading-6 text-cocoa/70">
               Choose a focus, then narrow the library by format or a word you
-              have in mind.
+              have in mind. Saved guides stay on this device.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_13rem]">
@@ -281,10 +318,11 @@ export function LibraryBrowser({
 
       <div className="mb-5 flex min-h-11 flex-wrap items-center justify-between gap-3">
         <p aria-live="polite" className="text-sm font-bold text-cocoa/70">
-          {visibleEntries.length === 1
-            ? "1 guide"
-            : `${visibleEntries.length} guides`}
-          {filtersActive ? " match your filters" : " in the library"}
+          {loadingSavedGuides
+            ? "Loading saved guides…"
+            : `${visibleEntries.length === 1 ? "1 guide" : `${visibleEntries.length} guides`}${
+                filtersActive ? " match your filters" : " in the library"
+              }`}
         </p>
         {filtersActive ? (
           <button
@@ -297,7 +335,16 @@ export function LibraryBrowser({
         ) : null}
       </div>
 
-      {visibleEntries.length > 0 ? (
+      {loadingSavedGuides ? (
+        <div
+          aria-live="polite"
+          className="rounded-xl border border-dune bg-shell px-6 py-12 text-center"
+        >
+          <p className="font-display text-2xl font-bold text-cocoa">
+            Loading saved guides…
+          </p>
+        </div>
+      ) : visibleEntries.length > 0 ? (
         <ul
           className="grid list-none gap-6 p-0 md:grid-cols-2 xl:grid-cols-3"
           aria-label="Published guides"
@@ -323,11 +370,14 @@ export function LibraryBrowser({
       ) : (
         <div className="rounded-xl border border-dashed border-dune bg-shell px-6 py-12 text-center">
           <h3 className="font-display text-3xl font-bold text-cocoa">
-            No guides match those filters.
+            {focus === "saved"
+              ? "No saved guides yet."
+              : "No guides match those filters."}
           </h3>
           <p className="mx-auto mt-3 max-w-lg text-cocoa/70">
-            Try a broader focus or clear the filters to see the complete
-            library.
+            {focus === "saved"
+              ? "Use Save guide on any card or article. Your reading list stays on this device."
+              : "Try a broader focus or clear the filters to see the complete library."}
           </p>
           <button
             type="button"

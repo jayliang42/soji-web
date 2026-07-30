@@ -12,6 +12,7 @@ import { ContentSourceBadge } from "@/components/content-source-badge";
 import { DataUnavailable } from "@/components/data-state";
 import { MarkdownContent } from "@/components/markdown-content";
 import { SectionShell } from "@/components/section-shell";
+import { SavedGuideButton } from "@/components/saved-guide-button";
 import { ShareButton } from "@/components/share-button";
 import {
   getContentAccessMode,
@@ -411,6 +412,17 @@ export default async function ContentDetailPage({
             ) : null}
 
             <div className="mt-6 border-t border-dune pt-6">
+              <SavedGuideButton
+                slug={item.slug}
+                title={item.title}
+                variant="full"
+              />
+              <p className="mt-2 text-xs leading-5 text-cocoa/62">
+                Saved guides stay on this device.
+              </p>
+            </div>
+
+            <div className="mt-4">
               <ShareButton label="Share guide" title={item.title} />
             </div>
 

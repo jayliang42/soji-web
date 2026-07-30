@@ -2,6 +2,7 @@ import type { ContentItem } from "@soji/types";
 import clsx from "clsx";
 import Link from "next/link";
 import { ContentCover } from "@/components/content-cover";
+import { SavedGuideButton } from "@/components/saved-guide-button";
 import type { ContentAccessMode } from "@/lib/content-access";
 import { getContentAccessPresentation } from "@/lib/content-access-presentation";
 import { formatContentType, formatPublishedDate } from "@/lib/content-presentation";
@@ -104,7 +105,7 @@ export function ContentCard({
             ))}
           </ul>
         ) : null}
-        <div className="mt-auto flex flex-col items-start gap-4 pt-7 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-auto flex flex-col items-start gap-4 pt-7">
           <span
             className={clsx(
               "rounded-full px-3 py-1 text-sm font-semibold",
@@ -113,12 +114,15 @@ export function ContentCard({
           >
             {access.label}
           </span>
-          <Link
-            href={`/library/${item.slug}`}
-            className="inline-flex min-h-11 items-center justify-center rounded-md border border-cocoa px-4 py-2 text-sm font-semibold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
-          >
-            {access.action}
-          </Link>
+          <div className="flex w-full flex-wrap items-center gap-2">
+            <SavedGuideButton slug={item.slug} title={item.title} />
+            <Link
+              href={`/library/${item.slug}`}
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-md border border-cocoa px-4 py-2 text-sm font-semibold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
+            >
+              {access.action}
+            </Link>
+          </div>
         </div>
       </div>
     </article>

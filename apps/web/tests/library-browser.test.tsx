@@ -56,6 +56,8 @@ describe("library browser", () => {
     expect(html).toContain('type="search"');
     expect(html).toContain("All formats");
     expect(html).toContain('aria-label="Filter guides by focus"');
+    expect(html).toContain(">Saved</button>");
+    expect(html).toContain("Saved guides stay on this device.");
     expect(html).toContain("3 guides in the library");
   });
 
