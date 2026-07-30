@@ -65,13 +65,19 @@ export default async function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <header className="sticky top-0 z-20 border-b border-dune/70 bg-shell">
+        <header className="sticky top-0 z-20 border-b border-dune/70 bg-shell shadow-[0_1px_12px_rgba(32,31,28,0.035)]">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3.5 md:py-4">
             <Link
               href="/"
-              className="inline-flex min-h-11 items-center text-2xl font-black text-darktext"
+              className="group inline-flex min-h-11 items-center gap-3 text-darktext"
             >
-              Soji
+              <span className="text-2xl font-black">Soji</span>
+              <span
+                aria-hidden="true"
+                className="hidden border-l border-dune pl-3 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-cocoa/68 transition-colors group-hover:text-clay lg:block"
+              >
+                Well Endowed
+              </span>
             </Link>
             <PublicNavigation signedIn={Boolean(snapshot.user)} />
           </div>

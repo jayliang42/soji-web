@@ -20,10 +20,32 @@ export function getSafeNextPath(value: string | null | undefined) {
   }
 }
 
-export function isNavigationSectionActive(pathname: string, href: string) {
-  if (href === "/") {
-    return pathname === href;
+export function isNavigationSectionActive(
+  pathname: string,
+  href: string,
+  currentSearch = ""
+) {
+  const destination = new URL(href, "https://soji.local");
+  const destinationPathname = destination.pathname;
+
+  if (destinationPathname === "/") {
+    return pathname === destinationPathname;
   }
 
-  return pathname === href || pathname.startsWith(`${href}/`);
+  const pathMatches =
+    pathname === destinationPathname ||
+    pathname.startsWith(`${destinationPathname}/`);
+  if (!pathMatches) {
+    return false;
+  }
+
+  if (destinationPathname === "/account") {
+    const destinationView = destination.searchParams.get("view");
+    const currentView = new URLSearchParams(currentSearch).get("view");
+    if (destinationView || currentView) {
+      return destinationView === currentView;
+    }
+  }
+
+  return true;
 }

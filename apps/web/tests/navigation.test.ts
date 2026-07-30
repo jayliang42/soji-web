@@ -38,4 +38,27 @@ describe("isNavigationSectionActive", () => {
     expect(isNavigationSectionActive("/", "/")).toBe(true);
     expect(isNavigationSectionActive("/pricing", "/")).toBe(false);
   });
+
+  it("distinguishes account subsections by their view query", () => {
+    expect(
+      isNavigationSectionActive(
+        "/account",
+        "/account?view=subscriptions",
+        "view=subscriptions"
+      )
+    ).toBe(true);
+    expect(
+      isNavigationSectionActive(
+        "/account",
+        "/account",
+        "view=subscriptions"
+      )
+    ).toBe(false);
+    expect(
+      isNavigationSectionActive("/account", "/account", "purchase=success")
+    ).toBe(true);
+    expect(
+      isNavigationSectionActive("/account", "/account?view=subscriptions")
+    ).toBe(false);
+  });
 });

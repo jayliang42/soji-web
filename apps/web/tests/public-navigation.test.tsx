@@ -2,7 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/account"
+  usePathname: () => "/account",
+  useSearchParams: () => new URLSearchParams()
 }));
 
 import { PublicNavigation } from "@/components/public-navigation";
@@ -20,13 +21,18 @@ describe("primary navigation", () => {
     expect(html).toContain(">Sign in<");
     expect(html).not.toContain(">Account<");
     expect(html).not.toContain(">Subscriptions<");
+    expect(html).toContain("Explore Soji");
+    expect(html).toContain("Compare three membership depths");
+    expect(html).toContain("Access your benefits and purchases");
   });
 
-  it("gives every mobile destination a full-height target", () => {
+  it("gives every mobile destination a full-height target and list semantics", () => {
     const html = renderToStaticMarkup(<PublicNavigation />);
 
-    expect(html.match(/min-h-11/gu)).toHaveLength(6);
-    expect(html).toContain("hidden md:flex");
+    expect(html.match(/min-h-\[4\.5rem\]/gu)).toHaveLength(5);
+    expect(html).toContain("<ul");
+    expect(html.match(/<li/gu)).toHaveLength(5);
+    expect(html).toContain("hidden md:block");
   });
 
   it("moves membership choices under subscriptions for signed-in users", () => {
@@ -37,5 +43,7 @@ describe("primary navigation", () => {
     expect(html).toContain(">Account<");
     expect(html).not.toContain(">Sign in<");
     expect(html).not.toContain(">Pricing<");
+    expect(html).toContain("Review plans and billing");
+    expect(html).toContain("See benefits, purchases, and profile");
   });
 });

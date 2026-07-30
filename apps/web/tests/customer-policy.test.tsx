@@ -25,7 +25,8 @@ vi.mock("@/lib/session", () => ({
   }))
 }));
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/"
+  usePathname: () => "/",
+  useSearchParams: () => new URLSearchParams()
 }));
 
 const readyConfiguration = {
