@@ -11,6 +11,7 @@ import { ContentPreviewCta } from "@/components/content-preview-cta";
 import { ContentSourceBadge } from "@/components/content-source-badge";
 import { DataUnavailable } from "@/components/data-state";
 import { GuideReadingProgress } from "@/components/guide-reading-progress";
+import { GuideOutline } from "@/components/guide-outline";
 import { MarkdownContent } from "@/components/markdown-content";
 import { ReadingSizeControl } from "@/components/reading-size-control";
 import { SectionShell } from "@/components/section-shell";
@@ -273,6 +274,16 @@ export default async function ContentDetailPage({
               </div>
             </header>
 
+            {hasOutline ? (
+              <GuideOutline
+                className="border-b border-dune bg-cream/55 px-5 py-2 sm:px-8 lg:hidden"
+                contentTargetId="guide-reading-body"
+                headingId="mobile-guide-outline-heading"
+                outline={outline}
+                variant="mobile"
+              />
+            ) : null}
+
             <div className="px-5 py-8 sm:px-8 md:py-10">
               {displayBody ? (
                 <div className="guide-reading-body" id="guide-reading-body">
@@ -372,38 +383,13 @@ export default async function ContentDetailPage({
             </dl>
 
             {hasOutline ? (
-              <nav
-                aria-labelledby="guide-outline-heading"
-                className="mt-6 border-t border-dune pt-6"
-              >
-                <h3
-                  className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62"
-                  id="guide-outline-heading"
-                >
-                  In this guide
-                </h3>
-                <ol className="mt-3 space-y-1">
-                  {outline.map((heading, index) => (
-                    <li
-                      className={heading.level >= 3 ? "pl-4" : undefined}
-                      key={`${heading.line}-${heading.id}`}
-                    >
-                      <a
-                        className="group grid min-h-11 grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold leading-5 text-cocoa/72 transition-colors hover:bg-shell hover:text-cocoa"
-                        href={`#${heading.id}`}
-                      >
-                        <span
-                          aria-hidden="true"
-                          className="text-xs font-bold tabular-nums text-clay/65 group-hover:text-clay"
-                        >
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        <span>{heading.label}</span>
-                      </a>
-                    </li>
-                  ))}
-                </ol>
-              </nav>
+              <GuideOutline
+                className="mt-6 hidden border-t border-dune pt-6 lg:block"
+                contentTargetId="guide-reading-body"
+                headingId="desktop-guide-outline-heading"
+                outline={outline}
+                variant="desktop"
+              />
             ) : null}
 
             {visibleTags.length > 0 ? (

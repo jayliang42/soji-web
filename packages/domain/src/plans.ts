@@ -138,8 +138,11 @@ export const sampleLibrary: ContentItem[] = [
       "Start by comparing the purchases you still value with the ones you barely remember.",
     tags: ["demo", "supporting", "audit"],
     body: [
+      "## Compare remembered value",
       "A useful money audit starts with behavior, not spreadsheets. List the ten purchases from the last month that still feel worthwhile, then list the ten that disappeared from memory within a week.",
+      "## Name the default to change",
       "The gap between those two lists is the first signal. It shows where money is producing confidence, convenience, or connection, and where it is simply leaking into default choices.",
+      "## Choose one next move",
       "Members get the full worksheet version with review prompts, partner conversation scripts, and a monthly reset template."
     ].join("\n\n")
   },
