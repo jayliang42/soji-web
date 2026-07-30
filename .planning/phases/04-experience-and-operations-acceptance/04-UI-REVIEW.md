@@ -122,6 +122,12 @@ before they can be visually confirmed against live accounts.
   entitlement decision.
 - Fully entitled readers receive bounded next steps to more guides, practical
   tools, and Office Hours after the article rather than a generic dead end.
+- Every article can now continue into as many as three related pieces, ranked
+  first by shared public topics and then by format and recency. Internal fixture
+  tags never influence the ranking.
+- Related cards expose only catalog metadata, use the same access labels as the
+  Library, and retain an h3 title beneath the section heading; no related body
+  or preview copy is rendered into the current article.
 - Desktop, 390-pixel, and 320-pixel layouts preserve the reading hierarchy,
   44-pixel actions, and zero horizontal overflow.
 
@@ -263,7 +269,7 @@ before they can be visually confirmed against live accounts.
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 92 files, 666 tests passed.
+- Unit tests: 93 files, 670 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -336,7 +342,11 @@ before they can be visually confirmed against live accounts.
   Tier 1 Demo state: every outline link matched one visible heading, anchor
   navigation updated the URL, the target stopped 112 pixels below the top edge,
   and the desktop layout retained zero horizontal overflow. The Demo tier was
-  restored immediately and was not included in the implementation.
+  restored immediately and was not included in the implementation. The
+  related-reading section was then checked in the normal signed-in preview
+  state: its three desktop cards were equal-height, every action was at least
+  44 pixels high, the page had no horizontal overflow, the public article link
+  opened the correct durable URL, and text from related bodies was absent.
 
 ## Follow-up Note
 

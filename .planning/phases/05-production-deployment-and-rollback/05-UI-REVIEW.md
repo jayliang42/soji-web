@@ -105,6 +105,11 @@ responsive, and accessibility requirements while accepting purposeful UI improve
   primary action to the exact qualifying tier.
 - Added next-step routes for entitled readers after the article without changing content
   access, entitlement, or billing behavior.
+- Added a three-card `Keep reading` section that excludes the current article and ranks
+  candidates by shared public topics, then content format and recency.
+- Reused the Library's access-aware cards with an h3 title level, public catalog fields,
+  and exact public/preview/membership labels; related bodies are never rendered into the
+  current page and internal fixture tags do not affect recommendations.
 - Verified the signed-in preview state and 320/390-pixel touch targets without exposing
   protected copy or introducing horizontal overflow.
 
@@ -245,6 +250,12 @@ and the full responsive navigation suite retains active state and target sizing.
 - W3C WAI identifies headings as both content structure and a mechanism assistive
   technologies can use for in-page navigation:
   <https://www.w3.org/WAI/tutorials/page-structure/headings/>
+- Ghost's official read-next pattern excludes the current post, limits the result set,
+  and recommends related posts through shared tags:
+  <https://ghost.org/tutorials/read-next/>
+- Ghost keeps internal tags out of reader-facing tag output by default, matching Soji's
+  separation between editorial topics and fixture taxonomy:
+  <https://ghost.org/docs/themes/helpers/tags/>
 
 Soji borrows those information-architecture patterns, not their branding. The visual
 system remains Soji's restrained editorial serif, warm neutrals, clay accent, and owned
@@ -252,7 +263,7 @@ book imagery.
 
 ## Verification Evidence
 
-- Web Vitest: 92 files and 666 tests passed.
+- Web Vitest: 93 files and 670 tests passed.
 - ESLint and generated-route typecheck passed.
 - Next.js production build passed and generated 37 routes.
 - Focused Playwright membership comparison checks passed 7 tests across desktop and
@@ -293,3 +304,10 @@ the expected URL fragment and 112-pixel top clearance, and the desktop article/a
 composition had no horizontal overflow. Restoring the normal free Demo user confirmed
 that the public opening does not render the hidden outline; the temporary tier change was
 not committed.
+
+The related-reading section was reviewed in the normal signed-in preview state. Its
+three cards were equal-height at desktop, every action remained at least 44 pixels high,
+the document retained zero horizontal overflow, and the public recommendation opened its
+correct durable article URL. DOM inspection confirmed that none of the related article
+bodies was included on the current page; the focused Reading suite then passed on desktop
+and mobile, including explicit 320- and 390-pixel checks.
