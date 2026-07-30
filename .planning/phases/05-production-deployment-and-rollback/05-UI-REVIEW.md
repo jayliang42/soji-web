@@ -9,6 +9,7 @@ routes:
   - /
   - /pricing
   - /products
+  - /products/wealth-dashboard-template-pack
   - /library
   - /library/wealth-without-drift
   - /office-hours
@@ -32,6 +33,8 @@ Article details now distinguish the public opening from the member edition, surf
 the reading time a visitor can actually access, and lead to the exact qualifying tier.
 Admin Overview now links status directly to its owning workspace and lets operators
 reduce the 20-item release checklist to the subset relevant to the next task.
+Each digital product now has a durable detail page that explains the offer and delivery
+before presenting the existing account-aware purchase action.
 
 The user explicitly reopened visual and functional iteration after the original Phase 5
 UI contract froze Phase 4. This audit therefore retains the contract's truthfulness,
@@ -88,6 +91,17 @@ responsive, and accessibility requirements while accepting purposeful UI improve
   access, entitlement, or billing behavior.
 - Verified the signed-in preview state and 320/390-pixel touch targets without exposing
   protected copy or introducing horizontal overflow.
+
+### Product details
+
+- Added a shareable `/products/[slug]` route with public metadata, editorial artwork,
+  exact price/format labels, included outcomes, and a three-step delivery explanation.
+- Linked every Shop card to the matching product detail while retaining the existing
+  account-aware purchase action on both surfaces.
+- Preserved guest return intent, owner access, dispute review, catalog failure, purchase
+  history failure, and billing-unavailable behavior without creating a parallel checkout.
+- Kept the purchase disclosure beside the action and verified 320/390-pixel controls,
+  semantic hierarchy, and no horizontal overflow.
 
 ### Admin operations
 
@@ -191,6 +205,15 @@ and the full responsive navigation suite retains active state and target sizing.
 - Ghost Admin keeps content creation, preview, filtering, and organization together in
   the content-management workspace:
   <https://ghost.org/help/organizing-content/>
+- Gumroad gives each digital product a unique URL and combines its description, price,
+  additional details, call to action, and delivered content:
+  <https://gumroad.com/help/article/149-adding-a-product>
+- Gumroad's returning-buyer experience changes a product page from purchase to owned
+  content access, matching Soji's existing Account route:
+  <https://gumroad.com/help/article/199-how-do-i-access-my-purchase>
+- Lemon Squeezy treats single-payment products, storefront presentation, and durable
+  digital delivery as parts of one product model:
+  <https://docs.lemonsqueezy.com/help/products>
 
 Soji borrows those information-architecture patterns, not their branding. The visual
 system remains Soji's restrained editorial serif, warm neutrals, clay accent, and owned
@@ -198,7 +221,7 @@ book imagery.
 
 ## Verification Evidence
 
-- Web Vitest: 88 files and 652 tests passed.
+- Web Vitest: 89 files and 656 tests passed.
 - ESLint and generated-route typecheck passed.
 - Next.js production build passed and generated 37 routes.
 - Focused Playwright membership comparison checks passed 7 tests across desktop and
@@ -209,8 +232,11 @@ book imagery.
   desktop-only instance of the narrow-width check was intentionally skipped.
 - Focused Playwright Admin Overview checks passed 3 tests across desktop and mobile; one
   desktop-only instance of the narrow-width check was intentionally skipped.
+- Focused Playwright Product Detail checks passed 3 tests across desktop and mobile; one
+  desktop-only instance of the narrow-width check was intentionally skipped.
 - Existing cross-workflow acceptance checks passed 16/16, including all six Admin
-  workspaces at 320, 375, 768, 1024, and 1440 pixels and the blocking axe scan.
+  workspaces and the new product-detail route at 320, 375, 768, 1024, and 1440 pixels,
+  plus the blocking axe scan.
 - Focused Playwright navigation/home checks passed 6/6 on desktop and mobile.
 - Focused library discovery, keyboard, and axe checks passed 12/12 on desktop and mobile.
 - The prior full CI-style Playwright regression remains recorded at 124/124 on desktop

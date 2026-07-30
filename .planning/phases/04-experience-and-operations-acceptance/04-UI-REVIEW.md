@@ -16,6 +16,7 @@ routes:
   - /office-hours
   - /pricing
   - /products
+  - /products/wealth-dashboard-template-pack
   - /reset-password
   - /support
 ---
@@ -47,6 +48,8 @@ detail pages now provide an editorial reading frame, visible-content reading
 time, guide metadata, and an exact membership path after the public opening.
 Admin Overview now turns catalog status into direct, permission-aware
 workspaces and makes the long release checklist filterable by operator task.
+Shop products now have durable detail URLs that explain contents, delivery,
+purchase terms, and the current account-specific action before Checkout.
 
 The remaining note is operational rather than a local UI defect: authenticated
 production-provider states still require the consolidated owner checkpoint
@@ -210,6 +213,20 @@ before they can be visually confirmed against live accounts.
 - Search, sort, filter, and recovery controls maintain 44-pixel targets with no
   horizontal overflow at 320- and 390-pixel widths.
 
+### Product detail (`/products/[slug]`)
+
+- Every catalog card now leads to a shareable product-specific page rather
+  than asking a visitor to decide from a compact listing alone.
+- The editorial hero repeats the exact one-time price, digital format, and
+  no-subscription condition beside differentiated product artwork.
+- Included outcomes and the sign-in → pay once → Account delivery path appear
+  before a sticky purchase panel with the existing policy disclosure.
+- Guest authentication returns to the exact product; verified owners return to
+  Account, disputed owners retain the review path, and unavailable catalog or
+  purchase state never exposes a new Checkout action.
+- Product-specific metadata uses only public catalog fields, while the page
+  preserves 44-pixel controls and zero overflow at 320 and 390 pixels.
+
 ### Support (`/support`)
 
 - Four task cards route account access, subscriptions, purchases/downloads, and
@@ -227,7 +244,7 @@ before they can be visually confirmed against live accounts.
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 88 files, 652 tests passed.
+- Unit tests: 89 files, 656 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -253,6 +270,9 @@ before they can be visually confirmed against live accounts.
 - Targeted Playwright Reading suite: 3 tests passed across desktop and mobile;
   one desktop-only instance of the narrow-width check was intentionally skipped.
 - Targeted Playwright Admin Overview suite: 3 tests passed across desktop and
+  mobile; one desktop-only instance of the narrow-width check was intentionally
+  skipped.
+- Targeted Playwright Product Detail suite: 3 tests passed across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally
   skipped.
 - Existing cross-workflow acceptance suite: 16 tests passed, covering every
@@ -283,7 +303,9 @@ before they can be visually confirmed against live accounts.
   layouts and control sizing were verified by the focused Reading suite. Admin
   workspace cards and the default Open checklist were reviewed as full desktop
   compositions, and the Confirm filter was exercised from 19 open items to 9
-  operator-confirmation items.
+  operator-confirmation items. The product-detail hero, included-outcome grid,
+  delivery sequence, and sticky purchase panel were reviewed together in the
+  signed-in demo state, including the truthful unavailable-Checkout treatment.
 
 ## Follow-up Note
 
