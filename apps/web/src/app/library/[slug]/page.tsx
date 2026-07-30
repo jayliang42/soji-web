@@ -10,6 +10,7 @@ import { ContentCover } from "@/components/content-cover";
 import { ContentPreviewCta } from "@/components/content-preview-cta";
 import { ContentSourceBadge } from "@/components/content-source-badge";
 import { DataUnavailable } from "@/components/data-state";
+import { GuideReadingProgress } from "@/components/guide-reading-progress";
 import { MarkdownContent } from "@/components/markdown-content";
 import { SectionShell } from "@/components/section-shell";
 import { SavedGuideButton } from "@/components/saved-guide-button";
@@ -254,14 +255,25 @@ export default async function ContentDetailPage({
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/62">
                 Reading
               </p>
-              <p className="text-sm font-semibold text-cocoa/62">
-                {readingLabel}
-              </p>
+              <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+                <p className="text-sm font-semibold text-cocoa/62">
+                  {readingLabel}
+                </p>
+                {displayBody ? (
+                  <GuideReadingProgress
+                    slug={item.slug}
+                    targetId="guide-reading-body"
+                    title={item.title}
+                  />
+                ) : null}
+              </div>
             </header>
 
             <div className="px-5 py-8 sm:px-8 md:py-10">
               {displayBody ? (
-                <MarkdownContent content={displayBody} outline={outline} />
+                <div id="guide-reading-body">
+                  <MarkdownContent content={displayBody} outline={outline} />
+                </div>
               ) : (
                 <div className="space-y-4">
                   <p className="text-lg text-cocoa/80">

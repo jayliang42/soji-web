@@ -1,0 +1,221 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import {
+  calculateReadingProgress,
+  getBrowserReadingProgressStorage,
+  getResumeScrollTop,
+  readGuideProgress,
+  type ReadingProgressEntry,
+  writeGuideProgress
+} from "@/lib/reading-progress";
+
+const MOBILE_HEADER_OFFSET = 72;
+const DESKTOP_HEADER_OFFSET = 76;
+const RESUME_MINIMUM_PROGRESS = 5;
+const RESUME_MAXIMUM_PROGRESS = 97;
+const STORAGE_WRITE_INTERVAL_MS = 250;
+
+function getHeaderOffset() {
+  return window.matchMedia("(min-width: 768px)").matches
+    ? DESKTOP_HEADER_OFFSET
+    : MOBILE_HEADER_OFFSET;
+}
+
+function getTargetMeasurements(target: HTMLElement) {
+  const headerOffset = getHeaderOffset();
+  const targetTop = target.getBoundingClientRect().top + window.scrollY;
+  const progress = calculateReadingProgress({
+    headerOffset,
+    scrollY: window.scrollY,
+    targetHeight: target.scrollHeight,
+    targetTop,
+    viewportHeight: window.innerHeight
+  });
+
+  return {
+    headerOffset,
+    offset: Math.max(0, window.scrollY - targetTop + headerOffset),
+    progress,
+    targetTop
+  };
+}
+
+export function GuideReadingProgress({
+  slug,
+  targetId,
+  title
+}: {
+  slug: string;
+  targetId: string;
+  title: string;
+}) {
+  const [progress, setProgress] = useState(0);
+  const [savedProgress, setSavedProgress] =
+    useState<ReadingProgressEntry | null>(null);
+  const [resumeStatus, setResumeStatus] = useState("");
+  const [storageUnavailable, setStorageUnavailable] = useState(false);
+  const lastMeasurementRef = useRef({ offset: 0, progress: 0 });
+  const lastWriteAtRef = useRef(0);
+
+  useEffect(() => {
+    const target = document.getElementById(targetId);
+    if (!target) {
+      return;
+    }
+    const readingTarget = target;
+
+    const storage = getBrowserReadingProgressStorage();
+    const restored = readGuideProgress(slug, storage);
+    setSavedProgress(restored);
+
+    let animationFrame = 0;
+    let active = true;
+
+    function persistMeasurement(force = false) {
+      const measurement = lastMeasurementRef.current;
+      if (measurement.progress < 1) {
+        return;
+      }
+
+      const now = Date.now();
+      if (
+        !force &&
+        measurement.progress < 100 &&
+        now - lastWriteAtRef.current < STORAGE_WRITE_INTERVAL_MS
+      ) {
+        return;
+      }
+
+      lastWriteAtRef.current = now;
+      const next = writeGuideProgress(
+        {
+          offset: measurement.offset,
+          progress: measurement.progress,
+          slug,
+          updatedAt: new Date(now).toISOString()
+        },
+        storage
+      );
+
+      if (!active) {
+        return;
+      }
+      if (next) {
+        setSavedProgress(next);
+        setStorageUnavailable(false);
+      } else {
+        setStorageUnavailable(true);
+      }
+    }
+
+    function measure(shouldPersist: boolean) {
+      const measurement = getTargetMeasurements(readingTarget);
+      lastMeasurementRef.current = {
+        offset: measurement.offset,
+        progress: measurement.progress
+      };
+      setProgress((current) =>
+        current === measurement.progress ? current : measurement.progress
+      );
+
+      if (shouldPersist) {
+        persistMeasurement();
+      }
+    }
+
+    function scheduleMeasurement(shouldPersist: boolean) {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(() =>
+        measure(shouldPersist)
+      );
+    }
+
+    function handleScroll() {
+      scheduleMeasurement(true);
+    }
+
+    function handleResize() {
+      scheduleMeasurement(false);
+    }
+
+    function handlePageHide() {
+      persistMeasurement(true);
+    }
+
+    measure(false);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      active = false;
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("pagehide", handlePageHide);
+      persistMeasurement(true);
+    };
+  }, [slug, targetId]);
+
+  const canResume =
+    savedProgress !== null &&
+    savedProgress.progress >= RESUME_MINIMUM_PROGRESS &&
+    savedProgress.progress <= RESUME_MAXIMUM_PROGRESS &&
+    progress + 2 < savedProgress.progress;
+  const progressLabel = storageUnavailable
+    ? `${progress}% read · progress not saved`
+    : `${progress}% read`;
+
+  function resumeReading() {
+    const target = document.getElementById(targetId);
+    if (!target || !savedProgress) {
+      return;
+    }
+
+    const { headerOffset, targetTop } = getTargetMeasurements(target);
+    const top = getResumeScrollTop({
+      headerOffset,
+      offset: savedProgress.offset,
+      targetTop
+    });
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    window.scrollTo({
+      behavior: reduceMotion ? "auto" : "smooth",
+      top
+    });
+    setProgress(savedProgress.progress);
+    setResumeStatus(`Resumed ${title} at ${savedProgress.progress}% read.`);
+  }
+
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      <span className="text-xs font-bold text-cocoa/62">{progressLabel}</span>
+      {canResume ? (
+        <button
+          className="inline-flex min-h-11 items-center rounded-md border border-clay/35 bg-accent-muted px-3 text-xs font-bold text-clay transition-colors hover:border-clay hover:bg-sand"
+          onClick={resumeReading}
+          type="button"
+        >
+          Resume at {savedProgress.progress}%
+        </button>
+      ) : null}
+      <progress
+        aria-label={`Reading progress for ${title}`}
+        className={`guide-reading-progress pointer-events-none fixed left-0 top-[72px] z-30 h-1 w-full transition-opacity md:top-[76px] ${
+          progress > 0 && progress < 100 ? "opacity-100" : "opacity-0"
+        }`}
+        max={100}
+        value={progress}
+      >
+        {progress}%
+      </progress>
+      <span aria-live="polite" className="sr-only">
+        {resumeStatus}
+      </span>
+    </div>
+  );
+}

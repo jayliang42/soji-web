@@ -112,6 +112,10 @@ describe("content detail reading experience", () => {
     expect(html).toContain("Guide details");
     expect(html).toContain("Share guide");
     expect(html).toContain(
+      'aria-label="Reading progress for A Calmer Decision"'
+    );
+    expect(html).toContain('id="guide-reading-body"');
+    expect(html).toContain(
       'aria-label="Save A Calmer Decision for later"'
     );
     expect(html).toContain("1 min public opening");
@@ -181,5 +185,23 @@ describe("content detail reading experience", () => {
     expect(html).not.toContain("RELATED TEMPLATE BODY");
     expect(html).not.toContain("Public opening complete");
     expect(html).not.toContain("Compare membership");
+  });
+
+  it("does not mount reading progress when no guide body is visible", async () => {
+    detailMocks.getContentBySlug.mockResolvedValue({
+      item: { ...guide, preview: "" },
+      items: [{ ...guide, preview: "" }],
+      source: "supabase"
+    });
+
+    const html = renderToStaticMarkup(
+      await ContentDetailPage({
+        params: Promise.resolve({ slug: guide.slug })
+      })
+    );
+
+    expect(html).not.toContain("PRIVATE MEMBER BODY");
+    expect(html).not.toContain("guide-reading-body");
+    expect(html).not.toContain("Reading progress for A Calmer Decision");
   });
 });
