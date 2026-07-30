@@ -128,6 +128,35 @@ describe("public customer policy pages", () => {
     }
   });
 
+  it("routes common support tasks before asking a customer to contact support", () => {
+    const html = renderToStaticMarkup(<SupportPage />);
+
+    expect(html).toContain("Choose the closest help path");
+    expect(html).toContain('href="/login?next=/account"');
+    expect(html).toContain('href="/account?view=subscriptions"');
+    expect(html).toContain('href="/account?view=purchases"');
+    expect(html).toContain('href="/refund-policy#request"');
+    expect(html).toContain("Send one clear support request");
+    expect(html).toContain('href="/library"');
+    expect(html).toContain('href="/office-hours"');
+  });
+
+  it("shows the configured support channel after the self-service paths", () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPPORT_URL", "mailto:help@soji.test");
+
+    try {
+      const html = renderToStaticMarkup(<SupportPage />);
+
+      expect(html).toContain('href="mailto:help@soji.test"');
+      expect(html).toContain("Open the Soji support channel");
+      expect(html.indexOf("Choose the closest help path")).toBeLessThan(
+        html.indexOf("Open the Soji support channel")
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("states current cancellation, refund, privacy, and education boundaries", () => {
     const html = pages
       .map(([, Page]) => renderToStaticMarkup(<Page />))
