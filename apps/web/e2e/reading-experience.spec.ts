@@ -42,6 +42,9 @@ test("article detail provides reading context and an exact access path", async (
   await expect(
     page.getByRole("heading", { name: "Choose the next useful step." })
   ).not.toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "In this guide" })
+  ).not.toBeVisible();
 
   await expectNoHorizontalOverflow(page);
 });

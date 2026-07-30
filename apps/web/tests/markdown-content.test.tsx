@@ -21,7 +21,7 @@ describe("MarkdownContent", () => {
       />
     );
 
-    expect(html).toContain("<h2>A section</h2>");
+    expect(html).toContain('<h2 class="scroll-mt-28" id="a-section">A section</h2>');
     expect(html).toContain("<ul>");
     expect(html).toContain("<table>");
     expect(html).toContain("<strong>carefully</strong>");
@@ -47,5 +47,25 @@ describe("MarkdownContent", () => {
 
     expect(html).toContain("<a href=\"\"");
     expect(html).not.toContain("javascript:");
+  });
+
+  it("adds unique deep-link targets without treating fenced examples as sections", () => {
+    const html = renderToStaticMarkup(
+      <MarkdownContent
+        content={[
+          "## Choose **one** move",
+          "",
+          "```md",
+          "## Not a real section",
+          "```",
+          "",
+          "## Choose one move"
+        ].join("\n")}
+      />
+    );
+
+    expect(html).toContain('id="choose-one-move"');
+    expect(html).toContain('id="choose-one-move-2"');
+    expect(html).not.toContain('id="not-a-real-section"');
   });
 });

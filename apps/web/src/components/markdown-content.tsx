@@ -1,6 +1,10 @@
 import clsx from "clsx";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import {
+  getMarkdownOutline,
+  type MarkdownOutlineItem
+} from "@/lib/markdown-outline";
 
 const allowedElements = [
   "a",
@@ -31,22 +35,52 @@ const allowedElements = [
   "ul"
 ];
 
-const components: Components = {
-  h1: ({ children }) => <h2>{children}</h2>,
-  table: ({ children }) => (
-    <div className="my-7 overflow-x-auto">
-      <table>{children}</table>
-    </div>
-  )
-};
+function createComponents(outline: MarkdownOutlineItem[]): Components {
+  const headingByLine = new Map(outline.map((item) => [item.line, item]));
+  const getHeadingProps = (
+    node: { position?: { start: { line: number } } } | undefined
+  ) => {
+    const item = node?.position?.start.line
+      ? headingByLine.get(node.position.start.line)
+      : undefined;
+
+    return item
+      ? { className: "scroll-mt-28", id: item.id }
+      : { className: undefined, id: undefined };
+  };
+
+  return {
+    h1: ({ children, node }) => (
+      <h2 {...getHeadingProps(node)}>{children}</h2>
+    ),
+    h2: ({ children, node }) => (
+      <h2 {...getHeadingProps(node)}>{children}</h2>
+    ),
+    h3: ({ children, node }) => (
+      <h3 {...getHeadingProps(node)}>{children}</h3>
+    ),
+    h4: ({ children, node }) => (
+      <h4 {...getHeadingProps(node)}>{children}</h4>
+    ),
+    table: ({ children }) => (
+      <div className="my-7 overflow-x-auto">
+        <table>{children}</table>
+      </div>
+    )
+  };
+}
 
 export function MarkdownContent({
   className,
-  content
+  content,
+  outline = getMarkdownOutline(content)
 }: {
   className?: string;
   content: string;
+  outline?: MarkdownOutlineItem[];
 }) {
+  const components = createComponents(outline);
+
   return (
     <div
       className={clsx(

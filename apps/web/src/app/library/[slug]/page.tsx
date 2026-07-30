@@ -15,6 +15,7 @@ import {
   formatPublishedDate
 } from "@/lib/content-presentation";
 import { getContentBySlug } from "@/lib/content";
+import { getMarkdownOutline } from "@/lib/markdown-outline";
 import { getSessionSnapshot } from "@/lib/session";
 
 const accessToneClasses = {
@@ -124,6 +125,10 @@ export default async function ContentDetailPage({
   const publishedDate = formatPublishedDate(item.publishedAt);
   const readingMinutes = estimateReadingMinutes(displayBody);
   const readingLabel = getReadingLabel(readingMinutes, accessMode);
+  const outline = getMarkdownOutline(displayBody).filter(
+    (heading) => heading.level <= 3
+  );
+  const hasOutline = outline.length >= 2;
   const visibleTags = item.tags
     .filter((tag) => !["demo", "supporting"].includes(tag.toLocaleLowerCase()))
     .slice(0, 4);
@@ -216,7 +221,7 @@ export default async function ContentDetailPage({
 
             <div className="px-5 py-8 sm:px-8 md:py-10">
               {displayBody ? (
-                <MarkdownContent content={displayBody} />
+                <MarkdownContent content={displayBody} outline={outline} />
               ) : (
                 <div className="space-y-4">
                   <p className="text-lg text-cocoa/80">
@@ -309,6 +314,41 @@ export default async function ContentDetailPage({
                 <dd className="font-semibold text-cocoa">{access.label}</dd>
               </div>
             </dl>
+
+            {hasOutline ? (
+              <nav
+                aria-labelledby="guide-outline-heading"
+                className="mt-6 border-t border-dune pt-6"
+              >
+                <h3
+                  className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62"
+                  id="guide-outline-heading"
+                >
+                  In this guide
+                </h3>
+                <ol className="mt-3 space-y-1">
+                  {outline.map((heading, index) => (
+                    <li
+                      className={heading.level >= 3 ? "pl-4" : undefined}
+                      key={`${heading.line}-${heading.id}`}
+                    >
+                      <a
+                        className="group grid min-h-11 grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold leading-5 text-cocoa/72 transition-colors hover:bg-shell hover:text-cocoa"
+                        href={`#${heading.id}`}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="text-xs font-bold tabular-nums text-clay/65 group-hover:text-clay"
+                        >
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <span>{heading.label}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            ) : null}
 
             {visibleTags.length > 0 ? (
               <div className="mt-6">

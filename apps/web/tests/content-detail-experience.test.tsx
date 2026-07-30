@@ -18,7 +18,15 @@ vi.mock("@/lib/session", () => ({
 import ContentDetailPage from "@/app/library/[slug]/page";
 
 const guide = {
-  body: "## Full guide\n\nPRIVATE MEMBER BODY with a complete decision process.",
+  body: [
+    "## Full guide",
+    "",
+    "PRIVATE MEMBER BODY with a complete decision process.",
+    "",
+    "## Choose a next move",
+    "",
+    "Finish with one dated action."
+  ].join("\n"),
   coverImage: "",
   coverImageAlt: "A calm editorial decision map.",
   id: "reader-guide",
@@ -69,6 +77,8 @@ describe("content detail reading experience", () => {
     expect(html).not.toContain(">demo<");
     expect(html).not.toContain(">supporting<");
     expect(html).not.toContain("PRIVATE MEMBER BODY");
+    expect(html).not.toContain("In this guide");
+    expect(html).not.toContain("Choose a next move");
   });
 
   it("gives an entitled reader useful next steps after the full guide", async () => {
@@ -93,6 +103,11 @@ describe("content detail reading experience", () => {
     );
 
     expect(html).toContain("PRIVATE MEMBER BODY");
+    expect(html).toContain("In this guide");
+    expect(html).toContain('href="#full-guide"');
+    expect(html).toContain('href="#choose-a-next-move"');
+    expect(html).toContain('id="full-guide"');
+    expect(html).toContain('id="choose-a-next-move"');
     expect(html).toContain("Choose the next useful step");
     expect(html).toContain('href="/library"');
     expect(html).toContain('href="/products"');
