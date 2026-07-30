@@ -1,9 +1,17 @@
 "use client";
 
 import type { ProductOffer } from "@soji/types";
+import type { Route } from "next";
+import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ProductArtwork } from "@/components/product-artwork";
 import { ProductCheckoutButton } from "@/components/product-checkout-button";
 import { PurchaseDisclosure } from "@/components/purchase-disclosure";
+import {
+  getProductFocus,
+  getProductSearchText,
+  type ProductFocus
+} from "@/lib/product-presentation";
 
 const focusOptions = [
   { id: "all", label: "All tools" },
@@ -17,64 +25,12 @@ const sortOptions = [
   { id: "price-desc", label: "Price: high to low" }
 ] as const;
 
-export type ProductFocus = (typeof focusOptions)[number]["id"];
 export type ProductSort = (typeof sortOptions)[number]["id"];
 
 export interface ProductCatalogEntry {
   accessPaused: boolean;
   alreadyPurchased: boolean;
   product: ProductOffer;
-}
-
-const focusKeywords: Record<Exclude<ProductFocus, "all">, string[]> = {
-  talk: [
-    "allowance",
-    "boundary",
-    "conversation",
-    "delicate",
-    "family",
-    "kids",
-    "parents",
-    "partner",
-    "prompt",
-    "script",
-    "social spending"
-  ],
-  track: [
-    "cash",
-    "dashboard",
-    "debt",
-    "insurance",
-    "monthly",
-    "net worth",
-    "quarterly",
-    "review",
-    "track",
-    "wealth",
-    "workbook"
-  ]
-};
-
-function searchableProductText(product: ProductOffer) {
-  return [product.title, product.summary, ...product.bullets]
-    .join(" ")
-    .toLocaleLowerCase();
-}
-
-export function getProductFocus(
-  product: ProductOffer
-): Exclude<ProductFocus, "all"> | null {
-  const source = searchableProductText(product);
-  const scores = Object.entries(focusKeywords).map(([focus, keywords]) => ({
-    focus: focus as Exclude<ProductFocus, "all">,
-    score: keywords.reduce(
-      (total, keyword) => total + (source.includes(keyword) ? 1 : 0),
-      0
-    )
-  }));
-  const bestMatch = scores.sort((left, right) => right.score - left.score)[0];
-
-  return bestMatch && bestMatch.score > 0 ? bestMatch.focus : null;
 }
 
 export function filterAndSortProductEntries(
@@ -95,7 +51,7 @@ export function filterAndSortProductEntries(
       focus === "all" || getProductFocus(product) === focus;
     const matchesQuery =
       !normalizedQuery ||
-      searchableProductText(product).includes(normalizedQuery);
+      getProductSearchText(product).includes(normalizedQuery);
 
     return matchesFocus && matchesQuery;
   });
@@ -108,58 +64,6 @@ export function filterAndSortProductEntries(
     sort === "price-asc"
       ? left.product.price - right.product.price
       : right.product.price - left.product.price
-  );
-}
-
-function getFocusLabel(product: ProductOffer) {
-  const focus = getProductFocus(product);
-
-  if (focus === "track") {
-    return "Planning & tracking";
-  }
-
-  if (focus === "talk") {
-    return "Conversation support";
-  }
-
-  return "Practical digital tool";
-}
-
-function ProductArtwork({ product }: { product: ProductOffer }) {
-  const focus = getProductFocus(product);
-  const background =
-    focus === "track"
-      ? "bg-richgreen"
-      : focus === "talk"
-        ? "bg-blush"
-        : "bg-cream";
-
-  return (
-    <div
-      className={`relative min-h-56 overflow-hidden border-b border-dune p-6 text-cocoa sm:p-8 ${background}`}
-    >
-      <div
-        aria-hidden="true"
-        className="absolute -right-12 -top-12 h-40 w-40 rounded-full border border-cocoa/10 bg-white/35"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute bottom-5 right-8 h-20 w-20 rotate-12 rounded-lg border border-cocoa/10 bg-white/45"
-      />
-      <div className="relative flex min-h-40 flex-col justify-between">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/65">
-            {getFocusLabel(product)}
-          </p>
-          <p className="rounded-full border border-cocoa/15 bg-white/65 px-4 py-2 text-sm font-bold">
-            {product.priceLabel} once
-          </p>
-        </div>
-        <h3 className="max-w-[16ch] font-display text-4xl font-semibold leading-[1.02] sm:text-5xl">
-          {product.title}
-        </h3>
-      </div>
-    </div>
   );
 }
 
@@ -320,6 +224,15 @@ export function ProductCatalog({
                       <span>No subscription</span>
                     </div>
                     <div className="mt-auto pt-7">
+                      <Link
+                        className="mb-3 inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
+                        href={`/products/${product.slug}` as Route}
+                      >
+                        View tool details
+                        <span aria-hidden="true" className="ml-2">
+                          →
+                        </span>
+                      </Link>
                       <ProductCheckoutButton
                         accessPaused={accessPaused}
                         alreadyPurchased={alreadyPurchased}

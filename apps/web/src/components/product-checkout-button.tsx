@@ -26,6 +26,7 @@ export function ProductCheckoutButton({
   alreadyPurchased,
   checkoutEnabled,
   customerEmail,
+  nextPath = "/products",
   purchaseStateAvailable,
   productSlug
 }: {
@@ -33,6 +34,7 @@ export function ProductCheckoutButton({
   alreadyPurchased: boolean;
   checkoutEnabled: boolean;
   customerEmail: string | null;
+  nextPath?: string;
   purchaseStateAvailable: boolean;
   productSlug: string;
 }) {
@@ -43,8 +45,8 @@ export function ProductCheckoutButton({
   if (!customerEmail) {
     return (
       <Link
-        href={{ pathname: "/login", query: { next: "/products" } }}
-        className="inline-flex rounded-md bg-cocoa px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-charcoal"
+        href={{ pathname: "/login", query: { next: nextPath } }}
+        className="inline-flex min-h-11 items-center justify-center rounded-md bg-cocoa px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-charcoal"
       >
         Create account to buy
       </Link>
@@ -57,7 +59,7 @@ export function ProductCheckoutButton({
         <button
           type="button"
           disabled
-          className="inline-flex cursor-not-allowed rounded-md border border-dune bg-cream px-5 py-3 text-sm font-bold text-cocoa/60"
+          className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-md border border-dune bg-cream px-5 py-3 text-sm font-bold text-cocoa/60"
         >
           Purchase status unavailable
         </button>
@@ -72,7 +74,7 @@ export function ProductCheckoutButton({
     return (
       <Link
         href="/account#purchases-heading"
-        className="inline-flex rounded-md border border-cocoa px-5 py-3 text-sm font-bold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
+        className="inline-flex min-h-11 items-center justify-center rounded-md border border-cocoa px-5 py-3 text-sm font-bold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
       >
         {accessPaused ? "Review purchase" : "Access purchase"}
       </Link>
@@ -85,7 +87,7 @@ export function ProductCheckoutButton({
         <button
           type="button"
           disabled
-          className="inline-flex cursor-not-allowed rounded-md border border-dune bg-cream px-5 py-3 text-sm font-bold text-cocoa/60"
+          className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-md border border-dune bg-cream px-5 py-3 text-sm font-bold text-cocoa/60"
         >
           Checkout unavailable
         </button>
@@ -135,7 +137,7 @@ export function ProductCheckoutButton({
         type="button"
         onClick={startCheckout}
         disabled={isPending}
-        className="inline-flex rounded-md bg-cocoa px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-charcoal disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-11 items-center justify-center rounded-md bg-cocoa px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-charcoal disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "Opening checkout..." : "Buy once"}
       </button>

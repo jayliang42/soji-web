@@ -15,6 +15,10 @@ const customerWorkflows = [
     path: "/products"
   },
   {
+    heading: "Wealth Dashboard Template Pack",
+    path: "/products/wealth-dashboard-template-pack"
+  },
+  {
     heading: "Guides for making clearer money decisions",
     path: "/library"
   },

@@ -1,5 +1,6 @@
 import { productOffers } from "@soji/domain";
 import type { EntitlementKey, ProductOffer, ProductSnapshot } from "@soji/types";
+import { cache } from "react";
 import {
   resolveDataSnapshot,
   type LiveDataSnapshot
@@ -114,3 +115,15 @@ export async function getProductSnapshot({
     missingConfigurationError: "product_service_not_configured"
   });
 }
+
+export const getProductBySlug = cache(async function getProductBySlug(
+  slug: string
+) {
+  const snapshot = await getProductSnapshot();
+
+  return {
+    error: snapshot.error,
+    item: snapshot.items.find((product) => product.slug === slug) ?? null,
+    source: snapshot.source
+  };
+});

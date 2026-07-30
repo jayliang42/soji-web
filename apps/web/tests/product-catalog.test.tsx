@@ -3,10 +3,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
   filterAndSortProductEntries,
-  getProductFocus,
   ProductCatalog,
   type ProductCatalogEntry
 } from "@/components/product-catalog";
+import { getProductFocus } from "@/lib/product-presentation";
 
 const dashboard: ProductOffer = {
   bullets: [
@@ -86,5 +86,7 @@ describe("product catalog", () => {
     expect(html).toContain("2 tools match the shop");
     expect(html).toContain("Digital download");
     expect(html).toContain("No subscription");
+    expect(html).toContain('href="/products/wealth-dashboard"');
+    expect(html).toContain('href="/products/family-money-scripts"');
   });
 });
