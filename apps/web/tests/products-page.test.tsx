@@ -142,4 +142,31 @@ describe("products page purchase safety", () => {
     }
     expect(html).not.toMatch(/type="checkbox"/u);
   });
+
+  it("shows one full recovery path when the catalog and purchase history both fail", async () => {
+    pageMocks.getProductSnapshot.mockResolvedValue({
+      error: "products_query_failed",
+      items: [],
+      source: "supabase"
+    });
+    pageMocks.getAccountPurchases.mockResolvedValue({
+      error: "purchase_query_failed",
+      items: []
+    });
+
+    const html = renderToStaticMarkup(
+      await ProductsPage({ searchParams: Promise.resolve({}) })
+    );
+
+    expect(html).toContain("Connection paused");
+    expect(html).toContain("Products could not be loaded");
+    expect(html).toContain(">Try loading again</a>");
+    expect(html).toContain(">Read a public guide</a>");
+    expect(html).toContain(
+      "Checkout stays paused until the catalog returns; no purchase is started."
+    );
+    expect(html.match(/role="alert"/gu)).toHaveLength(1);
+    expect(html).not.toContain("Purchase status could not be verified");
+    expect(html).not.toContain("Buy once");
+  });
 });

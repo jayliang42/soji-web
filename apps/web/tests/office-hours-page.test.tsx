@@ -87,4 +87,32 @@ describe("Office Hours page", () => {
     expect(html).not.toContain(signupTarget);
     expect(html).not.toContain(replayTarget);
   });
+
+  it("uses one complete recovery panel when schedule and access checks both fail", async () => {
+    pageMocks.getSessionSnapshot.mockResolvedValue({
+      entitlements: [],
+      error: "session_query_failed",
+      source: "supabase",
+      user: null
+    });
+    pageMocks.getOfficeHourSnapshot.mockResolvedValue({
+      error: "office_hours_query_failed",
+      items: [],
+      source: "supabase"
+    });
+
+    const html = renderToStaticMarkup(await OfficeHoursPage());
+
+    expect(html).toContain("Connection paused");
+    expect(html).toContain("Office hours could not be loaded");
+    expect(html).toContain(">Try loading again</a>");
+    expect(html).toContain(">Read while you wait</a>");
+    expect(html).toContain(
+      "No private session or replay links are shown while the schedule is unavailable."
+    );
+    expect(html.match(/role="alert"/gu)).toHaveLength(1);
+    expect(html).not.toContain("Membership access is temporarily unavailable");
+    expect(html).not.toContain(signupTarget);
+    expect(html).not.toContain(replayTarget);
+  });
 });

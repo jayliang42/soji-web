@@ -100,14 +100,18 @@ export default async function ProductsPage({
         {productSnapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
+              alternativeHref="/library"
+              alternativeLabel="Read a public guide"
               title="Products could not be loaded"
               description="Purchasing is unavailable until the catalog connection recovers."
+              note="Checkout stays paused until the catalog returns; no purchase is started."
               retryHref="/products"
+              variant="panel"
             />
           </div>
         ) : null}
 
-        {customerEmail && !purchaseStateAvailable ? (
+        {customerEmail && !purchaseStateAvailable && !productSnapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
               title="Purchase status could not be verified"
@@ -120,8 +124,11 @@ export default async function ProductsPage({
         {!productSnapshot.error && productSnapshot.items.length === 0 ? (
           <div className="mb-6">
             <DataEmpty
+              actionHref="/pricing"
+              actionLabel="Compare membership"
               title="No products are available"
               description="Standalone tools will appear here when they are ready for purchase."
+              variant="panel"
             />
           </div>
         ) : null}

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ContentSourceBadge } from "@/components/content-source-badge";
 import { DataEmpty, DataUnavailable } from "@/components/data-state";
 import {
@@ -67,12 +66,16 @@ export default async function LibraryPage({
         {snapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
+              alternativeHref="/products"
+              alternativeLabel="Browse practical tools"
               title="The library could not be loaded"
               description="No restricted content has been shown. Please try again shortly."
+              note="Your membership and saved access stay unchanged while the library reconnects."
+              variant="panel"
             />
           </div>
         ) : null}
-        {session.error ? (
+        {session.error && !snapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
               title="Membership access is temporarily unavailable"
@@ -88,17 +91,14 @@ export default async function LibraryPage({
           />
         ) : null}
         {!snapshot.error && snapshot.items.length === 0 ? (
-          <div className="mt-6 space-y-4">
+          <div className="mt-6">
             <DataEmpty
+              actionHref="/pricing"
+              actionLabel="Compare membership"
               title="The first guide is being prepared"
               description="Browse membership details now, then return when the first guide is published."
+              variant="panel"
             />
-            <Link
-              href="/pricing"
-              className="inline-flex min-h-11 items-center font-semibold text-clay underline decoration-clay/40 underline-offset-4 hover:decoration-clay"
-            >
-              Compare membership
-            </Link>
           </div>
         ) : null}
       </SectionShell>

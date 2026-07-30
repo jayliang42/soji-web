@@ -236,7 +236,7 @@ export default async function OfficeHoursPage() {
         title="Closer support for higher-stakes decisions."
         description="Bring a specific money or life decision, compare tradeoffs with a clearer framework, and learn alongside other members. Sessions provide financial education, not individualized financial advice."
       >
-        {snapshot.error ? (
+        {snapshot.error && !officeHourSnapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
               title="Membership access is temporarily unavailable"
@@ -247,16 +247,24 @@ export default async function OfficeHoursPage() {
         {officeHourSnapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
+              alternativeHref="/library"
+              alternativeLabel="Read while you wait"
               title="Office hours could not be loaded"
               description="No signup or replay links are available until the schedule connection recovers."
+              note="No private session or replay links are shown while the schedule is unavailable."
+              retryHref="/office-hours"
+              variant="panel"
             />
           </div>
         ) : null}
         {!officeHourSnapshot.error && officeHourSnapshot.items.length === 0 ? (
           <div className="mb-6">
             <DataEmpty
+              actionHref="/library"
+              actionLabel="Browse the library"
               title="No live session is scheduled"
               description="Browse the library now; upcoming sessions and new replays will appear here."
+              variant="panel"
             />
           </div>
         ) : null}
