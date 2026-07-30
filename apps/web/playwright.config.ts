@@ -42,6 +42,8 @@ export default defineConfig({
         env: {
           NEXT_DIST_DIR: ".next-e2e",
           NEXT_PUBLIC_SITE_URL: baseURL,
+          NEXT_PUBLIC_SUPPORT_URL:
+            process.env.NEXT_PUBLIC_SUPPORT_URL ?? "mailto:help@soji.test",
           NEXT_PUBLIC_SUPABASE_ANON_KEY: "",
           NEXT_PUBLIC_SUPABASE_URL: "",
           SOJI_DEMO_MODE: "true",

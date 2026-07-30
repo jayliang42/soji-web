@@ -137,6 +137,8 @@ describe("public customer policy pages", () => {
     expect(html).toContain('href="/account?view=purchases"');
     expect(html).toContain('href="/refund-policy#request"');
     expect(html).toContain("Send one clear support request");
+    expect(html).toContain("Request builder");
+    expect(html).toContain("Prepare my request");
     expect(html).toContain('href="/library"');
     expect(html).toContain('href="/office-hours"');
   });
@@ -147,10 +149,10 @@ describe("public customer policy pages", () => {
     try {
       const html = renderToStaticMarkup(<SupportPage />);
 
-      expect(html).toContain('href="mailto:help@soji.test"');
-      expect(html).toContain("Open the Soji support channel");
+      expect(html).toContain("Support channel ready");
+      expect(html).toContain("Request builder");
       expect(html.indexOf("Choose the closest help path")).toBeLessThan(
-        html.indexOf("Open the Soji support channel")
+        html.indexOf("Request builder")
       );
     } finally {
       vi.unstubAllEnvs();

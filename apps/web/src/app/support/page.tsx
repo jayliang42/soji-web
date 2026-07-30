@@ -4,6 +4,7 @@ import {
   customerPolicyRoutes,
   getPublicSupportDestination
 } from "@/lib/customer-policy";
+import { SupportRequestComposer } from "@/components/support-request-composer";
 
 export const metadata: Metadata = {
   title: "Support",
@@ -83,7 +84,7 @@ export default function SupportPage() {
               not resolve it, send Support the details needed to investigate.
             </p>
             <p className="mt-4 text-sm font-semibold text-cocoa/62">
-              Updated <time dateTime="2026-07-27">July 27, 2026</time>
+              Updated <time dateTime="2026-07-30">July 30, 2026</time>
             </p>
           </div>
         </header>
@@ -151,12 +152,9 @@ export default function SupportPage() {
               explain or resolve your issue.
             </p>
             {destination.ok ? (
-              <a
-                className="mt-7 inline-flex min-h-12 items-center rounded-md bg-white px-6 py-3 text-sm font-bold text-cocoa transition-colors hover:bg-cream"
-                href={destination.value}
-              >
-                Open the Soji support channel
-              </a>
+              <p className="mt-7 inline-flex min-h-11 items-center rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-bold text-white/88">
+                Support channel ready
+              </p>
             ) : (
               <div
                 className="mt-7 border-l-4 border-clay bg-white/10 px-5 py-4 text-sm leading-6 text-white/82"
@@ -189,6 +187,12 @@ export default function SupportPage() {
               Never include full card numbers, passwords, authentication codes,
               or sensitive financial documents.
             </p>
+          </div>
+
+          <div className="lg:col-span-2">
+            <SupportRequestComposer
+              destination={destination.ok ? destination.value : null}
+            />
           </div>
         </section>
 
