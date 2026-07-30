@@ -12,6 +12,7 @@ routes:
   - /library?focus=family
   - /office-hours
   - /pricing
+  - /products
 ---
 
 # Phase 04 UI Review
@@ -27,7 +28,9 @@ wayfinding and next-step clarity without changing billing authority. Office
 Hours now explains its participation model before presenting lifecycle-aware
 session and replay states. Membership pricing now begins with a need-led plan
 finder that recommends a starting tier without changing price or checkout
-behavior.
+behavior. The standalone Shop now supports need-led browsing, full-text
+search, price sorting, and clear no-result recovery while retaining the
+existing purchase-state authority.
 
 The remaining note is operational rather than a local UI defect: authenticated
 production-provider states still require the consolidated owner checkpoint
@@ -113,10 +116,25 @@ before they can be visually confirmed against live accounts.
 - Finder controls maintain 44-pixel touch targets without horizontal overflow
   at both 320- and 390-pixel widths.
 
+### Shop (`/products`)
+
+- A compact catalog workspace now lets visitors search titles, summaries, and
+  included outcomes, browse by `Track & review` or `Talk & decide`, and sort
+  one-time tools by price.
+- Result counts update through an `aria-live` region, active use filters expose
+  pressed state, and a no-result panel offers one direct reset action.
+- Product cards use differentiated editorial cover treatments, one-time price
+  badges, outcome-led feature lists, and explicit delivery/account/subscription
+  metadata before the existing purchase action.
+- Search and focus filtering work together without changing product,
+  purchase-history, checkout-readiness, or account-access behavior.
+- Search, sort, filter, and recovery controls maintain 44-pixel targets with no
+  horizontal overflow at 320- and 390-pixel widths.
+
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 84 files, 638 tests passed.
+- Unit tests: 85 files, 641 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -129,6 +147,8 @@ before they can be visually confirmed against live accounts.
 - Targeted Playwright Membership suite: 5 tests passed across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally
   skipped.
+- Targeted Playwright Shop suite: 7 tests passed across desktop and mobile; one
+  desktop-only instance of the narrow-width check was intentionally skipped.
 - Manual browser review: home and library flows checked at desktop and mobile
   widths; search, focus filters, reset behavior, overflow, and control sizing
   were verified. Account overview, loading, membership-option, and anchored
@@ -136,7 +156,10 @@ before they can be visually confirmed against live accounts.
   unavailable-session, and preparation states were checked before and after
   the redesign with no horizontal overflow. Membership pricing was visually
   reviewed before and after adding the plan finder, with the recommendation
-  hierarchy, fallback state, and plan comparison transition confirmed.
+  hierarchy, fallback state, and plan comparison transition confirmed. Shop
+  search controls, editorial product covers, price hierarchy, and complete
+  desktop page composition were visually checked before and after the catalog
+  redesign.
 
 ## Follow-up Note
 
