@@ -65,6 +65,12 @@ describe("Office Hours page", () => {
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noreferrer noopener"');
     expect(html).toContain("Opens in a new tab");
+    expect(html).toContain("One decision. Three useful moves.");
+    expect(html).toContain("Name the decision");
+    expect(html).toContain("Bring the context");
+    expect(html).toContain("Leave with direction");
+    expect(html).toContain("Copy date and title");
+    expect(html).toContain("Prepare before the room opens");
   });
 
   it("renders no private targets when the signed-in user lacks access", async () => {
