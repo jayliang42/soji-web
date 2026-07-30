@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { MembershipPlanGrid } from "@/components/membership-plan-grid";
+import { PlanFinder } from "@/components/plan-finder";
 import { DataUnavailable } from "@/components/data-state";
 import {
   getAccountSubscriptions,
@@ -78,7 +79,10 @@ export default async function PricingPage({
           </div>
         ) : null}
       </section>
-      <section className="mx-auto max-w-6xl px-6 pb-20 pt-3 md:pt-6" aria-labelledby="membership-options">
+      <div className="mx-auto max-w-6xl px-6 pb-10 pt-2 md:pb-14">
+        <PlanFinder />
+      </div>
+      <section className="mx-auto max-w-6xl px-6 pb-20 pt-3" aria-labelledby="membership-options">
         <div className="mb-7 max-w-3xl md:mb-9">
           <p className="text-xs font-bold uppercase text-cocoa/62">Three monthly options</p>
           <h2 id="membership-options" className="mt-3 font-display text-3xl font-bold leading-[1.02] text-cocoa md:mt-4 md:text-5xl">

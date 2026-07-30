@@ -45,8 +45,9 @@ export function PlanCard({
 
   return (
     <div
+      id={`plan-${plan.id}`}
       className={cn(
-        "flex h-full flex-col rounded-lg border border-dune bg-shell p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl motion-reduce:transform-none sm:p-8",
+        "flex h-full scroll-mt-28 flex-col rounded-lg border border-dune bg-shell p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl motion-reduce:transform-none sm:p-8",
         plan.featured && "border-cocoa bg-white ring-2 ring-clay/25"
       )}
     >

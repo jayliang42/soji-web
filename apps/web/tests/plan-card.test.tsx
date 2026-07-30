@@ -15,6 +15,7 @@ describe("membership plan card", () => {
     );
 
     expect(html).toContain('href="/account"');
+    expect(html).toContain('id="plan-tier_1"');
     expect(html).toContain("Manage existing membership");
     expect(html).not.toContain("Join Tier");
   });
