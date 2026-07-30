@@ -1,8 +1,8 @@
 ---
 phase: 05
 slug: production-deployment-and-rollback
-status: pass_with_notes
-overall_score: 23
+status: pass
+overall_score: 24
 max_score: 24
 audited: 2026-07-30
 routes:
@@ -35,6 +35,9 @@ Admin Overview now links status directly to its owning workspace and lets operat
 reduce the 20-item release checklist to the subset relevant to the next task.
 Each digital product now has a durable detail page that explains the offer and delivery
 before presenting the existing account-aware purchase action.
+When Library, Shop, or Office Hours cannot load their collection, the missing catalog is
+now replaced by a full editorial recovery panel with one retry, one useful alternate
+route, and exact account/access reassurance instead of leaving most of the page blank.
 
 The user explicitly reopened visual and functional iteration after the original Phase 5
 UI contract froze Phase 4. This audit therefore retains the contract's truthfulness,
@@ -45,13 +48,13 @@ responsive, and accessibility requirements while accepting purposeful UI improve
 | Pillar | Score | Evidence |
 |--------|------:|----------|
 | Copywriting | 4/4 | Headings and actions name the next useful step; the new journey copy explains product architecture without generic labels or inflated financial claims. |
-| Visuals | 3/4 | The owned book hero, editorial cards, goal browser, and restrained imagery create a recognizable system. Degraded data states still become visually sparse when no catalog content can render. |
+| Visuals | 4/4 | Owned imagery, editorial cards, goal browsing, and the new illustrated catalog recovery panels preserve a recognizable hierarchy even when no live collection can render. |
 | Color | 4/4 | Shell, cream, cocoa, clay, and verified-success tones remain token-driven and maintain a controlled neutral/accent distribution. |
 | Typography | 4/4 | Display serif headings and sans-serif operational copy retain a strong hierarchy across 320–1440px without introducing a competing type system. |
 | Spacing | 4/4 | Mobile targets and card padding follow the 44px/spacing contract; shared membership rules now replace repeated full disclosures inside every plan card. |
 | Experience design | 4/4 | Mobile menu focus, Escape recovery, active state, no-overflow behavior, goal-based library entry, task-led support, search/filter reset, and safe disabled purchase states are automated. |
 
-**Overall: 23/24**
+**Overall: 24/24**
 
 ## Implemented Improvements
 
@@ -79,6 +82,13 @@ responsive, and accessibility requirements while accepting purposeful UI improve
   not have an uploaded image.
 - Added reusable recovery-action support to unavailable-state cards and enabled it on
   Pricing and Products.
+- Replaced sparse Library, Shop, and Office Hours catalog failures with one shared
+  editorial recovery panel that names the interruption, preserves one reload action,
+  and offers one still-valid alternate route.
+- Gave true empty collections a visually related non-error panel with one useful next
+  step, while keeping error states semantically distinct through `role="alert"`.
+- Suppressed duplicate account-status warnings when the owning catalog is already
+  unavailable, so simultaneous failures produce one coherent recovery path.
 
 ### Article reading
 
@@ -151,15 +161,18 @@ articles, one main refund-policy link, 44-pixel controls, and no horizontal over
 
 ### UI-02 — Catalog failure has little secondary value
 
-**Severity:** WARNING  
+**Severity:** RESOLVED
 **Pillar:** Visuals
 
-When the production content source is unavailable, the library correctly fails closed but
-the page becomes mostly empty. The alert is clear, yet a visitor has no public content,
-topic overview, or alternate route inside the main section.
+Library, Shop, and Office Hours now replace an unavailable collection with a substantial
+two-part recovery panel: direct explanation and account-safe reassurance on the left,
+plus a Soji-owned collection motif on the right. Each state provides one native reload
+and one alternate public route without presenting demo content as live.
 
-**Next iteration:** provide a retry action plus a small static path to Membership or
-Support without presenting demo content as live.
+**Verification:** a provider-free local runtime proves the actual server-rendered
+failure states. Desktop, 390-pixel, and 320-pixel Playwright checks require the exact
+retry/alternate actions, one matching recovery alert, 44-pixel mobile targets, zero
+horizontal overflow, and no serious or critical axe findings.
 
 ### UI-03 — Guest sign-in entry clarified
 
@@ -214,6 +227,12 @@ and the full responsive navigation suite retains active state and target sizing.
 - Lemon Squeezy treats single-payment products, storefront presentation, and durable
   digital delivery as parts of one product model:
   <https://docs.lemonsqueezy.com/help/products>
+- Adobe Spectrum recommends showing what happened and a simple path forward inside the
+  error state, such as retry or go back:
+  <https://spectrum.adobe.com/page/writing-for-errors/>
+- Carbon's empty-state pattern recommends explaining the missing space and placing a
+  direct primary action beside the guidance:
+  <https://carbondesignsystem.com/patterns/empty-states-pattern/>
 
 Soji borrows those information-architecture patterns, not their branding. The visual
 system remains Soji's restrained editorial serif, warm neutrals, clay accent, and owned
@@ -221,7 +240,7 @@ book imagery.
 
 ## Verification Evidence
 
-- Web Vitest: 89 files and 656 tests passed.
+- Web Vitest: 91 files and 662 tests passed.
 - ESLint and generated-route typecheck passed.
 - Next.js production build passed and generated 37 routes.
 - Focused Playwright membership comparison checks passed 7 tests across desktop and
@@ -234,6 +253,9 @@ book imagery.
   desktop-only instance of the narrow-width check was intentionally skipped.
 - Focused Playwright Product Detail checks passed 3 tests across desktop and mobile; one
   desktop-only instance of the narrow-width check was intentionally skipped.
+- Focused Playwright catalog recovery checks passed 7 tests across desktop, 390-pixel,
+  and 320-pixel views; one desktop-only instance of the mobile-only check was
+  intentionally skipped.
 - Existing cross-workflow acceptance checks passed 16/16, including all six Admin
   workspaces and the new product-detail route at 320, 375, 768, 1024, and 1440 pixels,
   plus the blocking axe scan.
@@ -247,3 +269,8 @@ book imagery.
 No additional login is needed for the local UI work. Provider-backed, billing, role, and
 canonical production states remain grouped in the existing consolidated owner checkpoint;
 this audit does not create another authentication list.
+
+The Shop empty collection and full connection-paused recovery panel were visually
+reviewed in the local browser. The provider-free Library, Shop, and Office Hours states
+were then checked at desktop, 390-pixel, and 320-pixel widths through the focused suite,
+including target size, overflow, semantics, and blocking accessibility findings.

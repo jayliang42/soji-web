@@ -213,6 +213,20 @@ before they can be visually confirmed against live accounts.
 - Search, sort, filter, and recovery controls maintain 44-pixel targets with no
   horizontal overflow at 320- and 390-pixel widths.
 
+### Cross-catalog recovery
+
+- Library, Shop, and Office Hours now replace a fully unavailable collection with
+  one shared editorial recovery panel instead of a narrow warning followed by a
+  mostly empty page.
+- Each panel states what could not load, provides a native reload action, explains
+  what remains unchanged, and offers one still-valid public destination.
+- Simultaneous catalog and account-status failures collapse into the owning catalog
+  recovery state rather than stacking two competing alerts.
+- True empty collections retain a visually related but non-error panel with one
+  useful next step; unavailable states remain explicit `role="alert"` regions.
+- The recovery and alternate actions remain at least 44 pixels high with no
+  horizontal overflow at 320 and 390 pixels.
+
 ### Product detail (`/products/[slug]`)
 
 - Every catalog card now leads to a shareable product-specific page rather
@@ -244,7 +258,7 @@ before they can be visually confirmed against live accounts.
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 89 files, 656 tests passed.
+- Unit tests: 91 files, 662 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -275,6 +289,9 @@ before they can be visually confirmed against live accounts.
 - Targeted Playwright Product Detail suite: 3 tests passed across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally
   skipped.
+- Targeted Playwright Catalog Recovery suite: 7 tests passed across desktop,
+  390-pixel, and 320-pixel views; one desktop-only instance of the mobile-only
+  check was intentionally skipped.
 - Existing cross-workflow acceptance suite: 16 tests passed, covering every
   Admin workspace at 320, 375, 768, 1024, and 1440 pixels plus accessibility.
 - Manual browser review: home and library flows checked at desktop and mobile
@@ -306,6 +323,10 @@ before they can be visually confirmed against live accounts.
   operator-confirmation items. The product-detail hero, included-outcome grid,
   delivery sequence, and sticky purchase panel were reviewed together in the
   signed-in demo state, including the truthful unavailable-Checkout treatment.
+  The Shop true-empty and connection-paused panels were reviewed as desktop
+  compositions; provider-free Library, Shop, and Office Hours recovery states
+  were verified at desktop, 390-pixel, and 320-pixel widths for exact actions,
+  target size, overflow, and blocking accessibility findings.
 
 ## Follow-up Note
 
