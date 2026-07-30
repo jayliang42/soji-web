@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
   filterAndSortProductEntries,
+  getProductFilterHref,
   ProductCatalog,
   type ProductCatalogEntry
 } from "@/components/product-catalog";
@@ -88,5 +89,47 @@ describe("product catalog", () => {
     expect(html).toContain("No subscription");
     expect(html).toContain('href="/products/wealth-dashboard"');
     expect(html).toContain('href="/products/family-money-scripts"');
+  });
+
+  it("honors shareable search, focus, and sort state before hydration", () => {
+    const html = renderToStaticMarkup(
+      <ProductCatalog
+        checkoutEnabled={false}
+        customerEmail={null}
+        entries={entries}
+        initialFocus="talk"
+        initialQuery="allowance"
+        initialSort="price-desc"
+        purchaseStateAvailable
+      />
+    );
+
+    expect(html).toContain('value="allowance"');
+    expect(html).toContain(
+      '<option value="price-desc" selected="">Price: high to low</option>'
+    );
+    expect(html).toContain("Family Money Scripts");
+    expect(html).not.toContain("Wealth Dashboard");
+    expect(html).toContain("1 tool matches your choices");
+  });
+
+  it("builds a compact filter URL while preserving checkout state", () => {
+    expect(
+      getProductFilterHref(
+        {
+          focus: "all",
+          query: " family ",
+          sort: "price-asc"
+        },
+        "?purchase=cancelled&focus=talk"
+      )
+    ).toBe("/products?purchase=cancelled&sort=price-asc&q=family");
+    expect(
+      getProductFilterHref({
+        focus: "all",
+        query: "",
+        sort: "featured"
+      })
+    ).toBe("/products");
   });
 });

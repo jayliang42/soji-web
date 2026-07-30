@@ -27,6 +27,7 @@ test("shop search and use filters lead to the relevant tool", async ({
   await catalog
     .getByRole("searchbox", { name: "Search the shop" })
     .fill("allowance");
+  await expect(page).toHaveURL("/products?q=allowance");
   await expect(catalog.getByText("1 tool matches your choices")).toBeVisible();
   await expect(
     products.getByRole("heading", { name: "Family Money Scripts" })
@@ -34,17 +35,28 @@ test("shop search and use filters lead to the relevant tool", async ({
   await expect(
     products.getByRole("heading", { name: "Wealth Dashboard Template Pack" })
   ).toHaveCount(0);
+  await page.reload();
+  await expect(
+    catalog.getByRole("searchbox", { name: "Search the shop" })
+  ).toHaveValue("allowance");
 
   await catalog
     .getByRole("button", { name: "Clear search and filters" })
     .click();
+  await expect(page).toHaveURL("/products");
   await catalog.getByRole("button", { name: "Track & review" }).click();
+  await expect(page).toHaveURL("/products?focus=track");
   await expect(
     products.getByRole("heading", { name: "Wealth Dashboard Template Pack" })
   ).toBeVisible();
   await expect(
     products.getByRole("heading", { name: "Family Money Scripts" })
   ).toHaveCount(0);
+  await page.goBack();
+  await expect(page).toHaveURL("/products");
+  await expect(
+    catalog.getByRole("button", { name: "All tools" })
+  ).toHaveAttribute("aria-pressed", "true");
   await expectNoHorizontalOverflow(page);
 });
 
@@ -55,12 +67,17 @@ test("shop can sort one-time tools by price", async ({ page }) => {
     name: "Find your one-time tool."
   });
   await catalog.getByRole("combobox", { name: "Sort" }).selectOption("price-asc");
+  await expect(page).toHaveURL("/products?sort=price-asc");
 
   await expect(
     catalog
       .getByRole("list", { name: "One-time digital tools" })
       .getByRole("heading", { level: 3 })
   ).toHaveText(["Family Money Scripts", "Wealth Dashboard Template Pack"]);
+  await page.reload();
+  await expect(catalog.getByRole("combobox", { name: "Sort" })).toHaveValue(
+    "price-asc"
+  );
 });
 
 test("shop offers a useful no-result recovery", async ({ page }) => {
@@ -72,11 +89,13 @@ test("shop offers a useful no-result recovery", async ({ page }) => {
   await catalog
     .getByRole("searchbox", { name: "Search the shop" })
     .fill("mortgage calculator");
+  await expect(page).toHaveURL("/products?q=mortgage+calculator");
 
   await expect(
     catalog.getByRole("heading", { name: "No tools match those choices." })
   ).toBeVisible();
   await catalog.getByRole("button", { name: "Show all tools" }).click();
+  await expect(page).toHaveURL("/products");
   await expect(catalog.getByText("2 tools match the shop")).toBeVisible();
 });
 
@@ -107,6 +126,7 @@ test("shop browsing controls remain usable at narrow widths", async ({
     }
 
     await catalog.getByRole("button", { name: "Talk & decide" }).click();
+    await expect(page).toHaveURL("/products?focus=talk");
     await expect(
       catalog.getByRole("heading", { name: "Family Money Scripts" })
     ).toBeVisible();

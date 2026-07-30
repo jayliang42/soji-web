@@ -26,7 +26,12 @@ export const metadata: Metadata = {
 export default async function ProductsPage({
   searchParams
 }: {
-  searchParams: Promise<{ purchase?: string }>;
+  searchParams: Promise<{
+    focus?: string;
+    purchase?: string;
+    q?: string;
+    sort?: string;
+  }>;
 }) {
   const [snapshot, productSnapshot, params] = await Promise.all([
     getSessionSnapshot(),
@@ -142,6 +147,9 @@ export default async function ProductsPage({
               alreadyPurchased: purchasedProductIds.has(product.id),
               product
             }))}
+            initialFocus={params.focus}
+            initialQuery={params.q}
+            initialSort={params.sort}
             purchaseStateAvailable={purchaseStateAvailable}
           />
         ) : null}

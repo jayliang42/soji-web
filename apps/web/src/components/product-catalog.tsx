@@ -3,7 +3,7 @@
 import type { ProductOffer } from "@soji/types";
 import type { Route } from "next";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProductArtwork } from "@/components/product-artwork";
 import { ProductCheckoutButton } from "@/components/product-checkout-button";
 import { PurchaseDisclosure } from "@/components/purchase-disclosure";
@@ -27,10 +27,53 @@ const sortOptions = [
 
 export type ProductSort = (typeof sortOptions)[number]["id"];
 
+interface ProductFilterState {
+  focus: ProductFocus;
+  query: string;
+  sort: ProductSort;
+}
+
 export interface ProductCatalogEntry {
   accessPaused: boolean;
   alreadyPurchased: boolean;
   product: ProductOffer;
+}
+
+function normalizeFocus(value: string | undefined): ProductFocus {
+  return focusOptions.some((option) => option.id === value)
+    ? (value as ProductFocus)
+    : "all";
+}
+
+function normalizeSort(value: string | undefined): ProductSort {
+  return sortOptions.some((option) => option.id === value)
+    ? (value as ProductSort)
+    : "featured";
+}
+
+export function getProductFilterHref(
+  { focus, query, sort }: ProductFilterState,
+  currentSearch = ""
+) {
+  const params = new URLSearchParams(currentSearch);
+  const normalizedQuery = query.trim();
+
+  params.delete("focus");
+  params.delete("q");
+  params.delete("sort");
+
+  if (focus !== "all") {
+    params.set("focus", focus);
+  }
+  if (sort !== "featured") {
+    params.set("sort", sort);
+  }
+  if (normalizedQuery) {
+    params.set("q", normalizedQuery);
+  }
+
+  const queryString = params.toString();
+  return queryString ? `/products?${queryString}` : "/products";
 }
 
 export function filterAndSortProductEntries(
@@ -71,16 +114,61 @@ export function ProductCatalog({
   checkoutEnabled,
   customerEmail,
   entries,
+  initialFocus,
+  initialQuery,
+  initialSort,
   purchaseStateAvailable
 }: {
   checkoutEnabled: boolean;
   customerEmail: string | null;
   entries: ProductCatalogEntry[];
+  initialFocus?: string;
+  initialQuery?: string;
+  initialSort?: string;
   purchaseStateAvailable: boolean;
 }) {
-  const [focus, setFocus] = useState<ProductFocus>("all");
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<ProductSort>("featured");
+  const [focus, setFocus] = useState<ProductFocus>(() =>
+    normalizeFocus(initialFocus)
+  );
+  const [query, setQuery] = useState(initialQuery ?? "");
+  const [sort, setSort] = useState<ProductSort>(() =>
+    normalizeSort(initialSort)
+  );
+
+  useEffect(() => {
+    function restoreFiltersFromHistory() {
+      const params = new URLSearchParams(window.location.search);
+      setFocus(normalizeFocus(params.get("focus") ?? undefined));
+      setQuery(params.get("q") ?? "");
+      setSort(normalizeSort(params.get("sort") ?? undefined));
+    }
+
+    window.addEventListener("popstate", restoreFiltersFromHistory);
+    return () =>
+      window.removeEventListener("popstate", restoreFiltersFromHistory);
+  }, []);
+
+  function updateFilterUrl(
+    nextFilters: ProductFilterState,
+    mode: "push" | "replace"
+  ) {
+    const href = getProductFilterHref(
+      nextFilters,
+      window.location.search
+    );
+    const currentHref = `${window.location.pathname}${window.location.search}`;
+
+    if (href === currentHref) {
+      return;
+    }
+
+    window.history[mode === "push" ? "pushState" : "replaceState"](
+      null,
+      "",
+      href
+    );
+  }
+
   const visibleEntries = useMemo(
     () => filterAndSortProductEntries(entries, { focus, query, sort }),
     [entries, focus, query, sort]
@@ -92,6 +180,10 @@ export function ProductCatalog({
     setFocus("all");
     setQuery("");
     setSort("featured");
+    updateFilterUrl(
+      { focus: "all", query: "", sort: "featured" },
+      "push"
+    );
   }
 
   return (
@@ -119,7 +211,14 @@ export function ProductCatalog({
               Search the shop
               <input
                 className="min-h-12 w-full rounded-md border border-dune bg-shell px-4 font-medium text-cocoa outline-none placeholder:text-cocoa/45 focus:border-clay focus:ring-2 focus:ring-clay/20"
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => {
+                  const nextQuery = event.target.value;
+                  setQuery(nextQuery);
+                  updateFilterUrl(
+                    { focus, query: nextQuery, sort },
+                    "replace"
+                  );
+                }}
                 placeholder="Try “family” or “cash flow”"
                 type="search"
                 value={query}
@@ -129,9 +228,14 @@ export function ProductCatalog({
               Sort
               <select
                 className="min-h-12 w-full rounded-md border border-dune bg-shell px-4 font-medium text-cocoa outline-none focus:border-clay focus:ring-2 focus:ring-clay/20"
-                onChange={(event) =>
-                  setSort(event.target.value as ProductSort)
-                }
+                onChange={(event) => {
+                  const nextSort = event.target.value as ProductSort;
+                  setSort(nextSort);
+                  updateFilterUrl(
+                    { focus, query, sort: nextSort },
+                    "push"
+                  );
+                }}
                 value={sort}
               >
                 {sortOptions.map((option) => (
@@ -160,7 +264,13 @@ export function ProductCatalog({
                     : "border-dune bg-shell text-cocoa/75 hover:border-clay hover:text-clay"
                 }`}
                 key={option.id}
-                onClick={() => setFocus(option.id)}
+                onClick={() => {
+                  setFocus(option.id);
+                  updateFilterUrl(
+                    { focus: option.id, query, sort },
+                    "push"
+                  );
+                }}
                 type="button"
               >
                 {option.label}
