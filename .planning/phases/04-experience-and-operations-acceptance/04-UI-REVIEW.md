@@ -232,6 +232,9 @@ before they can be visually confirmed against live accounts.
   longer carries the 4.36:1 text-contrast finding exposed by the axe scan.
 - Search and focus filtering work together without changing product,
   purchase-history, checkout-readiness, or account-access behavior.
+- Search, use, and price-sort state now lives in the Shop URL, survives refresh,
+  and restores through browser Back/Forward while preserving checkout-result
+  parameters such as `purchase=cancelled`.
 - Search, sort, filter, and recovery controls maintain 44-pixel targets with no
   horizontal overflow at 320- and 390-pixel widths.
 
@@ -282,7 +285,7 @@ before they can be visually confirmed against live accounts.
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 93 files, 673 tests passed.
+- Unit tests: 93 files, 675 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -299,7 +302,8 @@ before they can be visually confirmed against live accounts.
 - Targeted Playwright Membership suite: 7 tests passed across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally
   skipped.
-- Targeted Playwright Shop suite: 7 tests passed across desktop and mobile; one
+- Targeted Playwright Shop suite: 7 tests passed across desktop and mobile,
+  including URL persistence, reload, sorting, recovery, and browser Back; one
   desktop-only instance of the narrow-width check was intentionally skipped.
 - Targeted Playwright Home decision suite: 5 tests passed across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally

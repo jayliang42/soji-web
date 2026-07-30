@@ -134,6 +134,16 @@ responsive, and accessibility requirements while accepting purposeful UI improve
 - Added the product-specific route to the shared serious/critical axe page matrix so
   both catalog and detail typography remain covered on desktop and mobile.
 
+### Durable Shop discovery
+
+- Persisted Shop search, use, and price-sort state in compact `/products` URLs.
+- Restored all three controls before hydration after reload and through browser
+  Back/Forward navigation without refetching the product catalog.
+- Preserved unrelated checkout-result parameters while changing or clearing filters, so
+  a cancelled-purchase notice is not silently removed by catalog browsing.
+- Retained the existing result count, no-result recovery, purchase-state authority,
+  44-pixel controls, and zero-overflow behavior at 320 and 390 pixels.
+
 ### Admin operations
 
 - Added a permission-aware workspace guide for Content, Products, Office Hours, Users,
@@ -279,7 +289,7 @@ book imagery.
 
 ## Verification Evidence
 
-- Web Vitest: 93 files and 673 tests passed.
+- Web Vitest: 93 files and 675 tests passed.
 - ESLint and generated-route typecheck passed.
 - Next.js production build passed and generated 37 routes.
 - Focused Playwright membership comparison checks passed 7 tests across desktop and
@@ -294,6 +304,9 @@ book imagery.
   desktop-only instance of the narrow-width check was intentionally skipped.
 - Focused Shop and Product Detail axe checks passed 4/4 across desktop and mobile after
   correcting the small-label contrast.
+- Focused durable Shop discovery checks passed 7 tests across desktop and mobile,
+  covering search persistence, price sorting, reset, Back restoration, and narrow
+  layouts; one desktop-only mobile check was intentionally skipped.
 - Focused Playwright catalog recovery checks passed 7 tests across desktop, 390-pixel,
   and 320-pixel views; one desktop-only instance of the mobile-only check was
   intentionally skipped.
