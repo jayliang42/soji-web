@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { AdminMetric } from "@soji/types";
 import { AdminMetrics } from "@/components/admin-metrics";
+import { AdminWorkspaceGuide } from "@/components/admin-workspace-guide";
 import { AdminBillingEvents } from "@/components/admin-billing-events";
 import { AdminContentForm } from "@/components/admin-content-form";
 import { AdminContentEditor } from "@/components/admin-content-editor";
@@ -272,7 +273,7 @@ export default async function AdminPage({
                 key={id}
                 href={id === "overview" ? "/admin" : `/admin?view=${id}`}
                 aria-current={isActive ? "page" : undefined}
-                className={`whitespace-nowrap rounded-md px-2 py-2 text-center text-sm font-semibold transition-colors md:px-4 ${
+                className={`inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md px-2 py-2 text-center text-sm font-semibold transition-colors md:px-4 ${
                   isActive
                     ? "bg-cocoa text-white"
                     : "text-cocoa/72 hover:bg-white hover:text-cocoa"
@@ -290,6 +291,13 @@ export default async function AdminPage({
               Overview
             </h2>
             <AdminMetrics metrics={operationalMetrics} />
+            <AdminWorkspaceGuide
+              canInspectBilling={canInspectBilling}
+              canPublish={canPublish}
+              contentCount={contentSnapshot.items.length}
+              officeHourCount={officeHourSnapshot.items.length}
+              productCount={productSnapshot.items.length}
+            />
             {metricsSnapshot.error ? (
               <p className="rounded-lg border border-clay/25 bg-accent-muted px-4 py-3 text-sm text-cocoa">
                 Revenue metrics could not be loaded. Content operations remain available.
