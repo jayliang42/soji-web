@@ -234,7 +234,7 @@ export default async function ProductDetailPage({
             aria-labelledby="product-purchase-heading"
             className="rounded-xl border border-dune bg-white p-6 shadow-[0_18px_50px_rgba(32,31,28,0.07)] sm:p-8 lg:sticky lg:top-28"
           >
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/60">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/70">
               One-time purchase
             </p>
             <h2

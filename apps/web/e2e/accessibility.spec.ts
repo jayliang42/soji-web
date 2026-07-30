@@ -7,6 +7,7 @@ const auditedPages = [
   "/",
   "/pricing",
   "/products",
+  "/products/wealth-dashboard-template-pack",
   "/library",
   "/library/wealth-without-drift",
   "/office-hours",

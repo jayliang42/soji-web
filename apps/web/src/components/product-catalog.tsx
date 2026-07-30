@@ -203,7 +203,7 @@ export function ProductCatalog({
                       {product.summary}
                     </p>
                     <div className="mt-6 border-t border-dune pt-6">
-                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/60">
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/70">
                         What it helps you do
                       </p>
                       <ul className="mt-4 space-y-3 text-sm font-medium leading-6 text-cocoa/78">
