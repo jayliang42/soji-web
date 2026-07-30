@@ -7,6 +7,7 @@ max_score: 24
 audited: 2026-07-30
 routes:
   - /
+  - /account
   - /library
   - /library?focus=family
 ---
@@ -19,7 +20,8 @@ Phase 04 passes the UI quality gate. The public experience has a clear visual
 hierarchy, consistent editorial styling, responsive layouts, and accessible
 interaction targets. The main discovery gap identified in the library has been
 resolved with goal-led navigation, search, filtering, result feedback, and
-recovery states.
+recovery states. The authenticated Account experience now provides equivalent
+wayfinding and next-step clarity without changing billing authority.
 
 The remaining note is operational rather than a local UI defect: authenticated
 production-provider states still require the consolidated owner checkpoint
@@ -64,16 +66,33 @@ before they can be visually confirmed against live accounts.
 - Filter controls wrap without horizontal overflow on narrow screens.
 - Interactive controls meet the 44-pixel minimum target size.
 
+### Account (`/account`)
+
+- A four-link section navigator makes the long account surface easier to scan
+  and provides direct access to overview, membership, purchases, and profile.
+- The account overview groups current tier, active benefits, and useful next
+  actions into three visually distinct cards.
+- Subscription truth, purchase delivery, and degraded-state behavior remain
+  unchanged while their sections use clearer bounded panels.
+- The empty purchase state explains what will appear and offers a direct route
+  to practical tools.
+- The loading skeleton now mirrors the three-card overview and panel geometry,
+  reducing layout shift during account retrieval.
+
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 82 files, 633 tests passed.
+- Unit tests: 82 files, 634 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
+- Targeted Playwright Account suite: 5 tests passed across desktop and mobile;
+  one desktop-only instance of the mobile touch-target check was intentionally
+  skipped.
 - Manual browser review: home and library flows checked at desktop and mobile
   widths; search, focus filters, reset behavior, overflow, and control sizing
-  were verified.
+  were verified. Account overview, loading, membership-option, and anchored
+  panel states were visually reviewed in the browser.
 
 ## Follow-up Note
 
