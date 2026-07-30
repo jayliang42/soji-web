@@ -123,6 +123,10 @@ responsive, and accessibility requirements while accepting purposeful UI improve
   history failure, and billing-unavailable behavior without creating a parallel checkout.
 - Kept the purchase disclosure beside the action and verified 320/390-pixel controls,
   semantic hierarchy, and no horizontal overflow.
+- Strengthened the Shop outcome eyebrow and product-detail purchase eyebrow from
+  `cocoa/60` to `cocoa/70`, clearing the 4.36:1 contrast finding for 12-pixel text.
+- Added the product-specific route to the shared serious/critical axe page matrix so
+  both catalog and detail typography remain covered on desktop and mobile.
 
 ### Admin operations
 
@@ -276,6 +280,8 @@ book imagery.
   desktop-only instance of the narrow-width check was intentionally skipped.
 - Focused Playwright Product Detail checks passed 3 tests across desktop and mobile; one
   desktop-only instance of the narrow-width check was intentionally skipped.
+- Focused Shop and Product Detail axe checks passed 4/4 across desktop and mobile after
+  correcting the small-label contrast.
 - Focused Playwright catalog recovery checks passed 7 tests across desktop, 390-pixel,
   and 320-pixel views; one desktop-only instance of the mobile-only check was
   intentionally skipped.

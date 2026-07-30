@@ -219,6 +219,8 @@ before they can be visually confirmed against live accounts.
 - Product cards use differentiated editorial cover treatments, one-time price
   badges, outcome-led feature lists, and explicit delivery/account/subscription
   metadata before the existing purchase action.
+- Small uppercase outcome labels now use a stronger cocoa tone; the Shop no
+  longer carries the 4.36:1 text-contrast finding exposed by the axe scan.
 - Search and focus filtering work together without changing product,
   purchase-history, checkout-readiness, or account-access behavior.
 - Search, sort, filter, and recovery controls maintain 44-pixel targets with no
@@ -251,6 +253,8 @@ before they can be visually confirmed against live accounts.
   purchase state never exposes a new Checkout action.
 - Product-specific metadata uses only public catalog fields, while the page
   preserves 44-pixel controls and zero overflow at 320 and 390 pixels.
+- The product-specific route is now included in the shared serious/critical
+  axe regression alongside the Shop listing.
 
 ### Support (`/support`)
 
@@ -300,6 +304,8 @@ before they can be visually confirmed against live accounts.
 - Targeted Playwright Product Detail suite: 3 tests passed across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally
   skipped.
+- Targeted Shop and Product Detail axe checks: 4 tests passed across desktop
+  and mobile after the small-label contrast correction.
 - Targeted Playwright Catalog Recovery suite: 7 tests passed across desktop,
   390-pixel, and 320-pixel views; one desktop-only instance of the mobile-only
   check was intentionally skipped.
