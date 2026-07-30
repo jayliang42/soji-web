@@ -11,6 +11,7 @@ routes:
   - /library
   - /library?focus=family
   - /office-hours
+  - /pricing
 ---
 
 # Phase 04 UI Review
@@ -24,7 +25,9 @@ resolved with goal-led navigation, search, filtering, result feedback, and
 recovery states. The authenticated Account experience now provides equivalent
 wayfinding and next-step clarity without changing billing authority. Office
 Hours now explains its participation model before presenting lifecycle-aware
-session and replay states.
+session and replay states. Membership pricing now begins with a need-led plan
+finder that recommends a starting tier without changing price or checkout
+behavior.
 
 The remaining note is operational rather than a local UI defect: authenticated
 production-provider states still require the consolidated owner checkpoint
@@ -97,10 +100,23 @@ before they can be visually confirmed against live accounts.
 - The bottom preparation panel gives both a library-first and a
   membership-comparison next step.
 
+### Membership (`/pricing`)
+
+- A plan finder now precedes the longer comparison cards, giving visitors a
+  concrete decision path before asking them to compare every entitlement.
+- The three need-led choices map a calmer monthly rhythm, full working library,
+  and live guided support to Tier 1, Tier 2, and Tier 3 respectively.
+- Each result repeats the exact monthly price, explains the recommendation,
+  and deep-links to the corresponding full plan card.
+- The recommendation remains optional and does not change the listed price,
+  billing availability, checkout path, or account requirements.
+- Finder controls maintain 44-pixel touch targets without horizontal overflow
+  at both 320- and 390-pixel widths.
+
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 83 files, 636 tests passed.
+- Unit tests: 84 files, 638 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -110,12 +126,17 @@ before they can be visually confirmed against live accounts.
 - Targeted Playwright Office Hours suite: 5 tests passed across desktop,
   390-pixel, and 320-pixel views; one desktop-only instance of the mobile
   touch-target check was intentionally skipped.
+- Targeted Playwright Membership suite: 5 tests passed across desktop and
+  mobile; one desktop-only instance of the narrow-width check was intentionally
+  skipped.
 - Manual browser review: home and library flows checked at desktop and mobile
   widths; search, focus filters, reset behavior, overflow, and control sizing
   were verified. Account overview, loading, membership-option, and anchored
   panel states were visually reviewed in the browser. Office Hours format,
   unavailable-session, and preparation states were checked before and after
-  the redesign with no horizontal overflow.
+  the redesign with no horizontal overflow. Membership pricing was visually
+  reviewed before and after adding the plan finder, with the recommendation
+  hierarchy, fallback state, and plan comparison transition confirmed.
 
 ## Follow-up Note
 
