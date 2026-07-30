@@ -13,6 +13,7 @@ routes:
   - /office-hours
   - /login
   - /account
+  - /support
 ---
 
 # Phase 05 — UI Review
@@ -23,7 +24,8 @@ Soji now presents a coherent warm-editorial experience across its public discove
 membership, and account paths. The strongest improvements in this pass are functional:
 mobile navigation is no longer a compressed row of sub-44px links, the homepage explains
 a clear read → apply → ask journey, and the library supports goal, format, and keyword
-discovery with a useful empty state.
+discovery with a useful empty state. Support now routes common customer tasks to their
+authoritative account and policy destinations before presenting the contact channel.
 
 The user explicitly reopened visual and functional iteration after the original Phase 5
 UI contract froze Phase 4. This audit therefore retains the contract's truthfulness,
@@ -38,7 +40,7 @@ responsive, and accessibility requirements while accepting purposeful UI improve
 | Color | 4/4 | Shell, cream, cocoa, clay, and verified-success tones remain token-driven and maintain a controlled neutral/accent distribution. |
 | Typography | 4/4 | Display serif headings and sans-serif operational copy retain a strong hierarchy across 320–1440px without introducing a competing type system. |
 | Spacing | 4/4 | Mobile targets and card padding follow the 44px/spacing contract; shared membership rules now replace repeated full disclosures inside every plan card. |
-| Experience design | 4/4 | Mobile menu focus, Escape recovery, active state, no-overflow behavior, goal-based library entry, search/filter reset, and safe disabled purchase states are automated. |
+| Experience design | 4/4 | Mobile menu focus, Escape recovery, active state, no-overflow behavior, goal-based library entry, task-led support, search/filter reset, and safe disabled purchase states are automated. |
 
 **Overall: 23/24**
 
@@ -79,6 +81,15 @@ responsive, and accessibility requirements while accepting purposeful UI improve
   management, cancellation/access behavior, policies, and support.
 - Changed plan cards to labeled `article` elements with the plan name as the semantic
   heading, making keyboard and assistive-technology comparison clearer.
+
+### Support help paths
+
+- Replaced the long policy-first Support reading flow with four large task cards for
+  account recovery, membership/billing, purchases/downloads, and refund review.
+- Each card routes to an existing source-of-truth page; no empty help articles or
+  duplicate account states were introduced.
+- Contact remains a second step and renders a clear configured or unavailable state.
+- Library, Office Hours, and policy navigation remain available for adjacent needs.
 
 ## Findings
 
@@ -133,6 +144,13 @@ and the full responsive navigation suite retains active state and target sizing.
 - Patreon explains recurring billing and cancellation behavior as one shared membership
   model instead of repeating it for every tier:
   <https://support.patreon.com/hc/en-us/articles/360002355991-How-membership-billing-works>
+- Ghost places membership support alongside account and subscription management:
+  <https://ghost.org/help/customize-portal/>
+- Skillshare groups help by Billing & Payments and Managing Your Account before contact:
+  <https://help.skillshare.com/hc/en-us>
+- Patreon sends product delivery and receipt questions to the Purchases and Billing
+  history views:
+  <https://support.patreon.com/hc/en-us/articles/16494151075981-My-purchases>
 
 Soji borrows those information-architecture patterns, not their branding. The visual
 system remains Soji's restrained editorial serif, warm neutrals, clay accent, and owned
@@ -140,11 +158,13 @@ book imagery.
 
 ## Verification Evidence
 
-- Web Vitest: 86 files and 644 tests passed.
+- Web Vitest: 86 files and 646 tests passed.
 - ESLint and generated-route typecheck passed.
 - Next.js production build passed and generated 37 routes.
 - Focused Playwright membership comparison checks passed 7 tests across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally skipped.
+- Focused Playwright Support checks passed 3 tests across desktop and mobile; one
+  desktop-only instance of the narrow-width check was intentionally skipped.
 - Focused Playwright navigation/home checks passed 6/6 on desktop and mobile.
 - Focused library discovery, keyboard, and axe checks passed 12/12 on desktop and mobile.
 - The prior full CI-style Playwright regression remains recorded at 124/124 on desktop

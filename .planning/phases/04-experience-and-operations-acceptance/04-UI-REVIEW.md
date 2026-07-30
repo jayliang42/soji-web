@@ -15,6 +15,7 @@ routes:
   - /pricing
   - /products
   - /reset-password
+  - /support
 ---
 
 # Phase 04 UI Review
@@ -38,6 +39,8 @@ paths and keeps transaction-specific actions on their authoritative pages.
 The sign-in entry now adapts to the task that brought a visitor there, states
 the post-authentication destination, and presents password recovery as a
 focused step instead of an immediate side effect of the sign-in form.
+Support now begins with direct account, subscription, purchase, and refund
+paths before asking a customer to open the published contact channel.
 
 The remaining note is operational rather than a local UI defect: authenticated
 production-provider states still require the consolidated owner checkpoint
@@ -170,10 +173,24 @@ before they can be visually confirmed against live accounts.
 - Search, sort, filter, and recovery controls maintain 44-pixel targets with no
   horizontal overflow at 320- and 390-pixel widths.
 
+### Support (`/support`)
+
+- Four task cards route account access, subscriptions, purchases/downloads, and
+  refund review to the existing authoritative page instead of making customers
+  read policy prose before taking action.
+- Contact Support appears after the self-service routes and handles both the
+  configured-channel and not-yet-configured states without inventing a response
+  time.
+- A concise three-item checklist explains what makes a request actionable while
+  public Library and Office Hours paths remain available for non-support needs.
+- All five policy routes remain reciprocally linked from the page.
+- Full-card links, secondary routes, and policy links maintain 44-pixel targets
+  with no horizontal overflow at 320- and 390-pixel widths.
+
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 86 files, 644 tests passed.
+- Unit tests: 86 files, 646 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -194,6 +211,8 @@ before they can be visually confirmed against live accounts.
 - Targeted Playwright Auth Entry suite: 7 tests passed across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally
   skipped.
+- Targeted Playwright Support suite: 3 tests passed across desktop and mobile;
+  one desktop-only instance of the narrow-width check was intentionally skipped.
 - Manual browser review: home and library flows checked at desktop and mobile
   widths; search, focus filters, reset behavior, overflow, and control sizing
   were verified. Account overview, loading, membership-option, and anchored
@@ -212,7 +231,9 @@ before they can be visually confirmed against live accounts.
   distractions during recovery. The membership comparison and its shared
   billing-policy panel were reviewed as a complete desktop composition, with
   mobile layout, target size, policy-link uniqueness, and overflow verified by
-  the focused browser suite.
+  the focused browser suite. Support was reviewed as a complete desktop help
+  flow from task cards through contact and policy navigation; both narrow
+  layouts were verified by the focused browser suite.
 
 ## Follow-up Note
 
