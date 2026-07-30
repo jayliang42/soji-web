@@ -87,21 +87,21 @@ textarea {
   background: rgba(231, 245, 218, 0.9);
 }
 
-.guide-reading-progress {
+.reading-progress {
   appearance: none;
   border: 0;
   background: transparent;
   color: var(--accent);
 }
 
-.guide-reading-progress::-webkit-progress-bar {
+.reading-progress::-webkit-progress-bar {
   background: rgba(200, 204, 197, 0.72);
 }
 
-.guide-reading-progress::-webkit-progress-value {
+.reading-progress::-webkit-progress-value {
   background: var(--accent);
 }
 
-.guide-reading-progress::-moz-progress-bar {
+.reading-progress::-moz-progress-bar {
   background: var(--accent);
 }

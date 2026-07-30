@@ -1,10 +1,34 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const homeMocks = vi.hoisted(() => ({
+  getContentSnapshot: vi.fn()
+}));
+
+vi.mock("@/lib/content", () => ({
+  getContentSnapshot: homeMocks.getContentSnapshot
+}));
+
 import HomePage from "@/app/page";
 
 describe("home page decision paths", () => {
-  it("offers four distinct ways to start without requiring an account", () => {
-    const html = renderToStaticMarkup(<HomePage />);
+  beforeEach(() => {
+    homeMocks.getContentSnapshot.mockReset();
+    homeMocks.getContentSnapshot.mockResolvedValue({
+      items: [
+        {
+          slug: "current-guide",
+          summary: "A current published guide.",
+          title: "A Current Guide",
+          type: "article"
+        }
+      ],
+      source: "supabase"
+    });
+  });
+
+  it("offers four distinct ways to start without requiring an account", async () => {
+    const html = renderToStaticMarkup(await HomePage());
 
     for (const [label, href] of [
       ["Explore the library", "/library?focus=start"],
@@ -21,8 +45,8 @@ describe("home page decision paths", () => {
     expect(html).not.toContain("Create account to join");
   });
 
-  it("summarizes every tier and sends comparison to the pricing page", () => {
-    const html = renderToStaticMarkup(<HomePage />);
+  it("summarizes every tier and sends comparison to the pricing page", async () => {
+    const html = renderToStaticMarkup(await HomePage());
 
     expect(html).toContain("Membership at a glance");
     expect(html).toContain('href="/pricing#plan-finder-heading"');
@@ -32,5 +56,13 @@ describe("home page decision paths", () => {
     }
     expect(html).not.toContain("Digital product purchase terms");
     expect(html).not.toContain("Membership purchase terms");
+  });
+
+  it("keeps personalized Continue reading out of server HTML", async () => {
+    const html = renderToStaticMarkup(await HomePage());
+
+    expect(homeMocks.getContentSnapshot).toHaveBeenCalledOnce();
+    expect(html).not.toContain("Continue reading");
+    expect(html).not.toContain("Resume guide");
   });
 });

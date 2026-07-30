@@ -99,18 +99,30 @@ export function readGuideProgress(
   storage: ReadingProgressStorage | undefined
 ) {
   const normalizedSlug = normalizeSlug(slug);
-  if (!normalizedSlug || !storage) {
+  if (!normalizedSlug) {
     return null;
   }
 
+  return (
+    readReadingProgress(storage).find(
+      (entry) => entry.slug === normalizedSlug
+    ) ?? null
+  );
+}
+
+export function readReadingProgress(
+  storage: ReadingProgressStorage | undefined
+) {
+  if (!storage) {
+    return [];
+  }
+
   try {
-    return (
-      parseReadingProgress(storage.getItem(READING_PROGRESS_STORAGE_KEY)).find(
-        (entry) => entry.slug === normalizedSlug
-      ) ?? null
+    return parseReadingProgress(
+      storage.getItem(READING_PROGRESS_STORAGE_KEY)
     );
   } catch {
-    return null;
+    return [];
   }
 }
 

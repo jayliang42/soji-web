@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata, Route } from "next";
 import { membershipPlans } from "@soji/domain";
+import { ContinueReading } from "@/components/continue-reading";
+import { getContentSnapshot } from "@/lib/content";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" }
@@ -73,7 +75,17 @@ const pathways = [
   }
 ] as const;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const content = await getContentSnapshot();
+  const continueReadingGuides = content.items.map(
+    ({ slug, summary, title, type }) => ({
+      slug,
+      summary,
+      title,
+      type
+    })
+  );
+
   return (
     <main>
       <section className="relative h-[calc(100svh-216px)] min-h-[420px] max-h-[628px] overflow-hidden bg-white md:h-[calc(100svh-184px)] md:min-h-[520px] md:max-h-[680px]">
@@ -152,6 +164,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <ContinueReading guides={continueReadingGuides} />
 
       <section className="bg-cream" aria-labelledby="how-soji-works">
         <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">

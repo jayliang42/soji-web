@@ -41,6 +41,36 @@ function getTargetMeasurements(target: HTMLElement) {
   };
 }
 
+function scrollToStoredProgress(
+  target: HTMLElement,
+  entry: ReadingProgressEntry
+) {
+  const { headerOffset, targetTop } = getTargetMeasurements(target);
+  const top = getResumeScrollTop({
+    headerOffset,
+    offset: entry.offset,
+    targetTop
+  });
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  window.scrollTo({
+    behavior: reduceMotion ? "auto" : "smooth",
+    top
+  });
+}
+
+function removeResumeRequest() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("resume");
+  window.history.replaceState(
+    window.history.state,
+    "",
+    `${url.pathname}${url.search}${url.hash}`
+  );
+}
+
 export function GuideReadingProgress({
   slug,
   targetId,
@@ -70,6 +100,7 @@ export function GuideReadingProgress({
     setSavedProgress(restored);
 
     let animationFrame = 0;
+    let resumeAnimationFrame = 0;
     let active = true;
 
     function persistMeasurement(force = false) {
@@ -144,6 +175,24 @@ export function GuideReadingProgress({
     }
 
     measure(false);
+    if (new URLSearchParams(window.location.search).get("resume") === "1") {
+      if (
+        restored &&
+        restored.progress >= RESUME_MINIMUM_PROGRESS &&
+        restored.progress <= RESUME_MAXIMUM_PROGRESS
+      ) {
+        resumeAnimationFrame = window.requestAnimationFrame(() => {
+          scrollToStoredProgress(readingTarget, restored);
+          setProgress(restored.progress);
+          setResumeStatus(
+            `Resumed ${title} at ${restored.progress}% read.`
+          );
+          removeResumeRequest();
+        });
+      } else {
+        removeResumeRequest();
+      }
+    }
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize);
     window.addEventListener("pagehide", handlePageHide);
@@ -151,12 +200,13 @@ export function GuideReadingProgress({
     return () => {
       active = false;
       window.cancelAnimationFrame(animationFrame);
+      window.cancelAnimationFrame(resumeAnimationFrame);
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("pagehide", handlePageHide);
       persistMeasurement(true);
     };
-  }, [slug, targetId]);
+  }, [slug, targetId, title]);
 
   const canResume =
     savedProgress !== null &&
@@ -173,20 +223,7 @@ export function GuideReadingProgress({
       return;
     }
 
-    const { headerOffset, targetTop } = getTargetMeasurements(target);
-    const top = getResumeScrollTop({
-      headerOffset,
-      offset: savedProgress.offset,
-      targetTop
-    });
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    window.scrollTo({
-      behavior: reduceMotion ? "auto" : "smooth",
-      top
-    });
+    scrollToStoredProgress(target, savedProgress);
     setProgress(savedProgress.progress);
     setResumeStatus(`Resumed ${title} at ${savedProgress.progress}% read.`);
   }
@@ -205,7 +242,7 @@ export function GuideReadingProgress({
       ) : null}
       <progress
         aria-label={`Reading progress for ${title}`}
-        className={`guide-reading-progress pointer-events-none fixed left-0 top-[72px] z-30 h-1 w-full transition-opacity md:top-[76px] ${
+        className={`reading-progress pointer-events-none fixed left-0 top-[72px] z-30 h-1 w-full transition-opacity md:top-[76px] ${
           progress > 0 && progress < 100 ? "opacity-100" : "opacity-0"
         }`}
         max={100}
