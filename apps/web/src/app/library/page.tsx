@@ -69,7 +69,6 @@ export default async function LibraryPage({
             <DataUnavailable
               title="The library could not be loaded"
               description="No restricted content has been shown. Please try again shortly."
-              retryHref="/library"
             />
           </div>
         ) : null}
@@ -78,7 +77,6 @@ export default async function LibraryPage({
             <DataUnavailable
               title="Membership access is temporarily unavailable"
               description="Public pieces remain available, but we could not verify access to restricted content. Your membership has not been changed. Please try again shortly."
-              retryHref="/library"
             />
           </div>
         ) : null}
