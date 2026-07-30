@@ -10,6 +10,7 @@ routes:
   - /account
   - /library
   - /library?focus=family
+  - /office-hours
 ---
 
 # Phase 04 UI Review
@@ -21,7 +22,9 @@ hierarchy, consistent editorial styling, responsive layouts, and accessible
 interaction targets. The main discovery gap identified in the library has been
 resolved with goal-led navigation, search, filtering, result feedback, and
 recovery states. The authenticated Account experience now provides equivalent
-wayfinding and next-step clarity without changing billing authority.
+wayfinding and next-step clarity without changing billing authority. Office
+Hours now explains its participation model before presenting lifecycle-aware
+session and replay states.
 
 The remaining note is operational rather than a local UI defect: authenticated
 production-provider states still require the consolidated owner checkpoint
@@ -79,20 +82,40 @@ before they can be visually confirmed against live accounts.
 - The loading skeleton now mirrors the three-card overview and panel geometry,
   reducing layout shift during account retrieval.
 
+### Office Hours (`/office-hours`)
+
+- A three-step participation model explains how to prepare without promising
+  individualized advice.
+- Upcoming, replay, pending, and unavailable cards use distinct editorial
+  treatments while preserving the existing lifecycle and entitlement
+  projection.
+- Date badges, explicit Central Time labels, access copy, and bounded actions
+  make each session easier to scan.
+- Upcoming sessions include a clipboard action for copying only the public
+  title and date; protected signup and replay destinations remain outside the
+  copied summary.
+- The bottom preparation panel gives both a library-first and a
+  membership-comparison next step.
+
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 82 files, 634 tests passed.
+- Unit tests: 83 files, 636 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
 - Targeted Playwright Account suite: 5 tests passed across desktop and mobile;
   one desktop-only instance of the mobile touch-target check was intentionally
   skipped.
+- Targeted Playwright Office Hours suite: 5 tests passed across desktop,
+  390-pixel, and 320-pixel views; one desktop-only instance of the mobile
+  touch-target check was intentionally skipped.
 - Manual browser review: home and library flows checked at desktop and mobile
   widths; search, focus filters, reset behavior, overflow, and control sizing
   were verified. Account overview, loading, membership-option, and anchored
-  panel states were visually reviewed in the browser.
+  panel states were visually reviewed in the browser. Office Hours format,
+  unavailable-session, and preparation states were checked before and after
+  the redesign with no horizontal overflow.
 
 ## Follow-up Note
 
