@@ -145,6 +145,11 @@ before they can be visually confirmed against live accounts.
   and live guided support to Tier 1, Tier 2, and Tier 3 respectively.
 - Each result repeats the exact monthly price, explains the recommendation,
   and deep-links to the corresponding full plan card.
+- Each plan remains a labeled semantic article and keeps its exact monthly
+  renewal and cancellation path beside the action.
+- One shared membership-basics panel now holds Portal management, paid-period,
+  policy, and support details that are identical across all plans, replacing
+  three repeated full disclosure blocks.
 - The recommendation remains optional and does not change the listed price,
   billing availability, checkout path, or account requirements.
 - Finder controls maintain 44-pixel touch targets without horizontal overflow
@@ -178,7 +183,7 @@ before they can be visually confirmed against live accounts.
 - Targeted Playwright Office Hours suite: 5 tests passed across desktop,
   390-pixel, and 320-pixel views; one desktop-only instance of the mobile
   touch-target check was intentionally skipped.
-- Targeted Playwright Membership suite: 5 tests passed across desktop and
+- Targeted Playwright Membership suite: 7 tests passed across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally
   skipped.
 - Targeted Playwright Shop suite: 7 tests passed across desktop and mobile; one
@@ -204,7 +209,10 @@ before they can be visually confirmed against live accounts.
   transitions into Pricing. Login and failed password-recovery entry states
   were reviewed in the browser, including account-specific intent, error
   hierarchy, recovery-only controls, and the absence of authentication-method
-  distractions during recovery.
+  distractions during recovery. The membership comparison and its shared
+  billing-policy panel were reviewed as a complete desktop composition, with
+  mobile layout, target size, policy-link uniqueness, and overflow verified by
+  the focused browser suite.
 
 ## Follow-up Note
 

@@ -2,7 +2,7 @@
 phase: 05
 slug: production-deployment-and-rollback
 status: pass_with_notes
-overall_score: 22
+overall_score: 23
 max_score: 24
 audited: 2026-07-30
 routes:
@@ -37,10 +37,10 @@ responsive, and accessibility requirements while accepting purposeful UI improve
 | Visuals | 3/4 | The owned book hero, editorial cards, goal browser, and restrained imagery create a recognizable system. Degraded data states still become visually sparse when no catalog content can render. |
 | Color | 4/4 | Shell, cream, cocoa, clay, and verified-success tones remain token-driven and maintain a controlled neutral/accent distribution. |
 | Typography | 4/4 | Display serif headings and sans-serif operational copy retain a strong hierarchy across 320–1440px without introducing a competing type system. |
-| Spacing | 3/4 | Mobile targets and card padding now follow the 44px/spacing contract. Membership cards remain vertically dense because exact renewal and policy terms repeat per plan. |
+| Spacing | 4/4 | Mobile targets and card padding follow the 44px/spacing contract; shared membership rules now replace repeated full disclosures inside every plan card. |
 | Experience design | 4/4 | Mobile menu focus, Escape recovery, active state, no-overflow behavior, goal-based library entry, search/filter reset, and safe disabled purchase states are automated. |
 
-**Overall: 22/24**
+**Overall: 23/24**
 
 ## Implemented Improvements
 
@@ -69,20 +69,32 @@ responsive, and accessibility requirements while accepting purposeful UI improve
 - Added reusable recovery-action support to unavailable-state cards and enabled it on
   Pricing and Products.
 
+### Membership comparison
+
+- Preserved each plan's exact monthly amount, renewal condition, and Account-based
+  cancellation path directly beside its action.
+- Removed the repeated full Stripe Portal explanation and four policy links from every
+  plan card.
+- Added one shared `Membership basics` panel after the comparison grid for billing,
+  management, cancellation/access behavior, policies, and support.
+- Changed plan cards to labeled `article` elements with the plan name as the semantic
+  heading, making keyboard and assistive-technology comparison clearer.
+
 ## Findings
 
-### UI-01 — Membership comparison remains vertically dense
+### UI-01 — Membership comparison density
 
-**Severity:** WARNING  
+**Severity:** RESOLVED
 **Pillar:** Spacing
 
-Each plan correctly keeps its exact monthly renewal, cancellation, and policy terms next
-to the purchase action, but repeating four policy links and the full portal explanation
-inside every card makes comparison slower below the entitlement lists.
+Each plan keeps its exact monthly renewal and cancellation path next to the purchase
+action. Shared Stripe Portal, paid-period, policy, and support details now appear once
+below the comparison grid, reducing repetition without separating price truth from the
+decision.
 
-**Next iteration:** preserve the exact per-plan amount and cancellation sentence, then
-test a shared policy-link rail immediately below the grid if legal/acceptance requirements
-permit it.
+**Verification:** server-rendered pricing tests require all three exact amounts and only
+one shared Portal/policy panel. Desktop/mobile browser tests require semantic plan
+articles, one main refund-policy link, 44-pixel controls, and no horizontal overflow.
 
 ### UI-02 — Catalog failure has little secondary value
 
@@ -116,6 +128,11 @@ and the full responsive navigation suite retains active state and target sizing.
   question: <https://www.yourjuno.co/>
 - Bank Like Her separates learning, membership, and tools as distinct routes rather than
   presenting one undifferentiated feed: <https://www.banklikeher.com/>
+- MasterClass separates common membership inclusions from plan-specific device and
+  offline-access differences: <https://www.masterclass.com/checkout?gift=true>
+- Patreon explains recurring billing and cancellation behavior as one shared membership
+  model instead of repeating it for every tier:
+  <https://support.patreon.com/hc/en-us/articles/360002355991-How-membership-billing-works>
 
 Soji borrows those information-architecture patterns, not their branding. The visual
 system remains Soji's restrained editorial serif, warm neutrals, clay accent, and owned
@@ -123,12 +140,15 @@ book imagery.
 
 ## Verification Evidence
 
-- Web Vitest: 82 files and 632 tests passed.
+- Web Vitest: 86 files and 644 tests passed.
 - ESLint and generated-route typecheck passed.
 - Next.js production build passed and generated 37 routes.
+- Focused Playwright membership comparison checks passed 7 tests across desktop and
+  mobile; one desktop-only instance of the narrow-width check was intentionally skipped.
 - Focused Playwright navigation/home checks passed 6/6 on desktop and mobile.
 - Focused library discovery, keyboard, and axe checks passed 12/12 on desktop and mobile.
-- Full CI-style Playwright regression passed 124/124 on desktop and mobile.
+- The prior full CI-style Playwright regression remains recorded at 124/124 on desktop
+  and mobile.
 
 ## Human Review
 
