@@ -87,16 +87,22 @@ export function ContentCard({
         </Heading>
         <p className="mt-4 leading-7 text-cocoa/75">{item.summary}</p>
         {visibleTags.length > 0 ? (
-          <div className="mt-5 flex flex-wrap gap-2" aria-label="Topics">
+          <ul
+            aria-label="Topics"
+            className="mt-5 flex list-none flex-wrap gap-2 p-0"
+          >
             {visibleTags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full bg-sand px-3 py-1 text-xs font-semibold text-cocoa/75"
-              >
-                {tag}
-              </span>
+              <li key={tag}>
+                <Link
+                  aria-label={`Browse guides about ${tag}`}
+                  className="inline-flex min-h-11 items-center rounded-full border border-transparent bg-sand px-3 py-1 text-xs font-semibold text-cocoa/75 transition-colors hover:border-clay/35 hover:bg-accent-muted hover:text-clay"
+                  href={`/library?q=${encodeURIComponent(tag)}`}
+                >
+                  {tag}
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
         ) : null}
         <div className="mt-auto flex flex-col items-start gap-4 pt-7 sm:flex-row sm:items-center sm:justify-between">
           <span

@@ -1,5 +1,8 @@
 import type { ContentCardItem } from "@/components/content-card";
-import { LibraryBrowser } from "@/components/library-browser";
+import {
+  getLibraryFilterHref,
+  LibraryBrowser
+} from "@/components/library-browser";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -71,6 +74,26 @@ describe("library browser", () => {
     expect(html).toContain("1 guide match your filters");
   });
 
+  it("honors shareable query and format filters before hydration", () => {
+    const html = renderToStaticMarkup(
+      <LibraryBrowser
+        entries={entries}
+        initialFormat="case_study"
+        initialQuery="salary"
+        isAuthenticated={false}
+      />
+    );
+
+    expect(html).toContain('value="salary"');
+    expect(html).toContain(
+      '<option value="case_study" selected="">Case study</option>'
+    );
+    expect(html).toContain("Salary Negotiation Playbook");
+    expect(html).not.toContain("The First Money Audit");
+    expect(html).not.toContain("Family Money Scripts");
+    expect(html).toContain("1 guide match your filters");
+  });
+
   it("falls back to the full library for an unknown focus", () => {
     const html = renderToStaticMarkup(
       <LibraryBrowser
@@ -81,5 +104,18 @@ describe("library browser", () => {
     );
 
     expect(html).toContain("3 guides in the library");
+  });
+
+  it("builds a compact shareable URL and omits inactive filters", () => {
+    expect(
+      getLibraryFilterHref({
+        focus: "family",
+        format: "article",
+        query: " cash flow "
+      })
+    ).toBe("/library?focus=family&format=article&q=cash+flow");
+    expect(
+      getLibraryFilterHref({ focus: "all", format: "all", query: " " })
+    ).toBe("/library");
   });
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ContentType } from "@soji/types";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ContentCard,
   type ContentCardItem
@@ -18,6 +18,13 @@ const focusOptions = [
 ] as const;
 
 type FocusId = (typeof focusOptions)[number]["id"];
+type LibraryFormat = "all" | ContentType;
+
+interface LibraryFilterState {
+  focus: FocusId;
+  format: LibraryFormat;
+  query: string;
+}
 
 export interface LibraryBrowserEntry {
   accessMode: ContentAccessMode;
@@ -28,6 +35,37 @@ function normalizeFocus(value: string | undefined): FocusId {
   return focusOptions.some((option) => option.id === value)
     ? (value as FocusId)
     : "all";
+}
+
+function normalizeFormat(
+  value: string | undefined,
+  formats: readonly ContentType[]
+): LibraryFormat {
+  return formats.includes(value as ContentType)
+    ? (value as ContentType)
+    : "all";
+}
+
+export function getLibraryFilterHref({
+  focus,
+  format,
+  query
+}: LibraryFilterState) {
+  const params = new URLSearchParams();
+  const normalizedQuery = query.trim();
+
+  if (focus !== "all") {
+    params.set("focus", focus);
+  }
+  if (format !== "all") {
+    params.set("format", format);
+  }
+  if (normalizedQuery) {
+    params.set("q", normalizedQuery);
+  }
+
+  const queryString = params.toString();
+  return queryString ? `/library?${queryString}` : "/library";
 }
 
 function searchableText(item: ContentCardItem) {
@@ -67,18 +105,16 @@ function matchesFocus(item: ContentCardItem, focus: FocusId) {
 export function LibraryBrowser({
   entries,
   initialFocus,
+  initialFormat,
+  initialQuery,
   isAuthenticated
 }: {
   entries: LibraryBrowserEntry[];
   initialFocus?: string;
+  initialFormat?: string;
+  initialQuery?: string;
   isAuthenticated: boolean;
 }) {
-  const [focus, setFocus] = useState<FocusId>(() =>
-    normalizeFocus(initialFocus)
-  );
-  const [format, setFormat] = useState<"all" | ContentType>("all");
-  const [query, setQuery] = useState("");
-
   const formats = useMemo(
     () =>
       [...new Set(entries.map(({ item }) => item.type))].sort((left, right) =>
@@ -86,6 +122,46 @@ export function LibraryBrowser({
       ),
     [entries]
   );
+  const [focus, setFocus] = useState<FocusId>(() =>
+    normalizeFocus(initialFocus)
+  );
+  const [format, setFormat] = useState<LibraryFormat>(() =>
+    normalizeFormat(initialFormat, formats)
+  );
+  const [query, setQuery] = useState(initialQuery ?? "");
+
+  useEffect(() => {
+    function restoreFiltersFromHistory() {
+      const params = new URLSearchParams(window.location.search);
+      setFocus(normalizeFocus(params.get("focus") ?? undefined));
+      setFormat(
+        normalizeFormat(params.get("format") ?? undefined, formats)
+      );
+      setQuery(params.get("q") ?? "");
+    }
+
+    window.addEventListener("popstate", restoreFiltersFromHistory);
+    return () =>
+      window.removeEventListener("popstate", restoreFiltersFromHistory);
+  }, [formats]);
+
+  function updateFilterUrl(
+    nextFilters: LibraryFilterState,
+    mode: "push" | "replace"
+  ) {
+    const href = getLibraryFilterHref(nextFilters);
+    const currentHref = `${window.location.pathname}${window.location.search}`;
+
+    if (href === currentHref) {
+      return;
+    }
+
+    window.history[mode === "push" ? "pushState" : "replaceState"](
+      null,
+      "",
+      href
+    );
+  }
   const visibleEntries = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
 
@@ -103,6 +179,7 @@ export function LibraryBrowser({
     setFocus("all");
     setFormat("all");
     setQuery("");
+    updateFilterUrl({ focus: "all", format: "all", query: "" }, "push");
   }
 
   return (
@@ -133,7 +210,14 @@ export function LibraryBrowser({
               <input
                 type="search"
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => {
+                  const nextQuery = event.target.value;
+                  setQuery(nextQuery);
+                  updateFilterUrl(
+                    { focus, format, query: nextQuery },
+                    "replace"
+                  );
+                }}
                 placeholder="Try “family” or “cash flow”"
                 className="min-h-12 w-full rounded-md border border-dune bg-white px-4 font-medium text-cocoa outline-none placeholder:text-cocoa/45 focus:border-clay focus:ring-2 focus:ring-clay/20"
               />
@@ -142,9 +226,14 @@ export function LibraryBrowser({
               Format
               <select
                 value={format}
-                onChange={(event) =>
-                  setFormat(event.target.value as "all" | ContentType)
-                }
+                onChange={(event) => {
+                  const nextFormat = event.target.value as LibraryFormat;
+                  setFormat(nextFormat);
+                  updateFilterUrl(
+                    { focus, format: nextFormat, query },
+                    "push"
+                  );
+                }}
                 className="min-h-12 w-full rounded-md border border-dune bg-white px-4 font-medium text-cocoa outline-none focus:border-clay focus:ring-2 focus:ring-clay/20"
               >
                 <option value="all">All formats</option>
@@ -170,7 +259,13 @@ export function LibraryBrowser({
                 key={option.id}
                 type="button"
                 aria-pressed={focus === option.id}
-                onClick={() => setFocus(option.id)}
+                onClick={() => {
+                  setFocus(option.id);
+                  updateFilterUrl(
+                    { focus: option.id, format, query },
+                    "push"
+                  );
+                }}
                 className={`min-h-11 rounded-full border px-4 text-sm font-bold transition-colors ${
                   focus === option.id
                     ? "border-cocoa bg-cocoa text-white"

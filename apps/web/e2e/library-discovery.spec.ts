@@ -14,6 +14,7 @@ test("library focus filters reveal a useful subset and reset cleanly", async ({
   await page
     .getByRole("button", { exact: true, name: "Career & earning" })
     .click();
+  await expect(page).toHaveURL("/library?focus=career");
 
   await expect(page.getByText("1 guide match your filters")).toBeVisible();
   await expect(
@@ -29,30 +30,34 @@ test("library focus filters reveal a useful subset and reset cleanly", async ({
     })
   ).toHaveCount(0);
 
-  await page
-    .getByRole("button", { exact: true, name: "Clear filters" })
-    .click();
+  await page.goBack();
+  await expect(page).toHaveURL("/library");
+  await expect(
+    page.getByRole("button", { exact: true, name: "All guides" })
+  ).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByText("6 guides in the library")).toBeVisible();
 });
 
-test("library search has a helpful empty state and one-action recovery", async ({
+test("library search is shareable and has one-action recovery", async ({
   page
 }) => {
   await page.goto("/library");
   await page
     .getByRole("searchbox", { name: "Search the library" })
-    .fill("no guide should match this phrase");
+    .fill("family");
 
+  await expect(page).toHaveURL("/library?q=family");
+  await expect(page.getByText("4 guides match your filters")).toBeVisible();
+  await page.reload();
   await expect(
-    page.getByRole("heading", {
-      level: 3,
-      name: "No guides match those filters."
-    })
-  ).toBeVisible();
+    page.getByRole("searchbox", { name: "Search the library" })
+  ).toHaveValue("family");
+
   await page
-    .getByRole("button", { exact: true, name: "Show all guides" })
+    .getByRole("button", { exact: true, name: "Clear filters" })
     .click();
 
+  await expect(page).toHaveURL("/library");
   await expect(page.getByText("6 guides in the library")).toBeVisible();
   await expect(
     page.getByRole("searchbox", { name: "Search the library" })
@@ -82,4 +87,20 @@ test("goal links open a focused library without mobile overflow", async ({
 
   expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
   expect(layout.controls.every((height) => height >= 44)).toBe(true);
+});
+
+test("article topics open a durable filtered library view", async ({ page }) => {
+  await page.goto("/library/wealth-without-drift");
+
+  const familyTopic = page
+    .getByRole("link", { name: "Browse guides about family" })
+    .first();
+  await expect(familyTopic).toHaveAttribute("href", "/library?q=family");
+  await familyTopic.click();
+
+  await expect(page).toHaveURL("/library?q=family");
+  await expect(
+    page.getByRole("searchbox", { name: "Search the library" })
+  ).toHaveValue("family");
+  await expect(page.getByText("4 guides match your filters")).toBeVisible();
 });

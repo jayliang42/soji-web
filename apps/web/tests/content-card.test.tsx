@@ -117,6 +117,16 @@ describe("content card", () => {
     expect(html).not.toContain(">supporting<");
   });
 
+  it("turns public topics into library discovery links", () => {
+    const html = renderToStaticMarkup(
+      <ContentCard accessMode="full" item={item} />
+    );
+
+    expect(html).toContain('href="/library?q=planning"');
+    expect(html).toContain('aria-label="Browse guides about planning"');
+    expect(html).toContain("min-h-11");
+  });
+
   it("supports an h3 title when nested below a related-reading heading", () => {
     const html = renderToStaticMarkup(
       <ContentCard accessMode="full" headingLevel={3} item={item} />

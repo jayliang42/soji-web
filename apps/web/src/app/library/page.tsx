@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default async function LibraryPage({
   searchParams = Promise.resolve({})
 }: {
-  searchParams?: Promise<{ focus?: string }>;
+  searchParams?: Promise<{ focus?: string; format?: string; q?: string }>;
 }) {
   const [snapshot, session, params] = await Promise.all([
     getContentSnapshot(),
@@ -87,6 +87,8 @@ export default async function LibraryPage({
           <LibraryBrowser
             entries={entries}
             initialFocus={params.focus}
+            initialFormat={params.format}
+            initialQuery={params.q}
             isAuthenticated={isAuthenticated}
           />
         ) : null}

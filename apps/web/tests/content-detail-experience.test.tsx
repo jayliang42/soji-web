@@ -116,6 +116,9 @@ describe("content detail reading experience", () => {
     expect(html).toContain('href="/login?next=%2Flibrary%2Freader-guide"');
     expect(html).toContain("decision-making");
     expect(html).toContain("family");
+    expect(html).toContain('href="/library?q=decision-making"');
+    expect(html).toContain('href="/library?q=family"');
+    expect(html).toContain('aria-label="Browse guides about family"');
     expect(html).not.toContain(">demo<");
     expect(html).not.toContain(">supporting<");
     expect(html).not.toContain("PRIVATE MEMBER BODY");

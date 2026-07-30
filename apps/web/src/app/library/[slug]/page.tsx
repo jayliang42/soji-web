@@ -395,11 +395,14 @@ export default async function ContentDetailPage({
                 </p>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {visibleTags.map((tag) => (
-                    <li
-                      className="rounded-full bg-sand px-3 py-1 text-xs font-semibold text-cocoa/75"
-                      key={tag}
-                    >
-                      {tag}
+                    <li key={tag}>
+                      <Link
+                        aria-label={`Browse guides about ${tag}`}
+                        className="inline-flex min-h-11 items-center rounded-full border border-transparent bg-sand px-3 py-1 text-xs font-semibold text-cocoa/75 transition-colors hover:border-clay/35 hover:bg-accent-muted hover:text-clay"
+                        href={`/library?q=${encodeURIComponent(tag)}`}
+                      >
+                        {tag}
+                      </Link>
                     </li>
                   ))}
                 </ul>
