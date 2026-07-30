@@ -30,7 +30,7 @@ function validInspection(overrides = {}) {
           "CMD",
           "node",
           "-e",
-          "fetch('http://127.0.0.1:3000/api/health')"
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
         ]
       },
       Labels: {},
@@ -57,6 +57,16 @@ test("rejects privileged, incomplete, secret-bearing, and environment-file image
     [{ User: "1001" }, /user/],
     [{ Cmd: ["node", "server.js"] }, /entry/],
     [{ Healthcheck: undefined }, /healthcheck/],
+    [{
+      Healthcheck: {
+        Test: [
+          "CMD",
+          "sh",
+          "-c",
+          "curl https://example.com && curl http://127.0.0.1:3000/api/health"
+        ]
+      }
+    }, /healthcheck/],
     [{ ExposedPorts: {} }, /port/],
     [{ Env: ["SUPABASE_SERVICE_ROLE_KEY=private"] }, /secret/],
     [{ Labels: { CRON_SECRET: "private" } }, /secret/]
@@ -233,6 +243,30 @@ test("failure and timeout clean up only containers already created, in reverse o
   assert.match(events.at(-2), /candidate_cleanup/);
   assert.match(events.at(-1), /prior_cleanup/);
   assert.equal(events.some((event) => /rm.*soji-web(?!-phase5)/.test(event)), false);
+});
+
+test("a start command that throws still triggers exact owned cleanup", async () => {
+  const plan = createRollbackDrillPlan({
+    candidateImage,
+    candidatePort: 3411,
+    priorImage,
+    priorPort: 3410,
+    suffix: "deadbeef"
+  });
+  const events = [];
+  const result = await executeRollbackDrill({
+    healthProbe: async () => true,
+    plan,
+    runner: async ({ operation }) => {
+      events.push(operation);
+      if (operation === "prior_start") {
+        throw new Error("runner lost contact after container creation");
+      }
+      return { status: 0 };
+    }
+  });
+  assert.deepEqual(result, { failedAt: "prior_start", ok: false });
+  assert.deepEqual(events, ["prior_start", "prior_cleanup"]);
 });
 
 test("module import is silent and starts no Docker process", () => {

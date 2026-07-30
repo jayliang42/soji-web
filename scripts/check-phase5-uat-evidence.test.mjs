@@ -14,6 +14,8 @@ import {
   RELEASE_COMMANDS,
   REQUIRED_SCENARIOS,
   parseEvidence,
+  releaseEnvironment,
+  releaseImageTags,
   validateReleaseDocumentation,
   validateEvidence
 } from "./check-phase5-uat-evidence.mjs";
@@ -238,6 +240,8 @@ test("module import is silent; structure CLI passes and ready CLI fails", () => 
   assert.equal(imported.stderr, "");
   assert.equal(runCli(artifact()).status, 0);
   assert.notEqual(runCli(artifact(), ["--ready"]).status, 0);
+  assert.notEqual(runCli(artifact(), ["other-evidence.md"]).status, 0);
+  assert.notEqual(runCli(artifact(), ["--ready", "--ready"]).status, 0);
 });
 
 test("release command inventory is fixed, local-only, and docs preserve one checkpoint", () => {
@@ -251,4 +255,23 @@ test("release command inventory is fixed, local-only, and docs preserve one chec
     checkpointCount: 1,
     documents: 3
   });
+});
+
+test("release subprocess environment is allowlisted and image tags bind the candidate commit", () => {
+  const environment = releaseEnvironment({
+    HOME: "/tmp/soji-home",
+    PATH: "/usr/bin",
+    UNRELATED_PROVIDER_TOKEN: "must-not-cross-boundary"
+  });
+  assert.equal(environment.HOME, "/tmp/soji-home");
+  assert.equal(environment.PATH, "/usr/bin");
+  assert.equal(environment.UNRELATED_PROVIDER_TOKEN, undefined);
+  assert.equal(environment.STRIPE_SECRET_KEY, "");
+
+  const commit = "a".repeat(40);
+  assert.deepEqual(releaseImageTags(commit), {
+    candidateImage: `soji-web:candidate-${commit}`,
+    priorImage: `soji-web:prior-${`0${"a".repeat(39)}`}`
+  });
+  assert.throws(() => releaseImageTags("abc"), /full commit SHA/);
 });

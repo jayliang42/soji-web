@@ -418,9 +418,38 @@ function runChecked(command, args, { cwd, env, timeout = 30 * 60_000 }) {
   }
 }
 
-function releaseEnvironment() {
+const RELEASE_ENV_ALLOWLIST = Object.freeze([
+  "CI",
+  "COREPACK_HOME",
+  "DOCKER_CONTEXT",
+  "DOCKER_HOST",
+  "FORCE_COLOR",
+  "HOME",
+  "LANG",
+  "LC_ALL",
+  "LOGNAME",
+  "NO_COLOR",
+  "PATH",
+  "PNPM_HOME",
+  "SHELL",
+  "TEMP",
+  "TERM",
+  "TMP",
+  "TMPDIR",
+  "USER",
+  "XDG_CACHE_HOME",
+  "XDG_CONFIG_HOME",
+  "XDG_DATA_HOME"
+]);
+
+export function releaseEnvironment(source = process.env) {
+  const environment = Object.fromEntries(
+    RELEASE_ENV_ALLOWLIST.flatMap((name) =>
+      typeof source[name] === "string" ? [[name, source[name]]] : []
+    )
+  );
   return {
-    ...process.env,
+    ...environment,
     CRON_SECRET: "",
     NEXT_PUBLIC_SITE_URL: "https://ci.example.com",
     NEXT_PUBLIC_SUPABASE_ANON_KEY: "",
@@ -430,6 +459,18 @@ function releaseEnvironment() {
     STRIPE_SECRET_KEY: "",
     STRIPE_WEBHOOK_SECRET: "",
     SUPABASE_SERVICE_ROLE_KEY: ""
+  };
+}
+
+export function releaseImageTags(expectedCommit) {
+  if (!/^[a-f0-9]{40}$/iu.test(expectedCommit)) {
+    throw new Error("release image tags require a full commit SHA");
+  }
+  const normalizedCommit = expectedCommit.toLowerCase();
+  const priorCommit = `${normalizedCommit[0] === "0" ? "1" : "0"}${normalizedCommit.slice(1)}`;
+  return {
+    candidateImage: `soji-web:candidate-${normalizedCommit}`,
+    priorImage: `soji-web:prior-${priorCommit}`
   };
 }
 
@@ -473,10 +514,7 @@ async function runReleaseCheck() {
       runChecked(command, args, { cwd: releasePath, env });
     }
 
-    const priorImage =
-      "soji-web:prior-0000000000000000000000000000000000000000";
-    const candidateImage =
-      "soji-web:candidate-1111111111111111111111111111111111111111";
+    const { candidateImage, priorImage } = releaseImageTags(expectedCommit);
     runChecked(
       "docker",
       [
@@ -496,11 +534,18 @@ async function runReleaseCheck() {
       ["scripts/check-phase5-container.mjs", "--inspect", candidateImage],
       { cwd: releasePath, env, timeout: 60_000 }
     );
-    runChecked("corepack", ["pnpm", "phase5:container:drill"], {
-      cwd: releasePath,
-      env,
-      timeout: 5 * 60_000
-    });
+    runChecked(
+      "node",
+      [
+        "scripts/check-phase5-container.mjs",
+        "--drill",
+        "--prior-image",
+        priorImage,
+        "--candidate-image",
+        candidateImage
+      ],
+      { cwd: releasePath, env, timeout: 5 * 60_000 }
+    );
   } finally {
     if (worktreeCreated) {
       spawnSync(
@@ -519,14 +564,22 @@ async function runReleaseCheck() {
 
 function parseCliArgs(args) {
   let evidencePath = DEFAULT_EVIDENCE_PATH;
+  let evidencePathProvided = false;
   let ready = false;
   for (const argument of args) {
     if (argument === "--ready") {
+      if (ready) {
+        throw new Error("--ready may appear only once");
+      }
       ready = true;
     } else if (argument.startsWith("--")) {
       throw new Error(`unknown option ${argument}`);
     } else {
+      if (evidencePathProvided) {
+        throw new Error("evidence path may appear only once");
+      }
       evidencePath = argument;
+      evidencePathProvided = true;
     }
   }
   return { evidencePath, ready };

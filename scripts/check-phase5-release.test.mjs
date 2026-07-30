@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  mkdtempSync,
+  symlinkSync,
+  writeFileSync
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -222,11 +227,11 @@ function response({
   json,
   status = 200
 } = {}) {
+  const text = body || (json === undefined ? "" : JSON.stringify(json));
   return {
     headers: new Headers(headers),
-    json: async () => json,
     status,
-    text: async () => body
+    text: async () => text
   };
 }
 
@@ -327,6 +332,20 @@ test("returns stable failure for response, readiness, header, demo, and fetch fa
   }
 });
 
+test("fails closed when any smoke response exceeds the bounded body limit", async () => {
+  const oversized = "x".repeat(1024 * 1024 + 1);
+  const result = await probeReleaseTarget({
+    fetchImpl: async () =>
+      response({
+        body: oversized,
+        headers: { "content-type": "text/html" }
+      }),
+    origin: generatedOrigin
+  });
+  assert.deepEqual(result, { ok: false, reason: "liveness_invalid" });
+  assert.doesNotMatch(JSON.stringify(result), /x{32}/);
+});
+
 test("CLI rejects permissive input files and import is silent", () => {
   const root = mkdtempSync(path.join(tmpdir(), "soji-phase5-release-"));
   const commitFile = path.join(root, "commit.txt");
@@ -355,6 +374,43 @@ test("CLI rejects permissive input files and import is silent", () => {
   );
   assert.notEqual(cli.status, 0);
   assert.match(cli.stderr, /0600/);
+
+  chmodSync(commitFile, 0o600);
+  const linkedCommitFile = path.join(root, "linked-commit.txt");
+  symlinkSync(commitFile, linkedCommitFile);
+  const linkedCli = spawnSync(
+    process.execPath,
+    [
+      "scripts/check-phase5-release.mjs",
+      "--deployment",
+      "--lifecycle",
+      "staged",
+      "--expected-commit-file",
+      linkedCommitFile,
+      "--inspection-file",
+      inspectionFile,
+      "--worktree-file",
+      worktreeFile
+    ],
+    { cwd: process.cwd(), encoding: "utf8" }
+  );
+  assert.notEqual(linkedCli.status, 0);
+  assert.match(linkedCli.stderr, /symbolic link/);
+
+  const unknownOptionCli = spawnSync(
+    process.execPath,
+    [
+      "scripts/check-phase5-release.mjs",
+      "--smoke",
+      "--origin-file",
+      commitFile,
+      "--unexpected",
+      "value"
+    ],
+    { cwd: process.cwd(), encoding: "utf8" }
+  );
+  assert.notEqual(unknownOptionCli.status, 0);
+  assert.match(unknownOptionCli.stderr, /option set|unknown/);
 
   const imported = spawnSync(
     process.execPath,

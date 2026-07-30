@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from "node:fs";
+import { lstatSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -54,6 +54,9 @@ const READINESS_CHECKS = Object.freeze([
   "supabaseServiceRoleOperational",
   "supportContactConfigured"
 ]);
+
+const MAX_RESPONSE_BYTES = 1024 * 1024;
+const MAX_PRIVATE_FILE_BYTES = 1024 * 1024;
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -210,6 +213,51 @@ function hasOnlyTrueNamedChecks(value) {
   );
 }
 
+async function readBoundedResponse(response) {
+  const contentLength = Number(response.headers?.get?.("content-length"));
+  if (
+    Number.isFinite(contentLength) &&
+    contentLength > MAX_RESPONSE_BYTES
+  ) {
+    throw new Error("response body exceeds the smoke limit");
+  }
+
+  if (typeof response.body?.getReader === "function") {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let bytesRead = 0;
+    let body = "";
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        bytesRead += value.byteLength;
+        if (bytesRead > MAX_RESPONSE_BYTES) {
+          await reader.cancel();
+          throw new Error("response body exceeds the smoke limit");
+        }
+        body += decoder.decode(value, { stream: true });
+      }
+      body += decoder.decode();
+      return body;
+    } finally {
+      reader.releaseLock();
+    }
+  }
+
+  const body = await response.text();
+  if (Buffer.byteLength(body, "utf8") > MAX_RESPONSE_BYTES) {
+    throw new Error("response body exceeds the smoke limit");
+  }
+  return body;
+}
+
+async function readBoundedJson(response) {
+  return JSON.parse(await readBoundedResponse(response));
+}
+
 export async function probeReleaseTarget({
   fetchImpl = globalThis.fetch,
   origin
@@ -246,7 +294,7 @@ export async function probeReleaseTarget({
     if (route === "/api/health") {
       let payload;
       try {
-        payload = await response.json();
+        payload = await readBoundedJson(response);
       } catch {
         return stableFailure("liveness_invalid");
       }
@@ -260,7 +308,7 @@ export async function probeReleaseTarget({
     } else if (route === "/api/health/ready") {
       let payload;
       try {
-        payload = await response.json();
+        payload = await readBoundedJson(response);
       } catch {
         return stableFailure("readiness_invalid");
       }
@@ -292,7 +340,7 @@ export async function probeReleaseTarget({
       }
       let body;
       try {
-        body = await response.text();
+        body = await readBoundedResponse(response);
       } catch {
         return stableFailure("page_unreadable");
       }
@@ -311,7 +359,14 @@ export async function probeReleaseTarget({
 }
 
 function readPrivateFile(filePath, label) {
-  const mode = statSync(filePath).mode & 0o777;
+  const metadata = lstatSync(filePath);
+  if (!metadata.isFile() || metadata.isSymbolicLink()) {
+    throw new Error(`${label} must be a regular file, not a symbolic link`);
+  }
+  if (metadata.size > MAX_PRIVATE_FILE_BYTES) {
+    throw new Error(`${label} exceeds the private input size limit`);
+  }
+  const mode = metadata.mode & 0o777;
   if (mode !== 0o600) {
     throw new Error(`${label} must use mode 0600`);
   }
@@ -329,8 +384,34 @@ function optionValue(args, option) {
   return args[index + 1];
 }
 
+function validatePairedOptions(args, allowedOptions) {
+  if ((args.length - 1) / 2 !== allowedOptions.length) {
+    throw new Error("release command has an incomplete option set");
+  }
+  const seen = new Set();
+  for (let index = 1; index < args.length; index += 2) {
+    const option = args[index];
+    const value = args[index + 1];
+    if (
+      !allowedOptions.includes(option) ||
+      seen.has(option) ||
+      !value ||
+      value.startsWith("--")
+    ) {
+      throw new Error("release command contains an unknown or malformed option");
+    }
+    seen.add(option);
+  }
+}
+
 async function runCli(args) {
   if (args[0] === "--deployment") {
+    validatePairedOptions(args, [
+      "--lifecycle",
+      "--expected-commit-file",
+      "--inspection-file",
+      "--worktree-file"
+    ]);
     const lifecycleState = optionValue(args, "--lifecycle");
     const commitFile = optionValue(args, "--expected-commit-file");
     const inspectionFile = optionValue(args, "--inspection-file");
@@ -354,6 +435,7 @@ async function runCli(args) {
   }
 
   if (args[0] === "--smoke") {
+    validatePairedOptions(args, ["--origin-file"]);
     const originFile = optionValue(args, "--origin-file");
     const origin = readPrivateFile(originFile, "release origin file");
     const result = await probeReleaseTarget({ origin });

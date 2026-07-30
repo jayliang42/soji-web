@@ -70,13 +70,14 @@ export function validateImageInspection(raw) {
   const healthTest = config.Healthcheck?.Test;
   if (
     !Array.isArray(healthTest) ||
-    !healthTest.some(
-      (value) =>
-        typeof value === "string" &&
-        value.includes("127.0.0.1:3000/api/health")
-    )
+    healthTest.length !== 4 ||
+    healthTest[0] !== "CMD" ||
+    healthTest[1] !== "node" ||
+    healthTest[2] !== "-e" ||
+    healthTest[3] !==
+      "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
   ) {
-    throw new Error("image healthcheck must use loopback liveness");
+    throw new Error("image healthcheck must use the exact loopback liveness command");
   }
 
   for (const value of [
@@ -276,14 +277,14 @@ export async function executeRollbackDrill({
       ) {
         throw new Error("rollback plan contains an invalid command");
       }
-      const result = await runner(step);
-      if (!result || result.status !== 0) {
-        throw new Error("Docker command failed");
-      }
       const createdName = createdNameFor(step.operation, step.args);
       if (createdName) {
         validateOwnedResourceName(createdName, ownedSet);
         createdNames.push(createdName);
+      }
+      const result = await runner(step);
+      if (!result || result.status !== 0) {
+        throw new Error("Docker command failed");
       }
       if (step.operation.endsWith("_cleanup")) {
         const name = step.args.at(-1);
@@ -363,7 +364,14 @@ async function probeHealth({ port }) {
         signal: AbortSignal.timeout(1_000)
       });
       if (response.status === 200) {
-        return true;
+        const payload = await response.json();
+        if (
+          isPlainObject(payload) &&
+          payload.ok === true &&
+          payload.status === "alive"
+        ) {
+          return true;
+        }
       }
     } catch {
       // Retry without retaining or printing response/error details.
@@ -384,6 +392,26 @@ function optionValue(args, option) {
   return args[index + 1];
 }
 
+function validatePairedOptions(args, allowedOptions) {
+  if ((args.length - 1) / 2 !== allowedOptions.length) {
+    throw new Error("rollback drill requires exactly two named image options");
+  }
+  const seen = new Set();
+  for (let index = 1; index < args.length; index += 2) {
+    const option = args[index];
+    const value = args[index + 1];
+    if (
+      !allowedOptions.includes(option) ||
+      seen.has(option) ||
+      !value ||
+      value.startsWith("--")
+    ) {
+      throw new Error("rollback drill contains an unknown or malformed option");
+    }
+    seen.add(option);
+  }
+}
+
 async function runCli(args) {
   if (args[0] === "--inspect") {
     const image = args[1];
@@ -395,6 +423,7 @@ async function runCli(args) {
     return;
   }
   if (args[0] === "--drill") {
+    validatePairedOptions(args, ["--prior-image", "--candidate-image"]);
     const priorImage = optionValue(args, "--prior-image");
     const candidateImage = optionValue(args, "--candidate-image");
     inspectImage(priorImage);
