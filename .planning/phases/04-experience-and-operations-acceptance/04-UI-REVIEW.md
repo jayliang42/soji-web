@@ -112,6 +112,11 @@ before they can be visually confirmed against live accounts.
 - A sticky guide-details rail groups format, publication date, access level,
   visible reading time, and public topics without showing internal fixture
   tags.
+- Long visible guides now generate an `In this guide` navigation from their
+  Markdown headings, with numbered links and stable section anchors that stop
+  below the fixed site navigation.
+- Duplicate headings receive deterministic suffixes, fenced-code examples are
+  excluded, and previews never expose titles from the hidden member body.
 - After a public opening, the access panel links directly to the exact included
   membership tier and the reader's Account while preserving the existing
   entitlement decision.
@@ -258,7 +263,7 @@ before they can be visually confirmed against live accounts.
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 91 files, 662 tests passed.
+- Unit tests: 92 files, 666 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -327,6 +332,11 @@ before they can be visually confirmed against live accounts.
   compositions; provider-free Library, Shop, and Office Hours recovery states
   were verified at desktop, 390-pixel, and 320-pixel widths for exact actions,
   target size, overflow, and blocking accessibility findings.
+  The complete eight-section member guide was reviewed with a temporary local
+  Tier 1 Demo state: every outline link matched one visible heading, anchor
+  navigation updated the URL, the target stopped 112 pixels below the top edge,
+  and the desktop layout retained zero horizontal overflow. The Demo tier was
+  restored immediately and was not included in the implementation.
 
 ## Follow-up Note
 

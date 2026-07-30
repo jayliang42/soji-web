@@ -95,6 +95,12 @@ responsive, and accessibility requirements while accepting purposeful UI improve
 - Added an editorial title-and-cover hero with an immediate route back to Library.
 - Added a guide-details rail for format, publication date, visible reading time, access,
   and public topics while filtering internal fixture tags.
+- Added an automatic `In this guide` outline for long visible Markdown bodies, with
+  numbered in-page links, stable anchor IDs, and fixed-navigation scroll clearance.
+- Built the outline only from the body already authorized for the current reader;
+  preview and unavailable states cannot infer or reveal member-only section names.
+- Handled duplicate headings, formatted heading labels, Setext headings, and fenced code
+  without requiring authors to manage anchor IDs by hand.
 - Reframed the preview boundary as a two-part member-edition panel and deep-linked its
   primary action to the exact qualifying tier.
 - Added next-step routes for entitled readers after the article without changing content
@@ -233,6 +239,12 @@ and the full responsive navigation suite retains active state and target sizing.
 - Carbon's empty-state pattern recommends explaining the missing space and placing a
   direct primary action beside the guidance:
   <https://carbondesignsystem.com/patterns/empty-states-pattern/>
+- Ghost recommends automatically generated tables of contents so readers can preview a
+  post's structure and navigate directly to sections:
+  <https://ghost.org/tutorials/adding-table-of-contents/>
+- W3C WAI identifies headings as both content structure and a mechanism assistive
+  technologies can use for in-page navigation:
+  <https://www.w3.org/WAI/tutorials/page-structure/headings/>
 
 Soji borrows those information-architecture patterns, not their branding. The visual
 system remains Soji's restrained editorial serif, warm neutrals, clay accent, and owned
@@ -240,7 +252,7 @@ book imagery.
 
 ## Verification Evidence
 
-- Web Vitest: 91 files and 662 tests passed.
+- Web Vitest: 92 files and 666 tests passed.
 - ESLint and generated-route typecheck passed.
 - Next.js production build passed and generated 37 routes.
 - Focused Playwright membership comparison checks passed 7 tests across desktop and
@@ -274,3 +286,10 @@ The Shop empty collection and full connection-paused recovery panel were visuall
 reviewed in the local browser. The provider-free Library, Shop, and Office Hours states
 were then checked at desktop, 390-pixel, and 320-pixel widths through the focused suite,
 including target size, overflow, semantics, and blocking accessibility findings.
+
+The complete eight-section member guide was also reviewed in a temporary local Tier 1
+Demo state. The outline and body headings matched one for one, an in-page click produced
+the expected URL fragment and 112-pixel top clearance, and the desktop article/aside
+composition had no horizontal overflow. Restoring the normal free Demo user confirmed
+that the public opening does not render the hidden outline; the temporary tier change was
+not committed.
