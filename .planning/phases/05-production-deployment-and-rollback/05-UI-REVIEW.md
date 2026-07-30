@@ -14,6 +14,7 @@ routes:
   - /office-hours
   - /login
   - /account
+  - /admin
   - /support
 ---
 
@@ -29,6 +30,8 @@ discovery with a useful empty state. Support now routes common customer tasks to
 authoritative account and policy destinations before presenting the contact channel.
 Article details now distinguish the public opening from the member edition, surface only
 the reading time a visitor can actually access, and lead to the exact qualifying tier.
+Admin Overview now links status directly to its owning workspace and lets operators
+reduce the 20-item release checklist to the subset relevant to the next task.
 
 The user explicitly reopened visual and functional iteration after the original Phase 5
 UI contract froze Phase 4. This audit therefore retains the contract's truthfulness,
@@ -85,6 +88,16 @@ responsive, and accessibility requirements while accepting purposeful UI improve
   access, entitlement, or billing behavior.
 - Verified the signed-in preview state and 320/390-pixel touch targets without exposing
   protected copy or introducing horizontal overflow.
+
+### Admin operations
+
+- Added a permission-aware workspace guide for Content, Products, Office Hours, Users,
+  and Billing, using current snapshot counts where they help the operator orient.
+- Turned the long launch checklist into Open, Needs work, Confirm, Ready, and All views;
+  unresolved work remains the default and result changes are announced.
+- Increased every sticky Admin section link to the shared 44-pixel minimum target.
+- Kept metrics, readiness status, role authority, and operational actions unchanged while
+  making the route from observation to the owning workspace explicit.
 
 ### Membership comparison
 
@@ -172,6 +185,12 @@ and the full responsive navigation suite retains active state and target sizing.
 - Patreon likewise supports placing useful free article content above the paywall before
   the locked continuation:
   <https://support.patreon.com/hc/en-us/articles/115004048046-Posting-to-your-Patreon>
+- Stripe's Dashboard pairs an at-a-glance Home view with direct navigation to the
+  resources and integration-health areas that own follow-up work:
+  <https://docs.stripe.com/dashboard/basics>
+- Ghost Admin keeps content creation, preview, filtering, and organization together in
+  the content-management workspace:
+  <https://ghost.org/help/organizing-content/>
 
 Soji borrows those information-architecture patterns, not their branding. The visual
 system remains Soji's restrained editorial serif, warm neutrals, clay accent, and owned
@@ -179,7 +198,7 @@ book imagery.
 
 ## Verification Evidence
 
-- Web Vitest: 87 files and 649 tests passed.
+- Web Vitest: 88 files and 652 tests passed.
 - ESLint and generated-route typecheck passed.
 - Next.js production build passed and generated 37 routes.
 - Focused Playwright membership comparison checks passed 7 tests across desktop and
@@ -188,6 +207,10 @@ book imagery.
   desktop-only instance of the narrow-width check was intentionally skipped.
 - Focused Playwright Reading checks passed 3 tests across desktop and mobile; one
   desktop-only instance of the narrow-width check was intentionally skipped.
+- Focused Playwright Admin Overview checks passed 3 tests across desktop and mobile; one
+  desktop-only instance of the narrow-width check was intentionally skipped.
+- Existing cross-workflow acceptance checks passed 16/16, including all six Admin
+  workspaces at 320, 375, 768, 1024, and 1440 pixels and the blocking axe scan.
 - Focused Playwright navigation/home checks passed 6/6 on desktop and mobile.
 - Focused library discovery, keyboard, and axe checks passed 12/12 on desktop and mobile.
 - The prior full CI-style Playwright regression remains recorded at 124/124 on desktop

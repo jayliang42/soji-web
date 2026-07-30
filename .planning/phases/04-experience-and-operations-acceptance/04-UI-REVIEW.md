@@ -8,6 +8,7 @@ audited: 2026-07-30
 routes:
   - /
   - /account
+  - /admin
   - /library
   - /library/wealth-without-drift
   - /library?focus=family
@@ -44,6 +45,8 @@ Support now begins with direct account, subscription, purchase, and refund
 paths before asking a customer to open the published contact channel. Article
 detail pages now provide an editorial reading frame, visible-content reading
 time, guide metadata, and an exact membership path after the public opening.
+Admin Overview now turns catalog status into direct, permission-aware
+workspaces and makes the long release checklist filterable by operator task.
 
 The remaining note is operational rather than a local UI defect: authenticated
 production-provider states still require the consolidated owner checkpoint
@@ -126,6 +129,19 @@ before they can be visually confirmed against live accounts.
   to practical tools.
 - The loading skeleton now mirrors the three-card overview and panel geometry,
   reducing layout shift during account retrieval.
+
+### Admin (`/admin`)
+
+- A five-card workspace guide now converts catalog counts into direct Content,
+  Products, Office Hours, Users, and Billing operations.
+- Editor and Admin destinations remain permission-aware; restricted cards state
+  the required role instead of presenting an unusable action.
+- The 20-item release checklist opens on unresolved work and can be filtered by
+  needs-work, confirmation, ready, or complete views with live result feedback.
+- Existing status truth and source data remain unchanged; the update only
+  improves navigation, prioritization, and scanability.
+- The six sticky workspace tabs and all overview actions maintain 44-pixel
+  targets with no horizontal overflow at 320 and 390 pixels.
 
 ### Login and recovery (`/login`, `/reset-password`)
 
@@ -211,7 +227,7 @@ before they can be visually confirmed against live accounts.
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 87 files, 649 tests passed.
+- Unit tests: 88 files, 652 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -236,6 +252,11 @@ before they can be visually confirmed against live accounts.
   one desktop-only instance of the narrow-width check was intentionally skipped.
 - Targeted Playwright Reading suite: 3 tests passed across desktop and mobile;
   one desktop-only instance of the narrow-width check was intentionally skipped.
+- Targeted Playwright Admin Overview suite: 3 tests passed across desktop and
+  mobile; one desktop-only instance of the narrow-width check was intentionally
+  skipped.
+- Existing cross-workflow acceptance suite: 16 tests passed, covering every
+  Admin workspace at 320, 375, 768, 1024, and 1440 pixels plus accessibility.
 - Manual browser review: home and library flows checked at desktop and mobile
   widths; search, focus filters, reset behavior, overflow, and control sizing
   were verified. Account overview, loading, membership-option, and anchored
@@ -259,7 +280,10 @@ before they can be visually confirmed against live accounts.
   layouts were verified by the focused browser suite. The article-detail hero,
   public-opening boundary, exact Tier 1 route, guide-details rail, and visible
   reading-time treatment were reviewed in a signed-in preview state; narrow
-  layouts and control sizing were verified by the focused Reading suite.
+  layouts and control sizing were verified by the focused Reading suite. Admin
+  workspace cards and the default Open checklist were reviewed as full desktop
+  compositions, and the Confirm filter was exercised from 19 open items to 9
+  operator-confirmation items.
 
 ## Follow-up Note
 
