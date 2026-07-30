@@ -10,6 +10,7 @@ routes:
   - /pricing
   - /products
   - /library
+  - /library/wealth-without-drift
   - /office-hours
   - /login
   - /account
@@ -26,6 +27,8 @@ mobile navigation is no longer a compressed row of sub-44px links, the homepage 
 a clear read → apply → ask journey, and the library supports goal, format, and keyword
 discovery with a useful empty state. Support now routes common customer tasks to their
 authoritative account and policy destinations before presenting the contact channel.
+Article details now distinguish the public opening from the member edition, surface only
+the reading time a visitor can actually access, and lead to the exact qualifying tier.
 
 The user explicitly reopened visual and functional iteration after the original Phase 5
 UI contract froze Phase 4. This audit therefore retains the contract's truthfulness,
@@ -70,6 +73,18 @@ responsive, and accessibility requirements while accepting purposeful UI improve
   not have an uploaded image.
 - Added reusable recovery-action support to unavailable-state cards and enabled it on
   Pricing and Products.
+
+### Article reading
+
+- Added an editorial title-and-cover hero with an immediate route back to Library.
+- Added a guide-details rail for format, publication date, visible reading time, access,
+  and public topics while filtering internal fixture tags.
+- Reframed the preview boundary as a two-part member-edition panel and deep-linked its
+  primary action to the exact qualifying tier.
+- Added next-step routes for entitled readers after the article without changing content
+  access, entitlement, or billing behavior.
+- Verified the signed-in preview state and 320/390-pixel touch targets without exposing
+  protected copy or introducing horizontal overflow.
 
 ### Membership comparison
 
@@ -151,6 +166,12 @@ and the full responsive navigation suite retains active state and target sizing.
 - Patreon sends product delivery and receipt questions to the Purchases and Billing
   history views:
   <https://support.patreon.com/hc/en-us/articles/16494151075981-My-purchases>
+- Ghost separates a public opening from member-only article content and places the
+  membership prompt after that boundary:
+  <https://ghost.org/help/public-previews/>
+- Patreon likewise supports placing useful free article content above the paywall before
+  the locked continuation:
+  <https://support.patreon.com/hc/en-us/articles/115004048046-Posting-to-your-Patreon>
 
 Soji borrows those information-architecture patterns, not their branding. The visual
 system remains Soji's restrained editorial serif, warm neutrals, clay accent, and owned
@@ -158,12 +179,14 @@ book imagery.
 
 ## Verification Evidence
 
-- Web Vitest: 86 files and 646 tests passed.
+- Web Vitest: 87 files and 649 tests passed.
 - ESLint and generated-route typecheck passed.
 - Next.js production build passed and generated 37 routes.
 - Focused Playwright membership comparison checks passed 7 tests across desktop and
   mobile; one desktop-only instance of the narrow-width check was intentionally skipped.
 - Focused Playwright Support checks passed 3 tests across desktop and mobile; one
+  desktop-only instance of the narrow-width check was intentionally skipped.
+- Focused Playwright Reading checks passed 3 tests across desktop and mobile; one
   desktop-only instance of the narrow-width check was intentionally skipped.
 - Focused Playwright navigation/home checks passed 6/6 on desktop and mobile.
 - Focused library discovery, keyboard, and axe checks passed 12/12 on desktop and mobile.

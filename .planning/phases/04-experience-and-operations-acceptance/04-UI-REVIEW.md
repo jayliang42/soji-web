@@ -9,6 +9,7 @@ routes:
   - /
   - /account
   - /library
+  - /library/wealth-without-drift
   - /library?focus=family
   - /login
   - /office-hours
@@ -40,7 +41,9 @@ The sign-in entry now adapts to the task that brought a visitor there, states
 the post-authentication destination, and presents password recovery as a
 focused step instead of an immediate side effect of the sign-in form.
 Support now begins with direct account, subscription, purchase, and refund
-paths before asking a customer to open the published contact channel.
+paths before asking a customer to open the published contact channel. Article
+detail pages now provide an editorial reading frame, visible-content reading
+time, guide metadata, and an exact membership path after the public opening.
 
 The remaining note is operational rather than a local UI defect: authenticated
 production-provider states still require the consolidated owner checkpoint
@@ -92,6 +95,24 @@ before they can be visually confirmed against live accounts.
 - Deep links initialize the relevant focus state.
 - Filter controls wrap without horizontal overflow on narrow screens.
 - Interactive controls meet the 44-pixel minimum target size.
+
+### Library detail (`/library/[slug]`)
+
+- An editorial two-column hero now pairs the article title and summary with its
+  owned cover, while a visible Back to Library action restores orientation.
+- Reading time is calculated only from the body actually delivered to the
+  current visitor; protected text is never inferred or exposed through the
+  estimate.
+- A sticky guide-details rail groups format, publication date, access level,
+  visible reading time, and public topics without showing internal fixture
+  tags.
+- After a public opening, the access panel links directly to the exact included
+  membership tier and the reader's Account while preserving the existing
+  entitlement decision.
+- Fully entitled readers receive bounded next steps to more guides, practical
+  tools, and Office Hours after the article rather than a generic dead end.
+- Desktop, 390-pixel, and 320-pixel layouts preserve the reading hierarchy,
+  44-pixel actions, and zero horizontal overflow.
 
 ### Account (`/account`)
 
@@ -190,7 +211,7 @@ before they can be visually confirmed against live accounts.
 ## Validation
 
 - Production build: passed, including all 37 generated routes and endpoints.
-- Unit tests: 86 files, 646 tests passed.
+- Unit tests: 87 files, 649 tests passed.
 - ESLint: passed.
 - TypeScript route generation and typecheck: passed.
 - Targeted Playwright discovery suite: 6 tests passed across desktop and mobile.
@@ -213,6 +234,8 @@ before they can be visually confirmed against live accounts.
   skipped.
 - Targeted Playwright Support suite: 3 tests passed across desktop and mobile;
   one desktop-only instance of the narrow-width check was intentionally skipped.
+- Targeted Playwright Reading suite: 3 tests passed across desktop and mobile;
+  one desktop-only instance of the narrow-width check was intentionally skipped.
 - Manual browser review: home and library flows checked at desktop and mobile
   widths; search, focus filters, reset behavior, overflow, and control sizing
   were verified. Account overview, loading, membership-option, and anchored
@@ -233,7 +256,10 @@ before they can be visually confirmed against live accounts.
   mobile layout, target size, policy-link uniqueness, and overflow verified by
   the focused browser suite. Support was reviewed as a complete desktop help
   flow from task cards through contact and policy navigation; both narrow
-  layouts were verified by the focused browser suite.
+  layouts were verified by the focused browser suite. The article-detail hero,
+  public-opening boundary, exact Tier 1 route, guide-details rail, and visible
+  reading-time treatment were reviewed in a signed-in preview state; narrow
+  layouts and control sizing were verified by the focused Reading suite.
 
 ## Follow-up Note
 
