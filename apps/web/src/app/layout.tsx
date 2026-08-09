@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata, Route } from "next";
+import { Suspense } from "react";
 import { PublicNavigation } from "@/components/public-navigation";
 import { getSiteUrl } from "@/lib/env";
 import { getSessionSnapshot } from "@/lib/session";
@@ -79,7 +80,16 @@ export default async function RootLayout({
                 Well Endowed
               </span>
             </Link>
-            <PublicNavigation signedIn={Boolean(snapshot.user)} />
+            <Suspense
+              fallback={
+                <div
+                  aria-hidden="true"
+                  className="h-11 w-20 rounded-full border border-dune bg-white"
+                />
+              }
+            >
+              <PublicNavigation signedIn={Boolean(snapshot.user)} />
+            </Suspense>
           </div>
         </header>
         <div id="main-content" tabIndex={-1}>
