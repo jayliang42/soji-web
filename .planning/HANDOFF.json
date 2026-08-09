@@ -1,0 +1,79 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-08-09T00:06:44.062Z",
+  "phase": "05",
+  "phase_name": "production-deployment-and-rollback",
+  "phase_dir": ".planning/phases/05-production-deployment-and-rollback",
+  "plan": 4,
+  "task": 1,
+  "total_tasks": 2,
+  "status": "paused",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "Deterministic release gate and body-free production smoke",
+      "status": "done",
+      "commit": "fa9e41a"
+    },
+    {
+      "id": 2,
+      "name": "Portable non-root container update and rollback drill",
+      "status": "done",
+      "commit": "ee2aaff"
+    },
+    {
+      "id": 3,
+      "name": "Consolidated Phase 1–5 evidence and one owner checkpoint",
+      "status": "done",
+      "commit": "9a02675"
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 1,
+      "name": "Complete one consolidated prerequisite and provider UAT session",
+      "status": "not_started"
+    },
+    {
+      "id": 2,
+      "name": "Stage, promote, smoke, rollback, and re-promote the exact candidate",
+      "status": "not_started"
+    }
+  ],
+  "blockers": [
+    {
+      "description": "Production Supabase service-role, SMTP, Google OAuth, Stripe test-mode, hosting, operations receiver, policy review, and controlled Soji identities are external prerequisites.",
+      "type": "human_action",
+      "workaround": "Keep the 48 owner/provider evidence rows PENDING and continue local gates; do not fabricate PASS."
+    }
+  ],
+  "human_actions_pending": [
+    {
+      "action": "Prepare one consolidated owner session with all Hosting/Vercel, Supabase/Auth/SMTP, Google, Stripe, Soji role, operations receiver, and policy-review contexts.",
+      "context": "The existing Phase 5 Plan 04 is intentionally non-autonomous and must close all remaining external observations in one checkpoint.",
+      "blocking": true
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Keep all Phase 1–5 external actions in one consolidated owner checkpoint.",
+      "rationale": "The user requested all login-required work to be presented together and the project already has one authoritative checkpoint.",
+      "phase": "05"
+    },
+    {
+      "decision": "Do not promote local tests, fixtures, configuration, or dry runs to provider PASS.",
+      "rationale": "Only direct canonical observations prove production identity, billing, operations, and deployment behavior.",
+      "phase": "05"
+    },
+    {
+      "decision": "Keep application rollback separate from database migration history.",
+      "rationale": "Production schema remains forward-only and must not be restored through ad hoc down migrations.",
+      "phase": "05"
+    }
+  ],
+  "uncommitted_files": [
+    "Existing user-owned dirty worktree changes are present (40 paths at handoff time). Do not stage broadly; inspect git status --short before any change."
+  ],
+  "next_action": "Read .planning/REMAINING-GAPS.md and 05-04-PLAN.md, then present one consolidated owner checkpoint before any provider mutation.",
+  "context_notes": "The project is functionally mature. The remaining work is a truthful production closeout, not another UI feature sprint. Preserve unrelated local changes and keep evidence privacy-safe."
+}
