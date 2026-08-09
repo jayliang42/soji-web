@@ -459,6 +459,9 @@ test("office-hour editor protects changes before starting a new draft", async ({
 
 test("member article preview never renders private body text", async ({ page }) => {
   await page.goto("/library/wealth-without-drift");
+  const guideDetails = page.getByRole("complementary", {
+    name: "Guide details"
+  });
   await expect(
     page.getByRole("heading", {
       level: 1,
@@ -466,7 +469,7 @@ test("member article preview never renders private body text", async ({ page }) 
     })
   ).toBeVisible();
   await expect(
-    page.getByText("Included with Tier 1 membership", { exact: true })
+    guideDetails.getByText("Included with Tier 1 membership", { exact: true })
   ).toBeVisible();
   await expect(
     page.getByRole("img", {
@@ -499,7 +502,9 @@ test("customer surfaces never expose entitlement identifiers", async ({ page }) 
 
   await page.goto("/library/wealth-without-drift");
   await expect(
-    page.getByText("Included with Tier 1 membership", { exact: true })
+    page
+      .getByRole("complementary", { name: "Guide details" })
+      .getByText("Included with Tier 1 membership", { exact: true })
   ).toBeVisible();
   await expect(page.locator("body")).not.toContainText("content.basic");
 });
