@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactElement } from "react";
 import { ContentSourceBadge } from "@/components/content-source-badge";
 import { DataEmpty, DataUnavailable } from "@/components/data-state";
 import {
@@ -17,11 +18,18 @@ export const metadata: Metadata = {
   alternates: { canonical: "/library" }
 };
 
-export default async function LibraryPage({
-  searchParams = Promise.resolve({})
-}: {
+type LibraryPageProps = {
   searchParams?: Promise<{ focus?: string; format?: string; q?: string }>;
-}) {
+};
+
+export default async function LibraryPage(): Promise<ReactElement>;
+export default async function LibraryPage(
+  props: LibraryPageProps
+): Promise<ReactElement>;
+export default async function LibraryPage(props?: LibraryPageProps) {
+  const searchParams =
+    props?.searchParams ??
+    Promise.resolve<{ focus?: string; format?: string; q?: string }>({});
   const [snapshot, session, params] = await Promise.all([
     getContentSnapshot(),
     getSessionSnapshot(),
