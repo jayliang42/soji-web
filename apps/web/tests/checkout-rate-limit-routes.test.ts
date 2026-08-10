@@ -27,7 +27,7 @@ vi.mock("@/lib/rate-limit", () => ({
   getRetryAfterSeconds: vi.fn(() => 300)
 }));
 vi.mock("@/lib/customer-policy", () => ({
-  getCustomerPolicyReadiness: routeMocks.getCustomerPolicyReadiness
+  getCheckoutCustomerPolicyReadiness: routeMocks.getCustomerPolicyReadiness
 }));
 vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: routeMocks.createSupabaseServerClient

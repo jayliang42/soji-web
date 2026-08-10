@@ -26,6 +26,13 @@ export type CustomerPolicyReadiness = {
   supportUrl: string | null;
 };
 
+function isCheckoutTestMode() {
+  return (
+    process.env.SOJI_CHECKOUT_TEST_MODE?.trim().toLowerCase() === "true" &&
+    process.env.STRIPE_SECRET_KEY?.trim().startsWith("sk_test_")
+  );
+}
+
 type SupportDestinationValidation =
   | { ok: true; value: string }
   | { ok: false; reason: CustomerPolicyReadinessReason };
@@ -160,6 +167,25 @@ export function getCustomerPolicyReadiness(
     ready: reasons.length === 0,
     reasons,
     supportUrl: support.ok ? support.value : null
+  };
+}
+
+export function getCheckoutCustomerPolicyReadiness(
+  configuration?: CustomerPolicyConfiguration
+): CustomerPolicyReadiness {
+  const readiness = getCustomerPolicyReadiness(configuration);
+  if (!isCheckoutTestMode()) {
+    return readiness;
+  }
+
+  const reasons = readiness.reasons.filter(
+    (reason) => !reason.startsWith("support_destination_")
+  );
+
+  return {
+    ...readiness,
+    ready: reasons.length === 0,
+    reasons
   };
 }
 

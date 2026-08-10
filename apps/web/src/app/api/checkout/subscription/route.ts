@@ -6,7 +6,7 @@ import {
   isBillingDeliveryReady
 } from "@/lib/billing-readiness";
 import { subscriptionCheckoutPayloadSchema } from "@/lib/checkout";
-import { getCustomerPolicyReadiness } from "@/lib/customer-policy";
+import { getCheckoutCustomerPolicyReadiness } from "@/lib/customer-policy";
 import { getSiteUrl } from "@/lib/env";
 import { reportOperationalError } from "@/lib/observability";
 import {
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  if (!getCustomerPolicyReadiness().ready) {
+  if (!getCheckoutCustomerPolicyReadiness().ready) {
     return NextResponse.json(
       { error: "customer_policy_not_ready" },
       { status: 503 }

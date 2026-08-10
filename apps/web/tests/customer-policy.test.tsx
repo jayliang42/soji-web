@@ -14,6 +14,7 @@ import { MembershipTerms } from "@/components/membership-terms";
 import { PurchaseDisclosure } from "@/components/purchase-disclosure";
 import {
   customerPolicyRoutes,
+  getCheckoutCustomerPolicyReadiness,
   getCustomerPolicyReadiness
 } from "@/lib/customer-policy";
 
@@ -88,6 +89,45 @@ describe("customer policy configuration", () => {
       ready: false,
       reasons
     });
+  });
+
+  it("allows checkout testing to skip only the support gate with a test Stripe key", () => {
+    vi.stubEnv("SOJI_CHECKOUT_TEST_MODE", "true");
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_checkout_only");
+
+    try {
+      expect(
+        getCheckoutCustomerPolicyReadiness({
+          ...readyConfiguration,
+          supportUrl: ""
+        })
+      ).toEqual({
+        ready: true,
+        reasons: [],
+        supportUrl: null
+      });
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("keeps the support gate enabled for live Stripe keys", () => {
+    vi.stubEnv("SOJI_CHECKOUT_TEST_MODE", "true");
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_live_checkout_only");
+
+    try {
+      expect(
+        getCheckoutCustomerPolicyReadiness({
+          ...readyConfiguration,
+          supportUrl: ""
+        })
+      ).toMatchObject({
+        ready: false,
+        reasons: ["support_destination_required"]
+      });
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
 

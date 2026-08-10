@@ -29,7 +29,8 @@ vi.mock("@/lib/rate-limit", () => ({
   getRetryAfterSeconds: vi.fn(() => 300)
 }));
 vi.mock("@/lib/customer-policy", () => ({
-  getCustomerPolicyReadiness: checkoutMocks.getCustomerPolicyReadiness
+  getCheckoutCustomerPolicyReadiness:
+    checkoutMocks.getCustomerPolicyReadiness
 }));
 const requestId = "00000000-0000-4000-8000-000000000501";
 
