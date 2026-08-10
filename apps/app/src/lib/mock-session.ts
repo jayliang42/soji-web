@@ -1,7 +1,7 @@
 import { getDefaultEntitlements, membershipPlans, sampleLibrary } from "@soji/domain";
 
 export function getAppSession() {
-  const tier = "tier_2" as const;
+  const tier = "tier_1" as const;
   return {
     user: {
       name: "Soji Demo Member",

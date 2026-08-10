@@ -245,9 +245,8 @@ describe("account billing management readiness", () => {
 
     expect(html).toContain("Upgrade your membership");
     expect(html).toContain("Compare access and support without leaving your account.");
-    expect(html).toContain("Tier 1");
-    expect(html).toContain("Tier 2");
-    expect(html).toContain("Tier 3");
+    expect(html).toContain("Full Access");
+    expect(html).toContain("$99");
   });
 
   it("locks Portal controls when secure billing updates cannot be received", async () => {

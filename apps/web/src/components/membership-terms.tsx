@@ -43,10 +43,10 @@ export function MembershipTerms() {
             className="mt-3 font-display text-3xl font-semibold leading-tight"
             id="membership-terms-heading"
           >
-            One billing rhythm across every plan.
+            One billing rhythm for full access.
           </h3>
           <p className="mt-4 max-w-md text-sm leading-6 text-white/72">
-            The price and level of support change. How billing works does not.
+            One $99 monthly subscription keeps every current and future benefit in the same place.
           </p>
         </div>
 

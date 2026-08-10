@@ -98,7 +98,7 @@ describe("account subscription history", () => {
       items: [
         expect.objectContaining({
           canManage: false,
-          planId: "tier_2",
+          planId: "tier_1",
           status: "canceled"
         })
       ]
@@ -152,7 +152,7 @@ describe("account subscription history", () => {
             }
           ],
           planId: "tier_2",
-          planName: "Tier 2",
+          planName: "Full Access",
           status: "active"
         })
       ]

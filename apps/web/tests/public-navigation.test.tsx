@@ -22,7 +22,7 @@ describe("primary navigation", () => {
     expect(html).not.toContain(">Account<");
     expect(html).not.toContain(">Subscriptions<");
     expect(html).toContain("Explore Soji");
-    expect(html).toContain("Compare three membership depths");
+    expect(html).toContain("Unlock the complete membership");
     expect(html).toContain("Access your benefits and purchases");
   });
 

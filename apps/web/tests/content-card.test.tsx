@@ -57,13 +57,13 @@ describe("content card", () => {
     {
       accessMode: "preview" as const,
       expectedAction: "View access",
-      expectedLabel: "Included with Tier 1 membership",
+      expectedLabel: "Included with Full Access membership",
       isAuthenticated: true
     },
     {
       accessMode: "locked" as const,
       expectedAction: "View access",
-      expectedLabel: "Included with Tier 1 membership",
+      expectedLabel: "Included with Full Access membership",
       isAuthenticated: true
     },
     {

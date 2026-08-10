@@ -278,8 +278,8 @@ const demoAccountSubscriptions: AccountSubscription[] = [
     createdAt: "2026-01-01T12:00:00.000Z",
     currentPeriodEndsAt: "2026-06-30T12:00:00.000Z",
     id: "00000000-0000-4000-8000-000000000601",
-    planId: "tier_2",
-    planName: "Tier 2",
+    planId: "tier_1",
+    planName: "Full Access",
     provider: "stripe",
     status: "canceled"
   }

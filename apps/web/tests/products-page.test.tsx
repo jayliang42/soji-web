@@ -127,6 +127,31 @@ describe("products page purchase safety", () => {
     expect(html).not.toContain("Buy once");
   });
 
+  it("shows every product as included for a Full Access member", async () => {
+    pageMocks.getSessionSnapshot.mockResolvedValue({
+      entitlements: ["product.digital"],
+      source: "supabase",
+      user: {
+        avatarUrl: null,
+        email: "member@example.com",
+        fullName: "Member",
+        id: "user-1",
+        providers: ["email"],
+        roles: ["member"],
+        tier: "tier_1"
+      }
+    });
+    pageMocks.getAccountPurchases.mockResolvedValue({ items: [] });
+
+    const html = renderToStaticMarkup(
+      await ProductsPage({ searchParams: Promise.resolve({}) })
+    );
+
+    expect(html).toContain("Download included product");
+    expect(html).toContain("Included with your Full Access membership");
+    expect(html).not.toContain("Buy once");
+  });
+
   it("places one-time delivery and refund terms beside every product action", async () => {
     pageMocks.getAccountPurchases.mockResolvedValue({ items: [] });
 

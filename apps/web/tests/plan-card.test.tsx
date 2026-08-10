@@ -18,7 +18,7 @@ describe("membership plan card", () => {
     expect(html).toContain('id="plan-tier_1"');
     expect(html).toContain('aria-labelledby="plan-tier_1-name"');
     expect(html).toContain("Manage existing membership");
-    expect(html).toContain("$29 billed monthly until canceled");
+    expect(html).toContain("$99 billed monthly until canceled");
     expect(html).not.toContain('href="/refund-policy"');
     expect(html).not.toContain("Join Tier");
   });

@@ -100,7 +100,7 @@ describe("Stripe product price validation", () => {
 });
 
 describe("Stripe membership catalog validation", () => {
-  it("accepts one active monthly USD price at the exact amount for every plan", async () => {
+  it("accepts one active monthly USD price at the exact amount for the full plan", async () => {
     const stripe = stripeWithMembershipCatalog(
       membershipPlans.map((plan) => membershipPrice(plan))
     );
@@ -110,9 +110,7 @@ describe("Stripe membership catalog validation", () => {
     ).resolves.toEqual({
       ok: true,
       priceIds: {
-        tier_1: "price_tier_1",
-        tier_2: "price_tier_2",
-        tier_3: "price_tier_3"
+        tier_1: "price_tier_1"
       }
     });
   });

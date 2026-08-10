@@ -167,10 +167,10 @@ describe("checkout route rate limiting", () => {
               active: true,
               currency: "usd",
               id: "price_membership",
-              lookup_key: "tier_1_monthly",
+              lookup_key: "full_access_monthly",
               recurring: { interval: "month", interval_count: 1 },
               type: "recurring",
-              unit_amount: 2900
+              unit_amount: 9900
             }
           ]
         })
@@ -222,10 +222,10 @@ describe("checkout route rate limiting", () => {
               active: true,
               currency: "usd",
               id: "price_membership",
-              lookup_key: "tier_1_monthly",
+              lookup_key: "full_access_monthly",
               recurring: { interval: "month", interval_count: 1 },
               type: "recurring",
-              unit_amount: 2900
+              unit_amount: 9900
             }
           ]
         })
@@ -263,10 +263,10 @@ describe("checkout route rate limiting", () => {
               active: true,
               currency: "usd",
               id: "price_membership",
-              lookup_key: "tier_1_monthly",
+              lookup_key: "full_access_monthly",
               recurring: { interval: "month", interval_count: 1 },
               type: "recurring",
-              unit_amount: 2900
+              unit_amount: 9900
             }
           ]
         })
@@ -302,10 +302,10 @@ describe("checkout route rate limiting", () => {
               active: true,
               currency: "usd",
               id: "price_membership",
-              lookup_key: "tier_1_monthly",
+              lookup_key: "full_access_monthly",
               recurring: { interval: "month", interval_count: 1 },
               type: "recurring",
-              unit_amount: 2900
+              unit_amount: 9900
             }
           ]
         })
@@ -340,7 +340,7 @@ describe("checkout route rate limiting", () => {
               active: true,
               currency: "usd",
               id: "price_wrong_amount",
-              lookup_key: "tier_1_monthly",
+              lookup_key: "full_access_monthly",
               recurring: { interval: "month", interval_count: 1 },
               type: "recurring",
               unit_amount: 1

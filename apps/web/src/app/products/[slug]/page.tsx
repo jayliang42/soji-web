@@ -96,12 +96,14 @@ export default async function ProductDetailPage({
     isPurchaseDisputeBlockingAccess(purchase.disputeStatus)
   );
   const customerEmail = session.user?.email ?? null;
+  const membershipEntitled = session.entitlements.includes(product.entitlement);
   let checkoutEnabled = false;
 
   if (
     customerEmail &&
     purchaseStateAvailable &&
     !alreadyPurchased &&
+    !membershipEntitled &&
     hasStripeConfig()
   ) {
     checkoutEnabled = isBillingDeliveryReady(
@@ -236,17 +238,18 @@ export default async function ProductDetailPage({
             className="rounded-xl border border-dune bg-white p-6 shadow-[0_18px_50px_rgba(32,31,28,0.07)] sm:p-8 lg:sticky lg:top-28"
           >
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/70">
-              One-time purchase
+              {membershipEntitled ? "Included with Full Access" : "One-time purchase"}
             </p>
             <h2
               className="mt-3 font-display text-4xl font-semibold text-cocoa"
               id="product-purchase-heading"
             >
-              {product.priceLabel}
+              {membershipEntitled ? "Included" : product.priceLabel}
             </h2>
             <p className="mt-3 text-sm font-medium leading-6 text-cocoa/70">
-              No recurring charge. The available download remains in the Soji
-              account used at checkout.
+              {membershipEntitled
+                ? "This product is included in your $99 monthly membership. Download it whenever you need it."
+                : "No recurring charge. The available download remains in the Soji account used at checkout."}
             </p>
             <div className="mt-6">
               <ProductCheckoutButton
@@ -254,12 +257,14 @@ export default async function ProductDetailPage({
                 alreadyPurchased={alreadyPurchased}
                 checkoutEnabled={checkoutEnabled}
                 customerEmail={customerEmail}
+                membershipEntitled={membershipEntitled}
                 nextPath={`/products/${product.slug}`}
+                productId={product.id}
                 productSlug={product.slug}
                 purchaseStateAvailable={purchaseStateAvailable}
               />
             </div>
-            <PurchaseDisclosure variant="product" />
+            {!membershipEntitled ? <PurchaseDisclosure variant="product" /> : null}
             <div className="mt-5 border-t border-dune pt-5">
               <ShareButton label="Share tool" title={product.title} />
             </div>

@@ -180,7 +180,7 @@ describe("content detail reading experience", () => {
     expect(html).toContain('href="/office-hours"');
     expect(html).toContain("Keep reading");
     expect(html).toContain("Included in your membership");
-    expect(html).toContain("Included with Tier 2 membership");
+    expect(html).toContain("Included with Full Access membership");
     expect(html).not.toContain("RELATED MEMBER BODY");
     expect(html).not.toContain("RELATED TEMPLATE BODY");
     expect(html).not.toContain("Public opening complete");

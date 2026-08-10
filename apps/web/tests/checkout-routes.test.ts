@@ -92,11 +92,11 @@ function subscriptionStripe() {
       {
         active: true,
         currency: "usd",
-        id: "price_server_tier_2",
-        lookup_key: "tier_2_monthly",
+        id: "price_server_full_access",
+        lookup_key: "full_access_monthly",
         recurring: { interval: "month", interval_count: 1 },
         type: "recurring",
-        unit_amount: 12_800
+        unit_amount: 9_900
       }
     ]
   });
@@ -114,7 +114,7 @@ function subscriptionStripe() {
 }
 
 function productSupabase() {
-  const maybeSingle = vi.fn().mockResolvedValue({
+  const productMaybeSingle = vi.fn().mockResolvedValue({
     data: {
       entitlement_id: "product.wealth_guide",
       id: "product-1",
@@ -125,12 +125,24 @@ function productSupabase() {
     },
     error: null
   });
-  const eq = vi.fn(() => ({ maybeSingle }));
-  const select = vi.fn(() => ({ eq }));
+  const productEq = vi.fn(() => ({ maybeSingle: productMaybeSingle }));
+  const membershipMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+  const membershipEq = vi.fn(() => ({
+    eq: vi.fn(() => ({
+      or: vi.fn(() => ({
+        limit: vi.fn(() => ({ maybeSingle: membershipMaybeSingle }))
+      }))
+    }))
+  }));
+  const from = vi.fn((table: string) =>
+    table === "products"
+      ? { select: vi.fn(() => ({ eq: productEq })) }
+      : { select: vi.fn(() => ({ eq: membershipEq })) }
+  );
 
   return {
     ...authenticatedSupabase(),
-    from: vi.fn(() => ({ select }))
+    from
   };
 }
 
@@ -177,7 +189,7 @@ describe("checkout route validation", () => {
       request(
         "/api/checkout/subscription",
         JSON.stringify({
-          planId: "tier_2",
+          planId: "tier_1",
           priceId: "price_untrusted",
           requestId
         })
@@ -205,7 +217,7 @@ describe("checkout route validation", () => {
           "/api/checkout/subscription",
           JSON.stringify({
             [field]: value,
-            planId: "tier_2",
+            planId: "tier_1",
             requestId
           })
         )
@@ -231,7 +243,7 @@ describe("checkout route validation", () => {
     const response = await createSubscriptionCheckout(
       request(
         "/api/checkout/subscription",
-        JSON.stringify({ planId: "tier_2", requestId })
+        JSON.stringify({ planId: "tier_1", requestId })
       )
     );
 
@@ -239,7 +251,7 @@ describe("checkout route validation", () => {
     expect(listPrices).toHaveBeenCalledWith({
       active: true,
       limit: 100,
-      lookup_keys: ["tier_2_monthly"]
+      lookup_keys: ["full_access_monthly"]
     });
     expect(checkoutMocks.getExistingStripeCustomerId).toHaveBeenCalledWith(
       supabase,
@@ -260,17 +272,17 @@ describe("checkout route validation", () => {
           }
         },
         expires_at: 1_784_032_500,
-        line_items: [{ price: "price_server_tier_2", quantity: 1 }],
+        line_items: [{ price: "price_server_full_access", quantity: 1 }],
         metadata: {
-          lookupKey: "tier_2_monthly",
-          planId: "tier_2",
+          lookupKey: "full_access_monthly",
+          planId: "tier_1",
           userId: "00000000-0000-4000-8000-000000000101"
         },
         mode: "subscription",
         subscription_data: {
           metadata: {
-            lookupKey: "tier_2_monthly",
-            planId: "tier_2",
+            lookupKey: "full_access_monthly",
+            planId: "tier_1",
             userId: "00000000-0000-4000-8000-000000000101"
           }
         },
@@ -331,7 +343,7 @@ describe("checkout route validation", () => {
       "subscription",
       createSubscriptionCheckout,
       "/api/checkout/subscription",
-      { planId: "tier_2", requestId }
+      { planId: "tier_1", requestId }
     ]
   ])(
     "blocks %s Checkout with a stable policy result before provider work",
@@ -367,7 +379,7 @@ describe("checkout route validation", () => {
       "subscription",
       createSubscriptionCheckout,
       "/api/checkout/subscription",
-      { planId: "tier_2", requestId, termsAccepted: true }
+      { planId: "tier_1", requestId, termsAccepted: true }
     ]
   ])(
     "rejects a client-provided consent override for %s Checkout",
@@ -393,7 +405,7 @@ describe("checkout route validation", () => {
     const response = await createSubscriptionCheckout(
       request(
         "/api/checkout/subscription",
-        JSON.stringify({ planId: "tier_2", requestId })
+        JSON.stringify({ planId: "tier_1", requestId })
       )
     );
 
@@ -434,7 +446,7 @@ describe("checkout route validation", () => {
       const response = await createSubscriptionCheckout(
         request(
           "/api/checkout/subscription",
-          JSON.stringify({ planId: "tier_2", requestId })
+          JSON.stringify({ planId: "tier_1", requestId })
         )
       );
 
@@ -458,13 +470,13 @@ describe("checkout route validation", () => {
     const first = await createSubscriptionCheckout(
       request(
         "/api/checkout/subscription",
-        JSON.stringify({ planId: "tier_2", requestId })
+        JSON.stringify({ planId: "tier_1", requestId })
       )
     );
     const retry = await createSubscriptionCheckout(
       request(
         "/api/checkout/subscription",
-        JSON.stringify({ planId: "tier_2", requestId })
+        JSON.stringify({ planId: "tier_1", requestId })
       )
     );
 
@@ -512,13 +524,13 @@ describe("checkout route validation", () => {
     const first = await createSubscriptionCheckout(
       request(
         "/api/checkout/subscription",
-        JSON.stringify({ planId: "tier_2", requestId })
+        JSON.stringify({ planId: "tier_1", requestId })
       )
     );
     const retry = await createSubscriptionCheckout(
       request(
         "/api/checkout/subscription",
-        JSON.stringify({ planId: "tier_2", requestId: secondRequestId })
+        JSON.stringify({ planId: "tier_1", requestId: secondRequestId })
       )
     );
 
@@ -545,7 +557,7 @@ describe("checkout route validation", () => {
 
   it.each([
     ["product", createProductCheckout, "/api/checkout/product", { productSlug: "wealth-guide", requestId }],
-    ["subscription", createSubscriptionCheckout, "/api/checkout/subscription", { planId: "tier_2", requestId }]
+    ["subscription", createSubscriptionCheckout, "/api/checkout/subscription", { planId: "tier_1", requestId }]
   ])("returns 401 for a missing %s checkout session without alerting", async (_mode, handler, path, body) => {
     checkoutMocks.getStripeClient.mockReturnValue({});
     checkoutMocks.createSupabaseServerClient.mockResolvedValue({
@@ -578,7 +590,7 @@ describe("checkout route validation", () => {
     const response = await createSubscriptionCheckout(
       request(
         "/api/checkout/subscription",
-        JSON.stringify({ planId: "tier_2", requestId })
+        JSON.stringify({ planId: "tier_1", requestId })
       )
     );
 
@@ -617,7 +629,7 @@ describe("checkout route validation", () => {
 
   it.each([
     ["product", createProductCheckout, "/api/checkout/product", { productSlug: "wealth-guide", requestId }],
-    ["subscription", createSubscriptionCheckout, "/api/checkout/subscription", { planId: "tier_2", requestId }]
+    ["subscription", createSubscriptionCheckout, "/api/checkout/subscription", { planId: "tier_1", requestId }]
   ])("blocks %s checkout before consuming limits or provider work when receipt delivery is unavailable", async (_mode, handler, path, body) => {
     const create = vi.fn();
     checkoutMocks.getStripeClient.mockReturnValue({

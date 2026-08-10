@@ -10,8 +10,8 @@ type SubscriptionState = {
 const planRank: Record<MembershipTier, number> = {
   free: 0,
   tier_1: 1,
-  tier_2: 2,
-  tier_3: 3
+  tier_2: 1,
+  tier_3: 1
 };
 
 export function isActiveSubscriptionStatus(status: string) {
@@ -27,7 +27,7 @@ export function getEffectiveMembershipTier(
     }
 
     return planRank[subscription.planId] > planRank[currentTier]
-      ? subscription.planId
+      ? "tier_1"
       : currentTier;
   }, "free");
 }

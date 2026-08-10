@@ -4,28 +4,20 @@ import { PlanCheckoutButton } from "@/components/plan-checkout-button";
 import { getEntitlementLabel } from "@/lib/entitlements";
 import { cn } from "@/lib/utils";
 
-const planGuidance: Record<
+const planGuidance: Partial<Record<
   MembershipPlan["id"],
   {
     bestFor: string;
     outcome: string;
   }
-> = {
+>> = {
   free: {
     bestFor: "Browsing public previews before committing.",
     outcome: "A clear read on the editorial voice and money philosophy."
   },
   tier_1: {
-    bestFor: "Readers who want a calmer monthly money rhythm.",
-    outcome: "Foundational essays and practical prompts you can use right away."
-  },
-  tier_2: {
-    bestFor: "Members who want the full working library.",
-    outcome: "Case studies, templates, and monthly drops in one core membership."
-  },
-  tier_3: {
-    bestFor: "Families who want closer support and live access.",
-    outcome: "Everything in Tier 2 plus office hours and private group access."
+    bestFor: "Readers who want every Soji resource in one membership.",
+    outcome: "The complete library, all digital products, live support, and future member drops."
   }
 };
 
@@ -40,7 +32,7 @@ export function PlanCard({
   hasExistingMembership?: boolean;
   plan: MembershipPlan;
 }) {
-  const guidance = planGuidance[plan.id];
+  const guidance = planGuidance[plan.id] ?? planGuidance.tier_1!;
 
   return (
     <article
@@ -113,10 +105,10 @@ export function PlanCard({
           </Link>
         ) : checkoutEnabled || customerEmail ? (
           <PlanCheckoutButton
-            accountLabel={`Create account to join ${plan.name}`}
+            accountLabel={`Create account to unlock ${plan.name}`}
             checkoutEnabled={checkoutEnabled}
             customerEmail={customerEmail}
-            label={`Join ${plan.name}`}
+            label="Unlock everything"
             lookupKey={plan.stripePriceLookupKey ?? null}
             planId={plan.id}
           />
@@ -125,7 +117,7 @@ export function PlanCard({
             href="/login?next=/pricing"
             className="block w-full rounded-md bg-cocoa px-6 py-4 text-center text-sm font-bold text-white transition-colors hover:bg-charcoal"
           >
-            Create account to join {plan.name}
+            Create account to unlock {plan.name}
           </Link>
         )}
         <p

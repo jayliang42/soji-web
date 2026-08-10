@@ -22,13 +22,13 @@ test("returns free when no active subscription remains", () => {
   );
 });
 
-test("keeps the highest tier when another subscription is canceled", () => {
+test("normalizes any active legacy paid tier to the single full-access tier", () => {
   assert.equal(
     getEffectiveMembershipTier([
       { planId: "tier_1", status: "canceled" },
       { planId: "tier_2", status: "active" },
       { planId: "tier_3", status: "trialing" }
     ]),
-    "tier_3"
+    "tier_1"
   );
 });

@@ -309,14 +309,14 @@ describe("Stripe webhook state synchronization", () => {
   });
 
   it("syncs subscription, entitlements, and effective tier through one RPC", async () => {
-    syncMocks.rpc.mockResolvedValue({ data: "tier_2", error: null });
+    syncMocks.rpc.mockResolvedValue({ data: "tier_1", error: null });
 
     await expect(
       syncSubscriptionEntitlements({ subscription: subscription() })
     ).resolves.toMatchObject({
       action: "synced",
-      effectiveTier: "tier_2",
-      planId: "tier_2",
+      effectiveTier: "tier_1",
+      planId: "tier_1",
       userId
     });
 
@@ -326,7 +326,7 @@ describe("Stripe webhook state synchronization", () => {
       expect.objectContaining({
         p_cancel_at_period_end: false,
         p_current_period_ends_at: "2026-08-14T12:00:00.000Z",
-        p_plan_id: "tier_2",
+        p_plan_id: "tier_1",
         p_provider_customer_id: "cus_test",
         p_provider_subscription_id: "sub_test",
         p_status: "active",

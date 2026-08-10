@@ -10,33 +10,12 @@ import type {
 export const membershipPlans: MembershipPlan[] = [
   {
     id: "tier_1",
-    name: "Tier 1",
-    monthlyPrice: 29,
-    stripePriceLookupKey: "tier_1_monthly",
-    description: "Monthly articles and the foundational content library.",
-    entitlements: ["content.basic"]
-  },
-  {
-    id: "tier_2",
-    name: "Tier 2",
-    monthlyPrice: 128,
-    stripePriceLookupKey: "tier_2_monthly",
-    description: "Full content, case studies, templates, and monthly update drops.",
+    name: "Full Access",
+    monthlyPrice: 99,
+    stripePriceLookupKey: "full_access_monthly",
+    description:
+      "One membership for the complete library, every digital product, live support, and all member benefits.",
     featured: true,
-    entitlements: [
-      "content.basic",
-      "content.all",
-      "library.case_studies",
-      "library.templates",
-      "monthly.updates"
-    ]
-  },
-  {
-    id: "tier_3",
-    name: "Tier 3",
-    monthlyPrice: 299,
-    stripePriceLookupKey: "tier_3_monthly",
-    description: "Everything in Tier 2 plus office hours and private group access.",
     entitlements: [
       "content.basic",
       "content.all",
@@ -45,7 +24,8 @@ export const membershipPlans: MembershipPlan[] = [
       "monthly.updates",
       "office_hours.join",
       "community.vip_access",
-      "contact.unlock"
+      "contact.unlock",
+      "product.digital"
     ]
   }
 ];
@@ -202,7 +182,7 @@ export const sampleLibrary: ContentItem[] = [
     body: [
       "A useful wealth dashboard should answer three questions quickly: where are we now, what changed this month, and what decision needs attention next?",
       "The template separates net worth, cash runway, investments, debt, insurance, and open decisions so the dashboard stays practical instead of becoming a vanity spreadsheet.",
-      "Tier 2 members get the downloadable workbook, setup notes, and a quarterly review checklist."
+      "Full Access members get the downloadable workbook, setup notes, and a quarterly review checklist."
     ].join("\n\n")
   },
   {
@@ -273,7 +253,13 @@ export const productOffers: ProductOffer[] = [
 ];
 
 export function getPlanByTier(tier: MembershipTier) {
-  return membershipPlans.find((plan) => plan.id === tier) ?? null;
+  if (tier === "free") {
+    return null;
+  }
+
+  // tier_2 and tier_3 remain valid database values for old records. They
+  // resolve to the single current offer until the data migration completes.
+  return membershipPlans[0] ?? null;
 }
 
 export function hasEntitlement(
@@ -290,5 +276,7 @@ export function hasEntitlement(
 }
 
 export function getDefaultEntitlements(tier: MembershipTier): EntitlementKey[] {
-  return getPlanByTier(tier)?.entitlements ?? [];
+  // Legacy tier values are normalized by subscription sync and migrations.
+  // Do not grant access from a stale profile alone.
+  return tier === "tier_1" ? membershipPlans[0]?.entitlements ?? [] : [];
 }

@@ -40,6 +40,7 @@ const scripts: ProductOffer = {
 const entries: ProductCatalogEntry[] = [dashboard, scripts].map((product) => ({
   accessPaused: false,
   alreadyPurchased: false,
+  membershipEntitled: false,
   product
 }));
 

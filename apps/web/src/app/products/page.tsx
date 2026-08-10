@@ -39,6 +39,7 @@ export default async function ProductsPage({
     searchParams
   ]);
   const customerEmail = snapshot.user?.email ?? null;
+  const membershipEntitled = snapshot.entitlements.includes("product.digital");
   const purchases = await getAccountPurchases(snapshot.user?.id, snapshot.source);
   const purchaseStateAvailable = !snapshot.error && !purchases.error;
   const purchasedProductIds = new Set(
@@ -75,7 +76,7 @@ export default async function ProductsPage({
               Best when
             </p>
             <p className="mt-2 font-medium">
-              You need one practical tool today, not a recurring membership.
+              You need one practical tool today, or want to see what Full Access includes.
             </p>
           </div>
           <div className="border-t border-dune pt-4 md:border-l md:border-t-0 md:px-6 md:pt-0">
@@ -83,7 +84,7 @@ export default async function ProductsPage({
               Access
             </p>
             <p className="mt-2 font-medium">
-              Purchases stay on your Soji account for future downloads.
+              Full Access members can download every product without a separate charge.
             </p>
           </div>
           <div className="border-t border-dune pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
@@ -91,7 +92,7 @@ export default async function ProductsPage({
               Checkout
             </p>
             <p className="mt-2 font-medium">
-              Create an account first, then complete secure Stripe checkout.
+              Create an account first, then choose membership or a standalone Stripe checkout.
             </p>
           </div>
         </div>
@@ -145,6 +146,7 @@ export default async function ProductsPage({
             entries={productSnapshot.items.map((product) => ({
               accessPaused: pausedProductIds.has(product.id),
               alreadyPurchased: purchasedProductIds.has(product.id),
+              membershipEntitled,
               product
             }))}
             initialFocus={params.focus}
@@ -157,7 +159,7 @@ export default async function ProductsPage({
         <div className="mt-8 border-l-4 border-clay bg-white px-6 py-5 text-sm text-cocoa/75">
           Want ongoing access instead?{" "}
           <Link href="/pricing" className="font-semibold text-clay">
-            Compare membership tiers
+            Unlock every product with Full Access
           </Link>
           .
         </div>

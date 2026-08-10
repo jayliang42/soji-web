@@ -140,6 +140,37 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const productEntitlement = product.entitlement_id ?? "product.digital";
+  const { data: membershipGrants, error: membershipGrantError } = await supabase
+    .from("user_entitlements")
+    .select("entitlement_id, ends_at")
+    .eq("user_id", user.id);
+
+  if (membershipGrantError) {
+    await reportOperationalError(
+      "stripe.checkout.membership_entitlement_lookup_failed",
+      membershipGrantError,
+      { productSlug: product.slug, userId: user.id }
+    );
+    return NextResponse.json(
+      { error: "Membership access could not be verified." },
+      { status: 503 }
+    );
+  }
+
+  const membershipGrant = membershipGrants?.some(
+    (grant) =>
+      grant.entitlement_id === productEntitlement &&
+      (!grant.ends_at || Date.parse(grant.ends_at) > Date.now())
+  );
+
+  if (membershipGrant) {
+    return NextResponse.json(
+      { error: "This product is included with your Full Access membership." },
+      { status: 409 }
+    );
+  }
+
   const priceId = product.stripe_price_id;
   if (!priceId) {
     return NextResponse.json(

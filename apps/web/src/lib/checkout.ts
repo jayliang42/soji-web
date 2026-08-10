@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const subscriptionCheckoutPayloadSchema = z
   .object({
-    planId: z.enum(["tier_1", "tier_2", "tier_3"]),
+    planId: z.enum(["tier_1"]),
     requestId: z.string().uuid()
   })
   .strict();

@@ -21,7 +21,7 @@ describe("managed user snapshots", () => {
             full_name: "Editorial User",
             id: "00000000-0000-4000-8000-000000000201",
             roles: ["member", "editor"],
-            tier: "tier_2"
+            tier: "tier_1"
           }
         ],
         total_items: 61
@@ -50,7 +50,7 @@ describe("managed user snapshots", () => {
           fullName: "Editorial User",
           id: "00000000-0000-4000-8000-000000000201",
           roles: ["member", "editor"],
-          tier: "tier_2"
+          tier: "tier_1"
         }
       ],
       page: 2,

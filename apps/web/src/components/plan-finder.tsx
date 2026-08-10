@@ -16,27 +16,11 @@ export interface PlanFinderOption {
 export const planFinderOptions: PlanFinderOption[] = [
   {
     description:
-      "A focused monthly essay and practical prompts are enough for how you want to learn.",
-    label: "Build a calmer monthly rhythm",
+      "Get the complete library, every digital product, live support, and future member drops.",
+    label: "Unlock everything",
     planId: "tier_1",
     rationale:
-      "Tier 1 keeps the experience focused: foundational essays and prompts without the larger working library."
-  },
-  {
-    description:
-      "You want case studies, templates, the complete archive, and new monthly working material.",
-    label: "Use the full working library",
-    planId: "tier_2",
-    rationale:
-      "Tier 2 is the strongest fit when you want to move from reading into repeatable tools, examples, and templates."
-  },
-  {
-    description:
-      "You want the full library plus Office Hours and closer support for higher-stakes decisions.",
-    label: "Add live guided support",
-    planId: "tier_3",
-    rationale:
-      "Tier 3 adds live Office Hours and direct-access benefits to everything included in the full library."
+      "One $99 monthly membership covers the complete Soji experience."
   }
 ];
 

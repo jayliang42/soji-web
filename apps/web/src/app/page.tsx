@@ -57,12 +57,12 @@ const pathways = [
   },
   {
     eyebrow: "03 · Join",
-    meta: "From $29 monthly",
-    title: "Build an ongoing practice",
+    meta: "$99 monthly",
+    title: "Unlock the complete experience",
     description:
-      "Open the member library and choose the depth of new material and support that fits you.",
-    href: "/pricing#plan-finder-heading",
-    action: "Find your membership"
+      "Get every article, case study, template, digital product, monthly drop, and live support benefit in one membership.",
+    href: "/pricing#plan-tier_1",
+    action: "Unlock everything"
   },
   {
     eyebrow: "04 · Ask",
@@ -122,6 +122,12 @@ export default async function HomePage() {
                 className="rounded-md border-2 border-cocoa bg-white/80 px-6 py-3.5 text-sm font-bold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
               >
                 Explore membership
+              </Link>
+              <Link
+                href="/pricing#plan-tier_1"
+                className="rounded-md border-2 border-clay bg-accent-muted px-6 py-3.5 text-sm font-bold text-cocoa transition-colors hover:bg-clay hover:text-white"
+              >
+                Get full access · $99/month
               </Link>
             </div>
           </div>
@@ -238,24 +244,24 @@ export default async function HomePage() {
               className="mt-4 font-display text-4xl font-bold leading-tight text-cocoa md:text-5xl"
               id="home-membership-heading"
             >
-              Three depths of access, one clear comparison.
+              One core membership, everything unlocked.
             </h2>
             <p className="mt-5 text-lg leading-8 text-cocoa/72">
-              Use the plan finder for a recommendation, then review every
-              benefit and purchase detail on the membership page.
+              One $99 monthly membership includes the complete library, every
+              digital product, live support, and all future member drops.
             </p>
             <div className="mt-7 flex flex-wrap gap-x-6 gap-y-2">
               <Link
                 className="inline-flex min-h-11 items-center rounded-md bg-cocoa px-5 text-sm font-bold text-white transition-colors hover:bg-charcoal"
-                href="/pricing#plan-finder-heading"
+                href="/pricing#plan-tier_1"
               >
-                Use the plan finder
+                Unlock full access
               </Link>
               <Link
                 className="inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
                 href="/pricing#membership-options"
               >
-                Compare every benefit
+                Review everything included
               </Link>
             </div>
           </div>

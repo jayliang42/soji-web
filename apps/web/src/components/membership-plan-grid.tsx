@@ -11,7 +11,7 @@ export function MembershipPlanGrid({
   hasExistingMembership?: boolean;
 }) {
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="mx-auto grid max-w-2xl gap-6">
       {membershipPlans.map((plan) => (
         <PlanCard
           key={plan.id}

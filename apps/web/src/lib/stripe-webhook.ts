@@ -5,7 +5,7 @@ import type { MembershipTier } from "@soji/types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
 
-const paidPlanIds = ["tier_1", "tier_2", "tier_3"] as const satisfies readonly MembershipTier[];
+const paidPlanIds = ["tier_1"] as const satisfies readonly MembershipTier[];
 
 export type BillingEventRecord = {
   id: string;
@@ -80,6 +80,10 @@ function requireAdminClient() {
 }
 
 function toPlanId(value: string | undefined) {
+  if (value === "tier_2" || value === "tier_3") {
+    return "tier_1" as const;
+  }
+
   return paidPlanIds.find((planId) => planId === value) ?? null;
 }
 

@@ -120,7 +120,7 @@ describe("editorial library pages", () => {
       })
     );
 
-    expect(html).toContain("Included with Tier 1 membership");
+    expect(html).toContain("Included with Full Access membership");
     expect(html).toContain("Most money drift starts when small decisions remain open.");
     expect(html).toContain(">See the membership that includes this</a>");
     expect(html).not.toContain("Sign in to check access");

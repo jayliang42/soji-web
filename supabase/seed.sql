@@ -1,9 +1,24 @@
+update subscriptions
+set plan_id = 'tier_1'
+where plan_id in ('tier_2', 'tier_3');
+
+update profiles as profile
+set tier = case
+  when exists (
+    select 1
+    from subscriptions as subscription
+    where subscription.user_id = profile.id
+      and subscription.plan_id = 'tier_1'
+      and subscription.status in ('active', 'trialing')
+  ) then 'tier_1'
+  else 'free'
+end
+where profile.tier in ('tier_2', 'tier_3');
+
 insert into membership_plans (id, name, monthly_price, stripe_lookup_key, revenuecat_entitlement, description)
 values
   ('free', 'Free', 0, null, null, 'Public access only.'),
-  ('tier_1', 'Tier 1', 29, 'tier_1_monthly', 'tier_1', 'Monthly articles and the foundational content library.'),
-  ('tier_2', 'Tier 2', 128, 'tier_2_monthly', 'tier_2', 'Full content, case studies, templates, and monthly update drops.'),
-  ('tier_3', 'Tier 3', 299, 'tier_3_monthly', 'tier_3', 'Everything in Tier 2 plus office hours and private group access.')
+  ('tier_1', 'Full Access', 99, 'full_access_monthly', 'full_access', 'One membership for the complete library, every digital product, live support, and all member benefits.')
 on conflict (id) do update
 set
   name = excluded.name,
@@ -11,6 +26,12 @@ set
   stripe_lookup_key = excluded.stripe_lookup_key,
   revenuecat_entitlement = excluded.revenuecat_entitlement,
   description = excluded.description;
+
+delete from plan_entitlements
+where plan_id in ('tier_2', 'tier_3');
+
+delete from membership_plans
+where id in ('tier_2', 'tier_3');
 
 insert into entitlements (id, label, description)
 values
@@ -31,19 +52,14 @@ set
 insert into plan_entitlements (plan_id, entitlement_id)
 values
   ('tier_1', 'content.basic'),
-  ('tier_2', 'content.basic'),
-  ('tier_2', 'content.all'),
-  ('tier_2', 'library.case_studies'),
-  ('tier_2', 'library.templates'),
-  ('tier_2', 'monthly.updates'),
-  ('tier_3', 'content.basic'),
-  ('tier_3', 'content.all'),
-  ('tier_3', 'library.case_studies'),
-  ('tier_3', 'library.templates'),
-  ('tier_3', 'monthly.updates'),
-  ('tier_3', 'office_hours.join'),
-  ('tier_3', 'community.vip_access'),
-  ('tier_3', 'contact.unlock')
+  ('tier_1', 'content.all'),
+  ('tier_1', 'library.case_studies'),
+  ('tier_1', 'library.templates'),
+  ('tier_1', 'monthly.updates'),
+  ('tier_1', 'office_hours.join'),
+  ('tier_1', 'community.vip_access'),
+  ('tier_1', 'contact.unlock'),
+  ('tier_1', 'product.digital')
 on conflict (plan_id, entitlement_id) do nothing;
 
 with flagship_seed as (
@@ -208,7 +224,7 @@ with content_seed as (
 3. Cut one category with low emotional return.
 4. Re-allocate that money to savings or debt payoff.
 
-This is the baseline ritual for Tier 1 members.',
+This is the baseline ritual for Full Access members.',
       'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80',
       now() - interval '10 days'
     ),

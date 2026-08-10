@@ -36,6 +36,7 @@ interface ProductFilterState {
 export interface ProductCatalogEntry {
   accessPaused: boolean;
   alreadyPurchased: boolean;
+  membershipEntitled: boolean;
   product: ProductOffer;
 }
 
@@ -304,7 +305,7 @@ export function ProductCatalog({
           className="grid list-none gap-6 p-0 lg:grid-cols-2"
         >
           {visibleEntries.map(
-            ({ accessPaused, alreadyPurchased, product }) => (
+            ({ accessPaused, alreadyPurchased, membershipEntitled, product }) => (
               <li key={product.id}>
                 <article className="flex h-full flex-col overflow-hidden rounded-xl border border-dune bg-shell">
                   <ProductArtwork product={product} />
@@ -348,7 +349,9 @@ export function ProductCatalog({
                         alreadyPurchased={alreadyPurchased}
                         checkoutEnabled={checkoutEnabled}
                         customerEmail={customerEmail}
+                        membershipEntitled={membershipEntitled}
                         productSlug={product.slug}
+                        productId={product.id}
                         purchaseStateAvailable={purchaseStateAvailable}
                       />
                       <PurchaseDisclosure variant="product" />

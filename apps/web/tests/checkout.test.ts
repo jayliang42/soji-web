@@ -10,7 +10,7 @@ const requestId = "00000000-0000-4000-8000-000000000503";
 describe("subscription checkout payload", () => {
   it("accepts only paid membership plan identifiers", () => {
     expect(
-      subscriptionCheckoutPayloadSchema.safeParse({ planId: "tier_2", requestId })
+      subscriptionCheckoutPayloadSchema.safeParse({ planId: "tier_1", requestId })
         .success
     ).toBe(true);
     expect(
@@ -21,7 +21,7 @@ describe("subscription checkout payload", () => {
   it("rejects client-controlled price fields", () => {
     expect(
       subscriptionCheckoutPayloadSchema.safeParse({
-        planId: "tier_2",
+        planId: "tier_1",
         priceId: "price_attacker_controlled",
         requestId
       }).success

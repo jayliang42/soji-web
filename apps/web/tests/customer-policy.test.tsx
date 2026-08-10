@@ -207,7 +207,7 @@ describe("customer trust links", () => {
       <PurchaseDisclosure variant="product" />
     );
 
-    expect(membership).toContain("One billing rhythm across every plan");
+    expect(membership).toContain("One billing rhythm for full access");
     expect(membership).toContain("renews monthly until canceled");
     expect(membership).toContain("Stripe Customer Portal");
     expect(membership).toContain("paid period and billing status");

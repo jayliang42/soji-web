@@ -123,6 +123,33 @@ describe("product detail experience", () => {
     expect(detailMocks.getBillingDeliveryReadiness).not.toHaveBeenCalled();
   });
 
+  it("gives Full Access members the included product download", async () => {
+    detailMocks.getSessionSnapshot.mockResolvedValue({
+      entitlements: ["product.digital"],
+      source: "supabase",
+      user: {
+        avatarUrl: null,
+        email: "member@example.com",
+        fullName: "Member",
+        id: "user-1",
+        providers: ["email"],
+        roles: ["member"],
+        tier: "tier_1"
+      }
+    });
+
+    const html = renderToStaticMarkup(
+      await ProductDetailPage({
+        params: Promise.resolve({ slug: product.slug })
+      })
+    );
+
+    expect(html).toContain("Included with Full Access");
+    expect(html).toContain("Download included product");
+    expect(html).not.toContain("Buy once");
+    expect(detailMocks.getBillingDeliveryReadiness).not.toHaveBeenCalled();
+  });
+
   it("shows a bounded catalog recovery state without a purchase action", async () => {
     detailMocks.getProductBySlug.mockResolvedValue({
       error: "product_query_failed",

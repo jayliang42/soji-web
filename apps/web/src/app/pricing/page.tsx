@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { MembershipTerms } from "@/components/membership-terms";
 import { MembershipPlanGrid } from "@/components/membership-plan-grid";
-import { PlanFinder } from "@/components/plan-finder";
 import { DataUnavailable } from "@/components/data-state";
 import {
   getAccountSubscriptions,
@@ -18,7 +17,7 @@ import { getSessionSnapshot } from "@/lib/session";
 export const metadata: Metadata = {
   title: "Membership",
   description:
-    "Compare Well Endowed membership levels for foundational essays, practical templates, monthly drops, and live support.",
+    "Get the complete Well Endowed library, every digital product, monthly drops, and live support for $99 per month.",
   alternates: { canonical: "/pricing" }
 };
 
@@ -57,12 +56,12 @@ export default async function PricingPage({
           <div>
             <p className="text-xs font-bold uppercase text-cocoa/62">Membership</p>
             <h1 className="mt-4 max-w-3xl font-display text-4xl font-bold leading-[1] text-cocoa md:text-6xl">
-              Choose your membership
+              Unlock the complete Soji experience
             </h1>
           </div>
           <p className="max-w-2xl text-base font-medium leading-7 text-cocoa/72 md:text-lg md:leading-8">
-            Start with foundational essays, move into the complete working library,
-            or add live support when your decisions need closer guidance.
+            One $99 monthly membership unlocks every article, template, case study,
+            digital product, monthly drop, and live support benefit.
           </p>
         </div>
         {cancelled ? (
@@ -80,17 +79,14 @@ export default async function PricingPage({
           </div>
         ) : null}
       </section>
-      <div className="mx-auto max-w-6xl px-6 pb-10 pt-2 md:pb-14">
-        <PlanFinder />
-      </div>
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-3" aria-labelledby="membership-options">
         <div className="mb-7 max-w-3xl md:mb-9">
-          <p className="text-xs font-bold uppercase text-cocoa/62">Three monthly options</p>
+          <p className="text-xs font-bold uppercase text-cocoa/62">One complete membership</p>
           <h2 id="membership-options" className="mt-3 font-display text-3xl font-bold leading-[1.02] text-cocoa md:mt-4 md:text-5xl">
-            Compare access and support
+            Everything included
           </h2>
           <p className="mt-3 max-w-2xl text-base font-semibold leading-7 text-cocoa/72 md:mt-4 md:text-lg md:leading-8">
-            Choose what fits now. You can manage or cancel your subscription from your account.
+            Pay once per month and keep every current and future member benefit in one place. Manage or cancel from your account.
           </p>
         </div>
         <MembershipPlanGrid

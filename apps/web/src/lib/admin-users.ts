@@ -15,7 +15,7 @@ const managedUserRowSchema = z.object({
   full_name: z.string().nullable(),
   id: z.string().uuid(),
   roles: z.array(z.enum(["member", "editor", "admin"])),
-  tier: z.enum(["free", "tier_1", "tier_2", "tier_3"])
+  tier: z.enum(["free", "tier_1"])
 });
 
 const managedUsersRpcResultSchema = z.object({

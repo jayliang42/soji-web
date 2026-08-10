@@ -256,13 +256,11 @@ workspace 边界统一按
 
 怎么做：
 
-1. 在 Stripe Dashboard 创建 3 个 recurring price。
-2. 给它们设置 lookup key：
+1. 在 Stripe Dashboard 创建 1 个 recurring price，金额为 `$99`。
+2. 给它设置 lookup key：
 
 ```text
-tier_1_monthly
-tier_2_monthly
-tier_3_monthly
+full_access_monthly
 ```
 
 3. 确保这些 prices 是 active。
@@ -275,7 +273,7 @@ tier_3_monthly
    `Billing unavailable`，Portal API 返回 `503` 且 Stripe 不创建 Session。
 7. 用同一账号快速发起两个不同 `requestId` 的 subscription checkout，确认只有一个
    返回 URL，另一个返回 `409`；重复同一个 `requestId` 应返回同一个 Stripe Session。
-8. 完成一笔测试订阅后再次打开 `/pricing`，确认三档 CTA 都变为
+8. 完成一笔测试订阅后再次打开 `/pricing`，确认唯一 CTA 变为
    `Manage existing membership`，直接调用 API 也返回 `409`。
 
 完成标准：
@@ -283,8 +281,8 @@ tier_3_monthly
 - `/pricing` 点击购买能创建 Stripe Checkout Session。
 - Checkout 金额来自 Stripe price，不来自客户端。
 - 支付成功后 Stripe 会触发 webhook。
-- `/api/health/ready` 的 `stripeMembershipPrices` 为 `true`；三档价格都必须是
-  active、USD、每月一次，金额分别为 `$29`、`$128`、`$299`。
+- `/api/health/ready` 的 `stripeMembershipPrices` 为 `true`；唯一价格必须是
+  active、USD、每月一次，金额为 `$99`。
 - 已有 Stripe Customer 的会员再次 checkout 时复用原 Customer，不产生割裂账单历史。
 - Portal 只能从当前用户拥有的 subscription 打开，期末取消后 Account 显示
   `Cancels at period end` 和准确的 access-through 日期。

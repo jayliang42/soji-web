@@ -87,12 +87,12 @@ describe("pricing membership safety", () => {
       await PricingPage({ searchParams: Promise.resolve({}) })
     );
 
-    for (const amount of ["$29", "$128", "$299"]) {
+    for (const amount of ["$99"]) {
       expect(html).toContain(`${amount} billed monthly until canceled`);
     }
     expect(html.match(/Stripe Customer Portal/gu)).toHaveLength(1);
     expect(html.split('href="/refund-policy"')).toHaveLength(2);
-    expect(html).toContain("One billing rhythm across every plan");
+    expect(html).toContain("One billing rhythm for full access");
     expect(html).not.toMatch(/type="checkbox"/u);
   });
 });

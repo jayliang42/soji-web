@@ -20,7 +20,7 @@ interface NavigationItem {
 
 const guestNavigation: ReadonlyArray<NavigationItem> = [
   {
-    description: "Compare three membership depths",
+    description: "Unlock the complete membership",
     href: "/pricing" as Route,
     label: "Pricing"
   },

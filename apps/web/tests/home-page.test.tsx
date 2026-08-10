@@ -33,7 +33,7 @@ describe("home page decision paths", () => {
     for (const [label, href] of [
       ["Explore the library", "/library?focus=start"],
       ["Browse practical tools", "/products"],
-      ["Find your membership", "/pricing#plan-finder-heading"],
+      ["Unlock everything", "/pricing#plan-tier_1"],
       ["See office hours", "/office-hours"]
     ]) {
       expect(html).toContain(`href="${href}"`);
@@ -41,7 +41,7 @@ describe("home page decision paths", () => {
     }
     expect(html).toContain("Free previews");
     expect(html).toContain("From $49 once");
-    expect(html).toContain("From $29 monthly");
+    expect(html).toContain("$99 monthly");
     expect(html).not.toContain("Create account to join");
   });
 
@@ -49,11 +49,9 @@ describe("home page decision paths", () => {
     const html = renderToStaticMarkup(await HomePage());
 
     expect(html).toContain("Membership at a glance");
-    expect(html).toContain('href="/pricing#plan-finder-heading"');
+    expect(html).toContain('href="/pricing#plan-tier_1"');
     expect(html).toContain('href="/pricing#membership-options"');
-    for (const planId of ["tier_1", "tier_2", "tier_3"]) {
-      expect(html).toContain(`href="/pricing#plan-${planId}"`);
-    }
+    expect(html).toContain('href="/pricing#plan-tier_1"');
     expect(html).not.toContain("Digital product purchase terms");
     expect(html).not.toContain("Membership purchase terms");
   });

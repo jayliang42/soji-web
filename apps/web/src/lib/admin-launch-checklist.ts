@@ -120,7 +120,7 @@ export function buildLaunchChecklist({
       status: hasVerifiedAdmin ? "ready" : "missing"
     },
     {
-      detail: "Create active Stripe prices for tier_1_monthly, tier_2_monthly, and tier_3_monthly.",
+      detail: "Create one active USD monthly Stripe price for full_access_monthly at $99.",
       label: "Membership Stripe prices",
       status: operationalReadiness.stripeMembershipPrices ? "ready" : "missing"
     },

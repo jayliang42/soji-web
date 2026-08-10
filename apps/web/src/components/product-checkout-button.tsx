@@ -26,21 +26,41 @@ export function ProductCheckoutButton({
   alreadyPurchased,
   checkoutEnabled,
   customerEmail,
+  membershipEntitled = false,
   nextPath = "/products",
   purchaseStateAvailable,
+  productId,
   productSlug
 }: {
   accessPaused: boolean;
   alreadyPurchased: boolean;
   checkoutEnabled: boolean;
   customerEmail: string | null;
+  membershipEntitled?: boolean;
   nextPath?: string;
   purchaseStateAvailable: boolean;
+  productId?: string;
   productSlug: string;
 }) {
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const requestIdRef = useRef<string | null>(null);
+
+  if (membershipEntitled && productId) {
+    return (
+      <div className="grid gap-2">
+        <a
+          href={`/api/account/products/${productId}/download`}
+          className="inline-flex min-h-11 items-center justify-center rounded-md bg-cocoa px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-charcoal"
+        >
+          Download included product
+        </a>
+        <p className="max-w-xs text-xs font-medium text-cocoa/65">
+          Included with your Full Access membership. No separate purchase is needed.
+        </p>
+      </div>
+    );
+  }
 
   if (!customerEmail) {
     return (
