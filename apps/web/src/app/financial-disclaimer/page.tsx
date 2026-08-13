@@ -4,7 +4,7 @@ import { PolicyLayout } from "@/components/policy-layout";
 export const metadata: Metadata = {
   title: "Financial disclaimer",
   description:
-    "The educational scope and financial-decision limits of Soji content and Office Hours.",
+    "The educational scope and financial-decision limits of GS学院 content and Office Hours.",
   alternates: { canonical: "/financial-disclaimer" }
 };
 
@@ -13,7 +13,7 @@ export default function FinancialDisclaimerPage() {
     <PolicyLayout
       eyebrow="Editorial standards"
       title="Financial disclaimer"
-      summary="Soji helps readers think more clearly about money decisions. It does not make those decisions for them."
+        summary="GS学院 helps readers think more clearly about money decisions. It does not make those decisions for them."
       updatedAt="July 27, 2026"
       sections={[
         {

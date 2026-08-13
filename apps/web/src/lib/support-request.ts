@@ -31,7 +31,7 @@ export function buildSupportRequest(draft: SupportRequestDraft) {
   const details = normalizeMultiline(draft.details);
   const context = normalizeMultiline(draft.context);
   const lines = [
-    "Soji support request",
+    "GS学院 support request",
     "",
     `Issue type: ${getSupportIssueLabel(draft.issue)}`,
     "",
@@ -50,7 +50,7 @@ export function buildSupportRequest(draft: SupportRequestDraft) {
   lines.push(
     "",
     "—",
-    "Prepared on Soji Support. This message was not saved by Soji."
+    "Prepared on GS学院 Support. This message was not saved by GS学院."
   );
 
   return lines.join("\n");
@@ -73,7 +73,7 @@ export function buildSupportMailto(
 
   mailto.searchParams.set(
     "subject",
-    `Soji support — ${getSupportIssueLabel(draft.issue)}`
+    `GS学院 support — ${getSupportIssueLabel(draft.issue)}`
   );
   mailto.searchParams.set("body", buildSupportRequest(draft));
   return mailto.toString();

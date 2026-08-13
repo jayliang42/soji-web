@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
         custom_text: {
           submit: {
             message:
-              "By subscribing, you agree to the Soji Terms. Your membership renews monthly until canceled."
+              "By subscribing, you agree to the GS学院 Terms. Your membership renews monthly until canceled."
           }
         },
         expires_at: checkoutExpiresAt,

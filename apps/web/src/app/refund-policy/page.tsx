@@ -5,7 +5,7 @@ import { PolicyLayout } from "@/components/policy-layout";
 export const metadata: Metadata = {
   title: "Refund policy",
   description:
-    "How Soji reviews membership and digital-product refund requests and how refunds affect access.",
+    "How GS学院 reviews membership and digital-product refund requests and how refunds affect access.",
   alternates: { canonical: "/refund-policy" }
 };
 
@@ -14,7 +14,7 @@ export default function RefundPolicyPage() {
     <PolicyLayout
       eyebrow="Customer policy"
       title="Refund policy"
-      summary="This review draft explains the baseline used by Soji's current billing and access system. Rights required by applicable law still apply."
+      summary="This review draft explains the baseline used by GS学院's current billing and access system. Rights required by applicable law still apply."
       updatedAt="July 27, 2026"
       sections={[
         {

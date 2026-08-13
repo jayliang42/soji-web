@@ -10,7 +10,6 @@ const siteUrl = getSiteUrl() ?? "http://localhost:3000";
 const exploreLinks: ReadonlyArray<readonly [string, Route]> = [
   ["Library", "/library"],
   ["Membership", "/pricing"],
-  ["Shop", "/products"],
   ["Office Hours", "/office-hours"],
   ["Account", "/account"]
 ] as const;
@@ -24,34 +23,34 @@ const supportPolicyLinks: ReadonlyArray<readonly [string, Route]> = [
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: "Soji",
+  applicationName: "GS学院",
   title: {
-    default: "Well Endowed by Soji",
-    template: "%s | Soji"
+    default: "BayArea珊瑚海 by GS学院",
+    template: "%s | GS学院"
   },
   description:
     "Practical guidance for strategic spending, family financial foundations, and wealth that lasts beyond one generation.",
   openGraph: {
     type: "website",
-    siteName: "Soji",
-    title: "Well Endowed by Soji",
+    siteName: "GS学院",
+    title: "BayArea珊瑚海 by GS学院",
     description:
       "Practical guidance for strategic spending, family financial foundations, and lasting wealth.",
     images: [
       {
-        alt: "Well Endowed hardcover book in a bright reading room",
-        height: 941,
-        url: "/well-endowed-hero.png",
-        width: 1672
+        alt: "Snowy mountains above a blue bay with a fishing boat and rocky shoreline",
+        height: 2240,
+        url: "/bayarea-coral-sea-hero.jpg",
+        width: 3360
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Well Endowed by Soji",
+    title: "BayArea珊瑚海 by GS学院",
     description:
       "Practical guidance for strategic spending, family financial foundations, and lasting wealth.",
-    images: ["/well-endowed-hero.png"]
+    images: ["/bayarea-coral-sea-hero.jpg"]
   }
 };
 
@@ -72,12 +71,12 @@ export default async function RootLayout({
               href="/"
               className="group inline-flex min-h-11 items-center gap-3 text-darktext"
             >
-              <span className="text-2xl font-black">Soji</span>
+              <span className="text-2xl font-black">GS学院</span>
               <span
                 aria-hidden="true"
                 className="hidden border-l border-dune pl-3 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-cocoa/68 transition-colors group-hover:text-clay lg:block"
               >
-                Well Endowed
+                BayArea珊瑚海
               </span>
             </Link>
             <Suspense
@@ -102,10 +101,10 @@ export default async function RootLayout({
                 href="/"
                 className="inline-flex min-h-11 items-center text-xl font-black text-cocoa"
               >
-                Soji
+                GS学院
               </Link>
               <p className="mt-2 max-w-sm font-medium leading-6">
-                Well Endowed is an editorial money membership for calmer,
+                BayArea珊瑚海 is an editorial money membership for calmer,
                 better-informed decisions.
               </p>
             </div>

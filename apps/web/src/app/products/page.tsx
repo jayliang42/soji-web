@@ -84,7 +84,7 @@ export default async function ProductsPage({
               Access
             </p>
             <p className="mt-2 font-medium">
-              Full Access members can download every product without a separate charge.
+              Purchases stay on your GS学院 account for future downloads.
             </p>
           </div>
           <div className="border-t border-dune pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">

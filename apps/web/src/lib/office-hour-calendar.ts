@@ -88,7 +88,7 @@ export function buildOfficeHourCalendarFile(
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Soji//Office Hours//EN",
+    "PRODID:-//GS学院//Office Hours//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
@@ -96,7 +96,7 @@ export function buildOfficeHourCalendarFile(
     `DTSTAMP:${formatUtcDate(generatedAt)}`,
     `DTSTART:${formatUtcDate(startsAt)}`,
     `SUMMARY:${escapeIcsText(title)}`,
-    "DESCRIPTION:Review current access and reservation details on the Soji Office Hours page.",
+    "DESCRIPTION:Review current access and reservation details on the GS学院 Office Hours page.",
     "LOCATION:Online",
     "STATUS:CONFIRMED",
     "END:VEVENT",

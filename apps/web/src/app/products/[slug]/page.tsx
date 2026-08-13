@@ -203,7 +203,7 @@ export default async function ProductDetailPage({
                 {[
                   {
                     description:
-                      "Use a Soji account so the purchase has a durable home.",
+                      "Use a GS学院 account so the purchase has a durable home.",
                     label: "Sign in"
                   },
                   {
@@ -248,8 +248,8 @@ export default async function ProductDetailPage({
             </h2>
             <p className="mt-3 text-sm font-medium leading-6 text-cocoa/70">
               {membershipEntitled
-                ? "This product is included in your $99 monthly membership. Download it whenever you need it."
-                : "No recurring charge. The available download remains in the Soji account used at checkout."}
+                ? "Full Access 会员已包含此内容，可随时下载。"
+                : "没有自动续费，购买后可在 GS学院账号中访问下载。"}
             </p>
             <div className="mt-6">
               <ProductCheckoutButton

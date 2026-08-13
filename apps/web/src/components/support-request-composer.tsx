@@ -289,7 +289,7 @@ export function SupportRequestComposer({
                   rel="noreferrer"
                   target="_blank"
                 >
-                  Open the Soji support channel
+                  Open the GS学院 support channel
                   <span className="sr-only"> in a new tab</span>
                 </a>
               ) : null}

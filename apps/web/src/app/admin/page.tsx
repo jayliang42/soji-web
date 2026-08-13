@@ -95,7 +95,7 @@ export default async function AdminPage({
         <SectionShell
           eyebrow="Admin"
           headingLevel={1}
-          title="Sign in to manage Soji."
+          title="Sign in to manage GS学院."
           description="Admin tools are available only to accounts with editor or admin roles."
         >
           <div className="rounded-lg border border-dune bg-shell p-6">

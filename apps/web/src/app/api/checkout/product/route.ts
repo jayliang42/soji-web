@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
         custom_text: {
           submit: {
             message:
-              "By purchasing, you agree to the Soji Terms and acknowledge the digital-product refund policy."
+              "By purchasing, you agree to the GS学院 Terms and acknowledge the digital-product refund policy."
           }
         },
         expires_at: checkoutExpiresAt,

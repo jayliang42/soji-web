@@ -5,7 +5,7 @@ import { PolicyLayout } from "@/components/policy-layout";
 export const metadata: Metadata = {
   title: "Terms",
   description:
-    "Terms for using Soji educational content, memberships, Office Hours, and digital products.",
+    "Terms for using GS学院 educational content, memberships, Office Hours, and digital products.",
   alternates: { canonical: "/terms" }
 };
 
@@ -14,7 +14,7 @@ export default function TermsPage() {
     <PolicyLayout
       eyebrow="Customer policy"
       title="Terms"
-      summary="These review-draft terms describe the current Soji educational publishing service and the responsibilities that come with an account."
+      summary="These review-draft terms describe the current GS学院 educational publishing service and the responsibilities that come with an account."
       updatedAt="July 27, 2026"
       sections={[
         {
@@ -22,7 +22,7 @@ export default function TermsPage() {
           title: "The service",
           content: (
             <p>
-              Soji publishes general educational material about money
+              GS学院 publishes general educational material about money
               decisions. An account may provide public reading, personal
               non-transferable membership access, Office Hours eligibility, or
               delivery of a purchased digital product. Features and publishing
@@ -69,7 +69,7 @@ export default function TermsPage() {
           title: "Acceptable use and intellectual property",
           content: (
             <p>
-              Soji content, design, downloads, and original materials remain
+              GS学院 content, design, downloads, and original materials remain
               protected by applicable intellectual-property rights. You may use
               purchased or member material personally, but may not republish,
               sell, distribute, automate extraction from, interfere with, or
@@ -82,7 +82,7 @@ export default function TermsPage() {
           title: "Education, not individualized advice",
           content: (
             <p>
-              Soji provides general education and is not individualized
+              GS学院 provides general education and is not individualized
               investment, legal, tax, or accounting advice. Content and Office
               Hours do not account for every person&apos;s circumstances and do
               not promise a financial outcome. Consider qualified professionals

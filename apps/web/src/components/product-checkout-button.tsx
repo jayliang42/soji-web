@@ -11,14 +11,14 @@ type CheckoutResponse = {
 
 function getErrorMessage(error: CheckoutResponse["error"]) {
   if (!error) {
-    return "Checkout failed.";
+    return "支付失败。";
   }
 
   if (typeof error === "string") {
     return error;
   }
 
-  return "Checkout failed. Please try again.";
+  return "支付失败，请稍后重试。";
 }
 
 export function ProductCheckoutButton({
@@ -27,6 +27,7 @@ export function ProductCheckoutButton({
   checkoutEnabled,
   customerEmail,
   membershipEntitled = false,
+  darkSurface = false,
   nextPath = "/products",
   purchaseStateAvailable,
   productId,
@@ -37,6 +38,7 @@ export function ProductCheckoutButton({
   checkoutEnabled: boolean;
   customerEmail: string | null;
   membershipEntitled?: boolean;
+  darkSurface?: boolean;
   nextPath?: string;
   purchaseStateAvailable: boolean;
   productId?: string;
@@ -53,10 +55,10 @@ export function ProductCheckoutButton({
           href={`/api/account/products/${productId}/download`}
           className="inline-flex min-h-11 items-center justify-center rounded-md bg-cocoa px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-charcoal"
         >
-          Download included product
+          下载已包含内容
         </a>
         <p className="max-w-xs text-xs font-medium text-cocoa/65">
-          Included with your Full Access membership. No separate purchase is needed.
+          Full Access 会员已包含，无需重复购买。
         </p>
       </div>
     );
@@ -66,9 +68,13 @@ export function ProductCheckoutButton({
     return (
       <Link
         href={{ pathname: "/login", query: { next: nextPath } }}
-        className="inline-flex min-h-11 items-center justify-center rounded-md bg-cocoa px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-charcoal"
+        className={`inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 text-sm font-bold transition-colors ${
+          darkSurface
+            ? "bg-white text-cocoa hover:bg-sand"
+            : "bg-cocoa text-white hover:bg-charcoal"
+        }`}
       >
-        Create account to buy
+        登录后解锁
       </Link>
     );
   }
@@ -79,12 +85,16 @@ export function ProductCheckoutButton({
         <button
           type="button"
           disabled
-          className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-md border border-dune bg-cream px-5 py-3 text-sm font-bold text-cocoa/60"
+          className={`inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-md border px-5 py-3 text-sm font-bold ${
+            darkSurface
+              ? "border-white/30 bg-white/10 text-white/60"
+              : "border-dune bg-cream text-cocoa/60"
+          }`}
         >
-          Purchase status unavailable
+          购买状态暂不可用
         </button>
         <p className="max-w-xs text-xs font-medium text-cocoa/65">
-          We cannot safely confirm your purchase history. Try again before buying this item.
+          暂时无法确认你的购买记录，请刷新后再试。
         </p>
       </div>
     );
@@ -94,9 +104,13 @@ export function ProductCheckoutButton({
     return (
       <Link
         href="/account#purchases-heading"
-        className="inline-flex min-h-11 items-center justify-center rounded-md border border-cocoa px-5 py-3 text-sm font-bold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
+        className={`inline-flex min-h-11 items-center justify-center rounded-md border px-5 py-3 text-sm font-bold transition-colors ${
+          darkSurface
+            ? "border-white bg-transparent text-white hover:bg-white hover:text-cocoa"
+            : "border-cocoa text-cocoa hover:bg-cocoa hover:text-white"
+        }`}
       >
-        {accessPaused ? "Review purchase" : "Access purchase"}
+        {accessPaused ? "查看购买记录" : "进入已解锁内容"}
       </Link>
     );
   }
@@ -107,12 +121,16 @@ export function ProductCheckoutButton({
         <button
           type="button"
           disabled
-          className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-md border border-dune bg-cream px-5 py-3 text-sm font-bold text-cocoa/60"
+          className={`inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-md border px-5 py-3 text-sm font-bold ${
+            darkSurface
+              ? "border-white/30 bg-white/10 text-white/60"
+              : "border-dune bg-cream text-cocoa/60"
+          }`}
         >
-          Checkout unavailable
+          支付配置中
         </button>
         <p className="max-w-xs text-xs font-medium text-cocoa/65">
-          Billing is temporarily unavailable. No payment can be started.
+          支付功能正在配置中，目前不会发起扣款。
         </p>
       </div>
     );
@@ -146,7 +164,7 @@ export function ProductCheckoutButton({
 
         window.location.assign(payload.url);
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Checkout failed.");
+        setMessage(error instanceof Error ? error.message : "支付失败，请稍后重试。");
       }
     });
   }
@@ -157,9 +175,13 @@ export function ProductCheckoutButton({
         type="button"
         onClick={startCheckout}
         disabled={isPending}
-        className="inline-flex min-h-11 items-center justify-center rounded-md bg-cocoa px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-charcoal disabled:cursor-not-allowed disabled:opacity-60"
+        className={`inline-flex min-h-11 items-center justify-center rounded-md px-5 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+          darkSurface
+            ? "bg-white text-cocoa hover:bg-sand"
+            : "bg-cocoa text-white hover:bg-charcoal"
+        }`}
       >
-        {isPending ? "Opening checkout..." : "Buy once"}
+        {isPending ? "正在打开支付..." : "立即解锁"}
       </button>
       {message ? (
         <p aria-live="polite" className="text-sm font-medium text-clay">

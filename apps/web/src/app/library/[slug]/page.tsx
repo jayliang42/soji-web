@@ -189,7 +189,7 @@ export default async function ContentDetailPage({
         <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] lg:items-stretch">
           <header className="flex flex-col justify-center py-2 lg:py-8">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-              Soji Library
+              GS学院 Library
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-cocoa/70">
               <span>{formatContentType(item.type)}</span>
@@ -325,12 +325,6 @@ export default async function ContentDetailPage({
                       href="/library"
                     >
                       Browse more guides
-                    </Link>
-                    <Link
-                      className="inline-flex min-h-11 items-center text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
-                      href="/products"
-                    >
-                      Explore practical tools
                     </Link>
                     <Link
                       className="inline-flex min-h-11 items-center text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"

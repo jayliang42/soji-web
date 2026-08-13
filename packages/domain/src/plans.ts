@@ -219,35 +219,35 @@ export const officeHourSessions: OfficeHourSession[] = [
 
 export const productOffers: ProductOffer[] = [
   {
-    id: "wealth-dashboard-template-pack",
-    slug: "wealth-dashboard-template-pack",
-    title: "Wealth Dashboard Template Pack",
+    id: "case-study-single",
+    slug: "case-study-single",
+    title: "单篇真实录取案例",
     summary:
-      "A standalone workbook for tracking net worth, cash runway, debt, insurance, and monthly decisions.",
-    price: 79,
-    priceLabel: "$79",
+      "解锁一篇真实录取案例，聚焦一个具体申请问题，看清背景、选择与结果之间的关系。",
+    price: 5,
+    priceLabel: "$5",
     entitlement: "product.digital",
     bullets: [
-      "Downloadable personal wealth dashboard structure",
-      "Monthly and quarterly review checklist",
-      "Decision log for family money conversations",
-      "Works as a standalone purchase or member bonus"
+      "一次性解锁 1 篇案例",
+      "围绕真实客户问题展开分析",
+      "查看背景、定位与文书思路",
+      "购买后保留账号访问权"
     ]
   },
   {
-    id: "family-money-scripts",
-    slug: "family-money-scripts",
-    title: "Family Money Scripts",
+    id: "case-study-collection",
+    slug: "case-study-collection",
+    title: "55篇真实录取案例合集",
     summary:
-      "Conversation prompts for partners, parents, and kids when the money topic is important but delicate.",
-    price: 49,
-    priceLabel: "$49",
+      "一次性解锁全部55篇案例，系统覆盖 Gap、转学、退学、第二本科与文书叙事等高频问题。",
+    price: 99,
+    priceLabel: "$99",
     entitlement: "product.digital",
     bullets: [
-      "Scripts for partner planning conversations",
-      "Prompts for kids and allowance decisions",
-      "Boundary-setting language for social spending",
-      "Short enough to use before a real conversation"
+      "一次性解锁全部 55 篇案例",
+      "覆盖非传统背景与专业匹配问题",
+      "集中梳理申请定位与故事线",
+      "比单篇购买节省 $176"
     ]
   }
 ];

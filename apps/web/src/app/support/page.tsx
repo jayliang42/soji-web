@@ -9,7 +9,7 @@ import { SupportRequestComposer } from "@/components/support-request-composer";
 export const metadata: Metadata = {
   title: "Support",
   description:
-    "Get help with a Soji account, membership, purchase, download, or accessibility issue.",
+    "Get help with a GS学院 account, membership, purchase, download, or accessibility issue.",
   alternates: { canonical: "/support" }
 };
 
@@ -43,7 +43,7 @@ const supportPaths: ReadonlyArray<{
   {
     action: "Review refund steps",
     description:
-      "See which membership and digital-product situations Soji can review before contacting us.",
+      "See which membership and digital-product situations GS学院 can review before contacting us.",
     href: "/refund-policy#request",
     label: "I want to request a refund review"
   }

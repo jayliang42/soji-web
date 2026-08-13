@@ -9,7 +9,7 @@ export type LoginPageCopy = {
 
 const defaultCopy: LoginPageCopy = {
   destinationDescription:
-    "Soji will return you to the guide or library view that brought you here.",
+    "GS学院 will return you to the guide or library view that brought you here.",
   destinationLabel: "your reading",
   description:
     "Create an account before checkout so your membership, purchases, and content access stay attached to the same profile.",
@@ -59,7 +59,7 @@ export function getLoginPageCopy(nextPath: string): LoginPageCopy {
         "Review memberships, purchases, downloads, and billing controls in one place.",
       panelDescription: "Use the email or Google account connected to your purchases.",
       panelTitle: "Open your account",
-      title: "Sign in to your Soji account"
+      title: "Sign in to your GS学院 account"
     };
   }
 

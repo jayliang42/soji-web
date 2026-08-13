@@ -1,120 +1,139 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import { MembershipTerms } from "@/components/membership-terms";
-import { MembershipPlanGrid } from "@/components/membership-plan-grid";
+import { productOffers } from "@soji/domain";
+import { CaseStudyOfferGrid } from "@/components/case-study-offer-grid";
 import { DataUnavailable } from "@/components/data-state";
-import {
-  getAccountSubscriptions,
-  hasOpenStripeMembership
-} from "@/lib/account-subscriptions";
+import { getAccountPurchases } from "@/lib/account-purchases";
 import {
   getBillingDeliveryReadiness,
   isBillingDeliveryReady
 } from "@/lib/billing-readiness";
 import { hasStripeConfig } from "@/lib/env";
+import { getProductSnapshot } from "@/lib/products";
+import {
+  isDeliveredPurchaseStatus,
+  isPurchaseDisputeBlockingAccess
+} from "@/lib/purchase-status";
 import { getSessionSnapshot } from "@/lib/session";
 
 export const metadata: Metadata = {
-  title: "Membership",
+  title: "解锁录取案例",
   description:
-    "Get the complete Well Endowed library, every digital product, monthly drops, and live support for $99 per month.",
+    "单篇5美元，或一次性解锁55篇真实录取案例合集。",
   alternates: { canonical: "/pricing" }
 };
 
 export default async function PricingPage({
   searchParams
 }: {
-  searchParams: Promise<{ checkout?: string; purchase?: string }>;
+  searchParams: Promise<{ purchase?: string }>;
 }) {
-  const [snapshot, params] = await Promise.all([
+  const [session, productSnapshot, params] = await Promise.all([
     getSessionSnapshot(),
+    getProductSnapshot(),
     searchParams
   ]);
-  const customerEmail = snapshot.user?.email ?? null;
-  const subscriptions = snapshot.user
-    ? await getAccountSubscriptions(snapshot.user.id, snapshot.source)
-    : { items: [] };
-  const subscriptionStateUnavailable = Boolean(snapshot.error || subscriptions.error);
-  const hasExistingMembership = hasOpenStripeMembership(subscriptions.items);
+  const customerEmail = session.user?.email ?? null;
+  const purchases = await getAccountPurchases(session.user?.id, session.source);
+  const purchaseStateAvailable = !session.error && !purchases.error;
+  const purchasedProductIds = new Set(
+    purchases.items
+      .filter((purchase) => isDeliveredPurchaseStatus(purchase.status))
+      .map((purchase) => purchase.productId)
+  );
+  const pausedProductIds = new Set(
+    purchases.items
+      .filter((purchase) =>
+        isPurchaseDisputeBlockingAccess(purchase.disputeStatus)
+      )
+      .map((purchase) => purchase.productId)
+  );
+  const offers = productOffers.map(
+    (fallbackOffer) =>
+      productSnapshot.items.find((offer) => offer.slug === fallbackOffer.slug) ??
+      fallbackOffer
+  );
+  const liveOfferSlugs = new Set(productSnapshot.items.map((offer) => offer.slug));
+  const hasConfiguredOffers = offers.every((offer) =>
+    liveOfferSlugs.has(offer.slug)
+  );
   let checkoutEnabled = false;
   if (
     customerEmail &&
-    !subscriptionStateUnavailable &&
-    !hasExistingMembership &&
+    purchaseStateAvailable &&
+    hasConfiguredOffers &&
     hasStripeConfig()
   ) {
     checkoutEnabled = isBillingDeliveryReady(
       await getBillingDeliveryReadiness()
     );
   }
-  const cancelled = params.checkout === "cancelled" || params.purchase === "cancelled";
+  const cancelled = params.purchase === "cancelled";
 
   return (
     <main>
-      <section className="mx-auto max-w-6xl px-6 pb-7 pt-8 md:pb-10 md:pt-10">
+      <section className="mx-auto max-w-6xl px-6 pb-10 pt-8 md:pb-14 md:pt-12">
         <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
           <div>
-            <p className="text-xs font-bold uppercase text-cocoa/62">Membership</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
+              55篇真实录取案例
+            </p>
             <h1 className="mt-4 max-w-3xl font-display text-4xl font-bold leading-[1] text-cocoa md:text-6xl">
-              Unlock the complete Soji experience
+              一次性付费，按你的需要解锁。
             </h1>
           </div>
           <p className="max-w-2xl text-base font-medium leading-7 text-cocoa/72 md:text-lg md:leading-8">
-            One $99 monthly membership unlocks every article, template, case study,
-            digital product, monthly drop, and live support benefit.
+            单篇案例 $5，完整合集 $99。没有月费，先从你正在面对的申请问题开始。
           </p>
         </div>
+
         {cancelled ? (
-          <div className="mt-6 rounded-lg border border-clay/25 bg-accent-muted px-5 py-4 text-sm font-medium text-cocoa">
-            Checkout was cancelled. Your account was not charged, and you can restart whenever you are ready.
+          <div className="mt-6 border border-clay/25 bg-accent-muted px-5 py-4 text-sm font-medium text-cocoa">
+            你已取消支付，账号没有被扣款。
           </div>
         ) : null}
-        {subscriptionStateUnavailable ? (
+
+        {session.error || purchases.error ? (
           <div className="mt-6">
             <DataUnavailable
-              title="Membership status unavailable"
-              description="We could not verify your current membership, so checkout is paused to prevent a duplicate subscription. Try again shortly or manage billing from your account."
+              title="购买状态暂时无法确认"
+              description="为避免重复购买，结账暂时暂停。请稍后刷新再试。"
               retryHref="/pricing"
             />
           </div>
         ) : null}
-      </section>
-      <section className="mx-auto max-w-6xl px-6 pb-20 pt-3" aria-labelledby="membership-options">
-        <div className="mb-7 max-w-3xl md:mb-9">
-          <p className="text-xs font-bold uppercase text-cocoa/62">One complete membership</p>
-          <h2 id="membership-options" className="mt-3 font-display text-3xl font-bold leading-[1.02] text-cocoa md:mt-4 md:text-5xl">
-            Everything included
-          </h2>
-          <p className="mt-3 max-w-2xl text-base font-semibold leading-7 text-cocoa/72 md:mt-4 md:text-lg md:leading-8">
-            Pay once per month and keep every current and future member benefit in one place. Manage or cancel from your account.
-          </p>
+        <div className="mt-10">
+          <CaseStudyOfferGrid
+            checkoutEnabled={checkoutEnabled}
+            customerEmail={customerEmail}
+            entries={offers.map((offer) => ({
+              accessPaused: pausedProductIds.has(offer.id),
+              alreadyPurchased: purchasedProductIds.has(offer.id),
+              offer
+            }))}
+            purchaseStateAvailable={purchaseStateAvailable}
+          />
         </div>
-        <MembershipPlanGrid
-          checkoutEnabled={checkoutEnabled}
-          customerEmail={customerEmail}
-          hasExistingMembership={hasExistingMembership}
-        />
-        <MembershipTerms />
-      </section>
-      <section className="mx-auto max-w-6xl px-6 pb-20 pt-6">
-        <div className="border-y border-dune py-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-xs uppercase text-cocoa/70">
-                Need a softer entry point?
-              </p>
-              <h2 className="mt-4 font-display text-4xl leading-[1] text-cocoa">
-                Browse the public library before choosing a membership.
-              </h2>
-            </div>
-            <Link
-              href="/library"
-              className="rounded-md border border-cocoa px-7 py-4 text-sm font-semibold uppercase text-cocoa transition-colors hover:bg-cocoa hover:text-white"
-            >
-              Browse public previews
-            </Link>
+
+        <div className="mt-8 grid gap-4 border-y border-dune py-6 text-sm font-medium leading-6 text-cocoa/72 md:grid-cols-3 md:gap-0">
+          <div className="border-t border-dune pt-4 first:border-t-0 first:pt-0 md:border-l md:border-t-0 md:px-6 md:pt-0 md:first:border-l-0 md:first:pl-0">
+            <p className="font-bold uppercase tracking-[0.12em] text-clay">单篇</p>
+            <p className="mt-2">只解锁当前最想研究的一个申请问题。</p>
+          </div>
+          <div className="border-t border-dune pt-4 md:border-l md:border-t-0 md:px-6 md:pt-0">
+            <p className="font-bold uppercase tracking-[0.12em] text-clay">合集</p>
+            <p className="mt-2">55篇全部解锁，比逐篇购买节省 $176。</p>
+          </div>
+          <div className="border-t border-dune pt-4 md:border-l md:border-t-0 md:pl-6">
+            <p className="font-bold uppercase tracking-[0.12em] text-clay">付款</p>
+            <p className="mt-2">一次性支付，没有自动续费或月度扣款。</p>
           </div>
         </div>
+
+        {productSnapshot.error ? (
+          <p className="mt-5 text-sm font-medium text-cocoa/60">
+            支付配置正在准备中，当前可以先浏览案例目录。
+          </p>
+        ) : null}
       </section>
     </main>
   );

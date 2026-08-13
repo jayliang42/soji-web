@@ -316,7 +316,7 @@ export default async function AccountPage({
         eyebrow="Account"
         headingLevel={1}
         title={user?.fullName ?? user?.email ?? "Guest"}
-        description="See what is active, manage billing, and return to the parts of Soji that matter next."
+        description="See what is active, manage billing, and return to the parts of GS学院 that matter next."
       >
         {params.setup === "failed" && user ? (
           <ProfileSetupRetry nextPath={params.next} />
@@ -454,7 +454,7 @@ export default async function AccountPage({
 
             <article className="rounded-xl border border-dune bg-cream p-6 sm:p-7">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-                Continue with Soji
+                Continue with GS学院
               </p>
               <div className="mt-4 grid gap-2">
                 <Link
@@ -474,18 +474,6 @@ export default async function AccountPage({
                   className="group flex min-h-11 items-center justify-between rounded-lg bg-shell px-4 text-sm font-bold text-cocoa transition-colors hover:text-clay"
                 >
                   Check office hours
-                  <span
-                    aria-hidden="true"
-                    className="transition-transform group-hover:translate-x-1 motion-reduce:transform-none"
-                  >
-                    →
-                  </span>
-                </Link>
-                <Link
-                  href="/products"
-                  className="group flex min-h-11 items-center justify-between rounded-lg bg-shell px-4 text-sm font-bold text-cocoa transition-colors hover:text-clay"
-                >
-                  Find practical tools
                   <span
                     aria-hidden="true"
                     className="transition-transform group-hover:translate-x-1 motion-reduce:transform-none"
@@ -654,14 +642,6 @@ export default async function AccountPage({
                   Standalone purchases
                 </h2>
               </div>
-              {!accountTruthUnavailable ? (
-                <Link
-                  href="/products"
-                  className="inline-flex min-h-11 items-center text-sm font-semibold text-clay"
-                >
-                  Browse products
-                </Link>
-              ) : null}
             </div>
 
             {accountTruthUnavailable || purchases.error ? (
@@ -731,12 +711,6 @@ export default async function AccountPage({
                   Practical workbooks and conversation tools you purchase will
                   appear here with their download status.
                 </p>
-                <Link
-                  href="/products"
-                  className="mt-4 inline-flex min-h-11 items-center rounded-md border border-cocoa px-4 text-sm font-bold text-cocoa transition-colors hover:bg-cocoa hover:text-white"
-                >
-                  Browse practical tools
-                </Link>
               </div>
             )}
           </section>

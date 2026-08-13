@@ -30,11 +30,6 @@ const guestNavigation: ReadonlyArray<NavigationItem> = [
     label: "Library"
   },
   {
-    description: "Buy focused one-time tools",
-    href: "/products" as Route,
-    label: "Shop"
-  },
-  {
     description: "Bring a decision to live support",
     href: "/office-hours" as Route,
     label: "Office hours"
@@ -57,11 +52,6 @@ const memberNavigation: ReadonlyArray<NavigationItem> = [
     description: "Read guides and member editions",
     href: "/library" as Route,
     label: "Library"
-  },
-  {
-    description: "Use your purchases or find a tool",
-    href: "/products" as Route,
-    label: "Shop"
   },
   {
     description: "Reserve sessions and watch replays",
@@ -193,7 +183,7 @@ export function PublicNavigation({ signedIn = false }: { signedIn?: boolean }) {
       >
         <div className="px-3 pb-3 pt-2 md:hidden">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-            Explore Soji
+            Explore GS学院
           </p>
           <p className="mt-2 max-w-[30ch] text-sm leading-6 text-cocoa/68">
             {signedIn

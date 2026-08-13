@@ -25,7 +25,7 @@ export function PurchaseDisclosure(props: PurchaseDisclosureProps) {
     ) : (
       <>
         <strong className="font-bold text-cocoa">One-time purchase.</strong>{" "}
-        Delivered to your Soji account. Review the digital-product refund
+        Delivered to your GS学院 account. Review the digital-product refund
         policy before paying.
       </>
     );

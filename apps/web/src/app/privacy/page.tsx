@@ -4,7 +4,7 @@ import { PolicyLayout } from "@/components/policy-layout";
 export const metadata: Metadata = {
   title: "Privacy",
   description:
-    "How Soji currently collects, uses, and shares account, billing, support, and operational data.",
+    "How GS学院 currently collects, uses, and shares account, billing, support, and operational data.",
   alternates: { canonical: "/privacy" }
 };
 
@@ -13,7 +13,7 @@ export default function PrivacyPage() {
     <PolicyLayout
       eyebrow="Customer policy"
       title="Privacy"
-      summary="This draft describes the data used by the current Soji web service. It does not describe features that have not been launched."
+      summary="This draft describes the data used by the current GS学院 web service. It does not describe features that have not been launched."
       updatedAt="July 27, 2026"
       sections={[
         {
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
                 Stripe processes payment details and returns billing
                 identifiers, status, amounts, and limited transaction facts
                 needed for Checkout, access, refunds, disputes, and account
-                support. Soji does not store full card numbers.
+                support. GS学院 does not store full card numbers.
               </p>
             </>
           )
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
           title: "Storage and service providers",
           content: (
             <p>
-              Soji uses Supabase for application data and authentication and
+              GS学院 uses Supabase for application data and authentication and
               Stripe for payment and billing operations. Essential
               session/security storage keeps you signed in and helps prevent
               abuse. Support communications are retained by the channel used to
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
         },
         {
           id: "current-limits",
-          title: "What Soji does not currently do",
+          title: "What GS学院 does not currently do",
           content: (
             <p>
               We do not sell personal information. The current web service does

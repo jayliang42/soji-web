@@ -192,7 +192,7 @@ function OfficeHourCard({
                   title={presentation.title}
                 />
                 <CopySessionDetailsButton
-                  details={`${presentation.title}\n${presentation.startsAtLabel}\nSoji Office Hours`}
+                  details={`${presentation.title}\n${presentation.startsAtLabel}\nGS学院 Office Hours`}
                   tone="dark"
                 />
               </>

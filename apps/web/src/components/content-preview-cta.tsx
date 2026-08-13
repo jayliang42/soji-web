@@ -40,7 +40,7 @@ export function ContentPreviewCta({
               ? membershipName
                 ? `Continue with ${membershipName}`
                 : "This guide needs additional access"
-              : "Continue with Soji membership"}
+              : "Continue with GS学院 membership"}
           </h2>
         </div>
 

@@ -38,7 +38,7 @@ function CollectionStateArtwork({
               isUnavailable ? "text-white/55" : "text-cocoa/55"
             }`}
           >
-            Soji collection
+            GS学院 collection
           </span>
           <span
             className={`h-2.5 w-2.5 rounded-full ${

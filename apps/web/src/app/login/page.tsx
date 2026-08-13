@@ -83,7 +83,7 @@ export default async function LoginPage({
                 <ol className="mt-6 grid gap-3 border-t border-white/15 pt-5 text-sm">
                   <li className="flex gap-3">
                     <span className="font-bold text-white/45">01</span>
-                    <span>Sign in or create one Soji account.</span>
+                    <span>Sign in or create one GS学院 account.</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="font-bold text-white/45">02</span>

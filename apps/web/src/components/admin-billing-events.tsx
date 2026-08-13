@@ -83,7 +83,7 @@ export function getBillingRetryResultMessage(
     return "Billing event processed successfully.";
   }
   if (result === "ignored") {
-    return "Billing event stored; this event type has no Soji handler.";
+    return "Billing event stored; this event type has no GS学院 handler.";
   }
   if (result === "active") {
     return "This event is already being processed. Retry becomes available if its lease expires.";
@@ -245,7 +245,7 @@ function getProcessingPresentation(
     return {
       badge: "Complete",
       canRetry: false,
-      supportingCopy: "Soji processing completed.",
+      supportingCopy: "GS学院 processing completed.",
       toneClassName: "bg-success-muted text-success"
     };
   }
@@ -255,7 +255,7 @@ function getProcessingPresentation(
       badge: "No handler",
       canRetry: false,
       supportingCopy:
-        "The signed event is retained, but this type does not change Soji state.",
+        "The signed event is retained, but this type does not change GS学院 state.",
       toneClassName: "bg-sand text-cocoa/70"
     };
   }
@@ -265,7 +265,7 @@ function getProcessingPresentation(
       badge: "Failed",
       canRetry: true,
       supportingCopy:
-        "Soji processing failed. The verified receipt remains stored.",
+        "GS学院 processing failed. The verified receipt remains stored.",
       toneClassName: "bg-accent-muted text-error"
     };
   }
@@ -744,7 +744,7 @@ export function AdminBillingEvents({
             Billing Events
           </h3>
           <p className="mt-2 text-sm text-cocoa/70">
-            Signed Stripe receipts and their independent Soji processing
+            Signed Stripe receipts and their independent GS学院 processing
             outcomes.
           </p>
         </div>

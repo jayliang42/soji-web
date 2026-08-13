@@ -74,8 +74,6 @@ export default async function LibraryPage(props?: LibraryPageProps) {
         {snapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
-              alternativeHref="/products"
-              alternativeLabel="Browse practical tools"
               title="The library could not be loaded"
               description="No restricted content has been shown. Please try again shortly."
               note="Your membership and saved access stay unchanged while the library reconnects."

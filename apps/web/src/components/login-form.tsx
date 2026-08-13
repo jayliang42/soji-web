@@ -265,7 +265,7 @@ export function LoginForm({
           <p className="mt-3 text-sm leading-6 text-cocoa/80">
             We sent a confirmation link to{" "}
             <span className="font-semibold text-cocoa">{confirmationEmail}</span>.
-            Open it to finish creating your Soji account.
+            Open it to finish creating your GS学院 account.
           </p>
           <p className="mt-2 text-sm leading-6 text-cocoa/70">
             If it does not arrive, check spam or use a different email.
