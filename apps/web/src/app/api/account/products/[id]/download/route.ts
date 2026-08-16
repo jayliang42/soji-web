@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { reportOperationalError } from "@/lib/observability";
+import { hasActiveProductGrant } from "@/lib/product-access";
 import { PRODUCT_FILES_BUCKET } from "@/lib/product-asset-validation";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isMissingAuthSession } from "@/lib/supabase/auth-errors";
@@ -85,10 +86,9 @@ export async function GET(
       { status: 503 }
     );
   }
-  const membershipGrant = membershipGrants?.some(
-    (grant) =>
-      grant.entitlement_id === entitlementId &&
-      (!grant.ends_at || Date.parse(grant.ends_at) > Date.now())
+  const membershipGrant = hasActiveProductGrant(
+    membershipGrants ?? [],
+    entitlementId
   );
 
   if (!membershipGrant) {

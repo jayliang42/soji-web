@@ -638,10 +638,18 @@ test("password and OAuth failures retain a clear recovery action", async ({
 test("membership checkout keeps plan and return intent visible", async ({ page }) => {
   await page.goto("/pricing");
   await expect(
-    page.getByRole("button", { name: "Checkout unavailable" }).nth(1)
+    page.getByRole("button", { name: "支付配置中" })
   ).toBeVisible();
   await expect(
-    page.getByText("Billing is temporarily unavailable. No payment can be started.").nth(1)
+    page.getByRole("button", { name: "Checkout unavailable" })
+  ).toBeVisible();
+  await expect(
+    page.getByText("支付功能正在配置中，目前不会发起扣款。", {
+      exact: true
+    })
+  ).toBeVisible();
+  await expect(
+    page.getByText("Billing is temporarily unavailable. No payment can be started.")
   ).toBeVisible();
   await expect(page.getByText("Account first, secure Stripe checkout next")).toHaveCount(0);
 
@@ -809,7 +817,7 @@ test("Phase 3 policy and purchase trust path is visible before action", async ({
 }) => {
   await page.goto("/pricing");
   await expect(
-    page.getByText("$29 billed monthly until canceled.", { exact: true })
+    page.getByText("$99 paid once.", { exact: true })
   ).toBeVisible();
   await expect(
     page
@@ -819,7 +827,7 @@ test("Phase 3 policy and purchase trust path is visible before action", async ({
 
   await page.goto("/products");
   await expect(
-    page.getByText("Delivered to your Soji account.", { exact: false }).first()
+    page.getByText("Delivered to your GS学院 account.", { exact: false }).first()
   ).toBeVisible();
   await expect(
     page.getByRole("link", { exact: true, name: "Refund policy" }).first()

@@ -14,7 +14,8 @@ export const productCheckoutPayloadSchema = z
       .min(3)
       .max(120)
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-    requestId: z.string().uuid()
+    requestId: z.string().uuid(),
+    returnTo: z.enum(["pricing", "products"]).default("products")
   })
   .strict();
 

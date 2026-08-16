@@ -5,6 +5,7 @@ import type { EntitlementKey, ProductOffer } from "@soji/types";
 
 const entitlementOptions: Array<{ value: EntitlementKey; label: string }> = [
   { value: "product.digital", label: "Digital product" },
+  { value: "product.case_study_single", label: "Single case study" },
   { value: "content.all", label: "All content" },
   { value: "library.templates", label: "Templates" },
   { value: "library.case_studies", label: "Case studies" },

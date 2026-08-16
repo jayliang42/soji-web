@@ -13,6 +13,7 @@ import {
   isBillingDeliveryReady
 } from "@/lib/billing-readiness";
 import { hasStripeConfig } from "@/lib/env";
+import { hasProductAccess } from "@/lib/product-access";
 import { getProductBySlug } from "@/lib/products";
 import {
   isDeliveredPurchaseStatus,
@@ -96,7 +97,10 @@ export default async function ProductDetailPage({
     isPurchaseDisputeBlockingAccess(purchase.disputeStatus)
   );
   const customerEmail = session.user?.email ?? null;
-  const membershipEntitled = session.entitlements.includes(product.entitlement);
+  const membershipEntitled = hasProductAccess(
+    session.entitlements,
+    product.entitlement
+  );
   let checkoutEnabled = false;
 
   if (

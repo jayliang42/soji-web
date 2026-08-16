@@ -20,7 +20,7 @@ export const planFinderOptions: PlanFinderOption[] = [
     label: "Unlock everything",
     planId: "tier_1",
     rationale:
-      "One $99 monthly membership covers the complete Soji experience."
+      "One $99 payment covers the complete GS学院 experience without renewal."
   }
 ];
 
@@ -108,7 +108,7 @@ export function PlanFinder() {
                     {selectedPlan.name}
                   </h3>
                   <p className="text-sm font-bold text-cocoa/70">
-                    ${selectedPlan.monthlyPrice} / month
+                    ${selectedPlan.price} one time
                   </p>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-cocoa/72">

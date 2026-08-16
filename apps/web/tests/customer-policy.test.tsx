@@ -248,11 +248,11 @@ describe("customer trust links", () => {
     );
 
     expect(membership).toContain("One billing rhythm for full access");
-    expect(membership).toContain("renews monthly until canceled");
-    expect(membership).toContain("Stripe Customer Portal");
-    expect(membership).toContain("paid period and billing status");
+    expect(membership).toContain("Pay $99 once");
+    expect(membership).toContain("no automatic renewal");
+    expect(membership).toContain("benefits attached to it");
     expect(product).toContain("One-time purchase");
-    expect(product).toContain("Delivered to your Soji account");
+    expect(product).toContain("Delivered to your GS学院 account");
     expect(product).toContain("digital-product refund policy");
 
     for (const html of [membership, product]) {

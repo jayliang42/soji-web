@@ -51,11 +51,16 @@ test("reduced-motion preference minimizes decorative transitions", async ({ page
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/pricing");
 
-  const transitionDuration = await page
+  const transitionDurations = await page
     .locator(".transition-all")
-    .first()
-    .evaluate((element) => getComputedStyle(element).transitionDuration);
-  expect(Number.parseFloat(transitionDuration)).toBeLessThanOrEqual(0.001);
+    .evaluateAll((elements) =>
+      elements.map((element) => getComputedStyle(element).transitionDuration)
+    );
+  expect(
+    transitionDurations.every(
+      (duration) => Number.parseFloat(duration) <= 0.001
+    )
+  ).toBe(true);
 });
 
 test("keyboard order reaches library discovery after the skip target", async ({

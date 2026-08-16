@@ -10,11 +10,13 @@ import {
 } from "@/lib/billing-readiness";
 import { hasStripeConfig } from "@/lib/env";
 import { getProductSnapshot } from "@/lib/products";
+import { releaseProductCheckout } from "@/lib/product-checkout-release";
 import {
   isDeliveredPurchaseStatus,
   isPurchaseDisputeBlockingAccess
 } from "@/lib/purchase-status";
 import { getSessionSnapshot } from "@/lib/session";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Shop",
@@ -28,6 +30,7 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<{
     focus?: string;
+    product?: string;
     purchase?: string;
     q?: string;
     sort?: string;
@@ -38,6 +41,12 @@ export default async function ProductsPage({
     getProductSnapshot(),
     searchParams
   ]);
+  if (params.purchase === "cancelled" && params.product) {
+    const supabase = await createSupabaseServerClient();
+    if (supabase) {
+      await releaseProductCheckout(supabase, params.product);
+    }
+  }
   const customerEmail = snapshot.user?.email ?? null;
   const membershipEntitled = snapshot.entitlements.includes("product.digital");
   const purchases = await getAccountPurchases(snapshot.user?.id, snapshot.source);

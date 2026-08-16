@@ -160,7 +160,7 @@ describe("products page purchase safety", () => {
     );
 
     expect(html).toContain("One-time purchase");
-    expect(html).toContain("Delivered to your Soji account");
+    expect(html).toContain("Delivered to your GS学院 account");
     expect(html).toContain("digital-product refund policy");
     for (const href of ["/terms", "/refund-policy", "/privacy", "/support"]) {
       expect(html).toContain(`href="${href}"`);

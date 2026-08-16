@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(277);
+select plan(302);
 
 insert into auth.users (id, email)
 values
@@ -33,6 +33,105 @@ values
 
 insert into public.user_roles (user_id, role)
 values ('00000000-0000-4000-8000-000000000105', 'editor');
+
+select ok(
+  exists (
+    select 1
+    from public.entitlements
+    where id = 'product.case_study_single'
+  ),
+  'the single-case product has a product-scoped entitlement'
+);
+select is(
+  (
+    select price_cents
+    from public.products
+    where slug = 'case-study-single'
+  ),
+  500,
+  'the single-case product is priced at five dollars'
+);
+select is(
+  (
+    select entitlement_id
+    from public.products
+    where slug = 'case-study-single'
+  ),
+  'product.case_study_single'::text,
+  'the five-dollar product cannot grant umbrella digital-product access'
+);
+select ok(
+  (
+    select not is_active and stripe_price_id is null
+    from public.products
+    where slug = 'case-study-single'
+  ),
+  'the five-dollar product remains inactive until its environment price is attached'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.claim_product_checkout(uuid,uuid)',
+    'execute'
+  ),
+  'anonymous clients cannot claim a product checkout'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.claim_product_checkout(uuid,uuid)',
+    'execute'
+  ),
+  'authenticated clients can claim a product checkout'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.claim_subscription_checkout(uuid)',
+    'execute'
+  ),
+  'anonymous clients cannot claim a membership checkout'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.claim_subscription_checkout(uuid)',
+    'execute'
+  ),
+  'authenticated clients can claim a membership checkout'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.release_product_checkout(text)',
+    'execute'
+  ),
+  'anonymous clients cannot release a product checkout'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.release_product_checkout(text)',
+    'execute'
+  ),
+  'authenticated clients can release a product checkout'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.release_subscription_checkout()',
+    'execute'
+  ),
+  'anonymous clients cannot release a membership checkout'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.release_subscription_checkout()',
+    'execute'
+  ),
+  'authenticated clients can release a membership checkout'
+);
 
 set local role service_role;
 select throws_like(
@@ -1197,19 +1296,148 @@ select is(
   'the replacement claim records the new request id'
 );
 
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-4000-8000-000000000101","role":"authenticated"}',
+  true
+);
+select is(
+  public.release_subscription_checkout(),
+  true,
+  'a signed-in user can release a cancelled checkout immediately'
+);
+reset role;
+select is(
+  (
+    select count(*)
+    from public.subscription_checkout_intents
+    where user_id = '00000000-0000-4000-8000-000000000101'
+  ),
+  0::bigint,
+  'releasing a cancelled checkout removes only the current user claim'
+);
+
+select is(
+  public.sync_stripe_membership_purchase(
+    '00000000-0000-4000-8000-000000000102',
+    'tier_1',
+    'pi_membership_database_test',
+    'paid',
+    '2026-07-14T12:00:00Z'
+  ),
+  'tier_1'::membership_tier,
+  'a paid one-time membership purchase activates Full Access'
+);
+select ok(
+  exists (
+    select 1
+    from public.membership_purchases
+    where user_id = '00000000-0000-4000-8000-000000000102'
+      and provider_payment_id = 'pi_membership_database_test'
+      and status = 'paid'
+  ) and exists (
+    select 1
+    from public.user_entitlements
+    where user_id = '00000000-0000-4000-8000-000000000102'
+      and entitlement_id = 'content.all'
+      and source_type = 'membership_purchase'
+      and source_id = 'pi_membership_database_test'
+  ),
+  'one-time membership synchronization stores payment evidence and entitlements'
+);
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-4000-8000-000000000102","role":"authenticated"}',
+  true
+);
+select results_eq(
+  $$
+    select outcome
+    from public.claim_subscription_checkout(
+      '00000000-0000-4000-8000-000000000704'
+    )
+  $$,
+  array['existing_subscription'],
+  'an existing one-time Full Access purchase blocks duplicate checkout'
+);
+reset role;
+select is(
+  public.sync_stripe_membership_refund(
+    'pi_membership_database_test',
+    'refunded',
+    '2026-07-14T14:00:00Z'
+  ),
+  'free'::membership_tier,
+  'a full refund revokes one-time Full Access'
+);
+select ok(
+  not exists (
+    select 1
+    from public.user_entitlements
+    where user_id = '00000000-0000-4000-8000-000000000102'
+      and source_type = 'membership_purchase'
+      and source_id = 'pi_membership_database_test'
+  ) and (
+    select tier
+    from public.profiles
+    where id = '00000000-0000-4000-8000-000000000102'
+  ) = 'free'::membership_tier,
+  'a refunded Full Access payment leaves no active purchase entitlement'
+);
+select is(
+  public.sync_stripe_membership_purchase(
+    '00000000-0000-4000-8000-000000000102',
+    'tier_1',
+    'pi_membership_database_test',
+    'paid',
+    '2026-07-14T12:00:00Z'
+  ),
+  'free'::membership_tier,
+  'an older paid event cannot restore a refunded Full Access purchase'
+);
+select ok(
+  not exists (
+    select 1
+    from public.user_entitlements
+    where user_id = '00000000-0000-4000-8000-000000000102'
+      and source_type = 'membership_purchase'
+      and source_id = 'pi_membership_database_test'
+  ),
+  'a delayed paid webhook replay cannot restore refunded access'
+);
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-4000-8000-000000000102","role":"authenticated"}',
+  true
+);
+select results_eq(
+  $$
+    select outcome
+    from public.claim_subscription_checkout(
+      '00000000-0000-4000-8000-000000000705'
+    )
+  $$,
+  array['claimed'],
+  'a fully refunded Full Access purchase can start a new checkout'
+);
+reset role;
+
 select is(
   public.sync_stripe_subscription_state(
     '00000000-0000-4000-8000-000000000101',
     'sub_database_atomic_test',
     'cus_database_atomic_test',
-    'tier_2',
+    'tier_1',
     'active',
     '2026-08-14T12:00:00Z',
     null,
     '2026-07-14T12:00:00Z',
     true
   ),
-  'tier_2'::membership_tier,
+  'tier_1'::membership_tier,
   'subscription synchronization returns the effective tier'
 );
 select is(
@@ -1217,7 +1445,7 @@ select is(
     select tier from public.profiles
     where id = '00000000-0000-4000-8000-000000000101'
   ),
-  'tier_2'::membership_tier,
+  'tier_1'::membership_tier,
   'subscription synchronization updates the profile tier atomically'
 );
 select is(
@@ -1227,6 +1455,11 @@ select is(
   ),
   true,
   'subscription synchronization preserves a scheduled period-end cancellation'
+);
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-4000-8000-000000000101","role":"authenticated"}',
+  true
 );
 set local role authenticated;
 select results_eq(
@@ -1249,7 +1482,7 @@ select is(
       and ends_at = '2026-08-14T12:00:00Z'
   ),
   (
-    select count(*) from public.plan_entitlements where plan_id = 'tier_2'
+    select count(*) from public.plan_entitlements where plan_id = 'tier_1'
   ),
   'subscription synchronization derives every entitlement from the plan'
 );
@@ -1258,7 +1491,7 @@ select is(
     '00000000-0000-4000-8000-000000000101',
     'sub_database_atomic_test',
     'cus_database_atomic_test',
-    'tier_2',
+    'tier_1',
     'canceled',
     '2026-08-14T12:00:00Z',
     '2026-07-15T12:00:00Z',
@@ -1275,7 +1508,7 @@ select is(
       and ends_at = '2026-07-15T12:00:00Z'
   ),
   (
-    select count(*) from public.plan_entitlements where plan_id = 'tier_2'
+    select count(*) from public.plan_entitlements where plan_id = 'tier_1'
   ),
   'canceling a subscription expires all of its entitlements'
 );
@@ -1284,7 +1517,7 @@ select is(
     '00000000-0000-4000-8000-000000000101',
     'sub_database_atomic_test',
     'cus_database_atomic_test',
-    'tier_2',
+    'tier_1',
     'active',
     '2026-08-14T12:00:00Z',
     null,
@@ -1318,7 +1551,7 @@ select is(
       and ends_at = '2026-07-15T12:00:00Z'
   ),
   (
-    select count(*) from public.plan_entitlements where plan_id = 'tier_2'
+    select count(*) from public.plan_entitlements where plan_id = 'tier_1'
   ),
   'a delayed subscription snapshot cannot reactivate expired entitlements'
 );
@@ -1524,6 +1757,39 @@ select is(
   ),
   '00000000-0000-4000-8000-000000000802'::uuid,
   'the replacement product claim records the new request id'
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-4000-8000-000000000101","role":"authenticated"}',
+  true
+);
+select is(
+  public.release_product_checkout('atomic-purchase-test'),
+  true,
+  'a signed-in user can release one cancelled product checkout immediately'
+);
+reset role;
+select is(
+  (
+    select count(*)
+    from public.product_checkout_intents
+    where user_id = '00000000-0000-4000-8000-000000000101'
+      and product_id = '00000000-0000-4000-8000-000000000201'
+  ),
+  0::bigint,
+  'releasing a cancelled product checkout removes the named product claim'
+);
+select is(
+  (
+    select count(*)
+    from public.product_checkout_intents
+    where user_id = '00000000-0000-4000-8000-000000000101'
+      and product_id = '00000000-0000-4000-8000-000000000204'
+  ),
+  1::bigint,
+  'releasing one product checkout preserves the user claim for another product'
 );
 
 select set_config('request.jwt.claims', '{}', true);

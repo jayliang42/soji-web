@@ -31,10 +31,19 @@ describe("subscription checkout payload", () => {
 
 describe("product checkout payload", () => {
   it("accepts normalized product slugs", () => {
+    const result = productCheckoutPayloadSchema.safeParse({
+      productSlug: "wealth-dashboard-template-pack",
+      requestId
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.returnTo).toBe("products");
+    }
     expect(
       productCheckoutPayloadSchema.safeParse({
-        productSlug: "wealth-dashboard-template-pack",
-        requestId
+        productSlug: "case-study-single",
+        requestId,
+        returnTo: "pricing"
       }).success
     ).toBe(true);
   });
@@ -49,6 +58,13 @@ describe("product checkout payload", () => {
         productSlug: "wealth-dashboard-template-pack",
         requestId,
         stripePriceId: "price_attacker_controlled"
+      }).success
+    ).toBe(false);
+    expect(
+      productCheckoutPayloadSchema.safeParse({
+        productSlug: "case-study-single",
+        requestId,
+        returnTo: "https://attacker.example"
       }).success
     ).toBe(false);
   });

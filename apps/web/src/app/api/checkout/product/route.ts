@@ -7,6 +7,7 @@ import { productCheckoutPayloadSchema } from "@/lib/checkout";
 import { getCheckoutCustomerPolicyReadiness } from "@/lib/customer-policy";
 import { getSiteUrl } from "@/lib/env";
 import { reportOperationalError } from "@/lib/observability";
+import { hasActiveProductGrant } from "@/lib/product-access";
 import { claimProductCheckout } from "@/lib/product-checkout";
 import {
   consumeCheckoutRateLimit,
@@ -158,10 +159,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const membershipGrant = membershipGrants?.some(
-    (grant) =>
-      grant.entitlement_id === productEntitlement &&
-      (!grant.ends_at || Date.parse(grant.ends_at) > Date.now())
+  const membershipGrant = hasActiveProductGrant(
+    membershipGrants ?? [],
+    productEntitlement
   );
 
   if (membershipGrant) {
@@ -251,7 +251,10 @@ export async function POST(request: NextRequest) {
           metadata
         },
         success_url: `${siteUrl}/account?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${siteUrl}/products?purchase=cancelled`
+        cancel_url:
+          parsed.data.returnTo === "pricing"
+            ? `${siteUrl}/pricing?purchase=cancelled&product=${product.slug}#case-study-offers`
+            : `${siteUrl}/products?purchase=cancelled&product=${product.slug}`
       },
       {
         idempotencyKey: `soji:checkout:product:${user.id}:${parsed.data.requestId}`

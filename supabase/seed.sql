@@ -10,15 +10,15 @@ set tier = case
     where subscription.user_id = profile.id
       and subscription.plan_id = 'tier_1'
       and subscription.status in ('active', 'trialing')
-  ) then 'tier_1'
-  else 'free'
+  ) then 'tier_1'::membership_tier
+  else 'free'::membership_tier
 end
 where profile.tier in ('tier_2', 'tier_3');
 
 insert into membership_plans (id, name, monthly_price, stripe_lookup_key, revenuecat_entitlement, description)
 values
   ('free', 'Free', 0, null, null, 'Public access only.'),
-  ('tier_1', 'Full Access', 99, 'full_access_monthly', 'full_access', 'One membership for the complete library, every digital product, live support, and all member benefits.')
+  ('tier_1', 'Full Access', 99, 'full_access_once', 'full_access', 'One payment for the complete library, every digital product, live support, and all member benefits.')
 on conflict (id) do update
 set
   name = excluded.name,

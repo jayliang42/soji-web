@@ -10,21 +10,20 @@ const membershipPolicyLinks = [
 const membershipBasics = [
   {
     label: "01",
-    title: "Your selected monthly price",
-    description:
-      "Your plan is charged when you join and renews monthly until canceled."
+    title: "Your one-time price",
+    description: "Pay $99 once. There is no automatic renewal."
   },
   {
     label: "02",
-    title: "One place to manage billing",
+    title: "One place to manage access",
     description:
-      "Use Account to open the Stripe Customer Portal, update payment details, or cancel."
+      "Use Account to review your purchase and the benefits attached to it."
   },
   {
     label: "03",
-    title: "Access follows the paid period",
+    title: "Access follows the purchase",
     description:
-      "Cancellation stops future renewal. Access continues according to your paid period and billing status."
+      "Your purchase unlocks the complete current and future member library."
   }
 ] as const;
 
@@ -46,7 +45,7 @@ export function MembershipTerms() {
             One billing rhythm for full access.
           </h3>
           <p className="mt-4 max-w-md text-sm leading-6 text-white/72">
-            One $99 monthly subscription keeps every current and future benefit in the same place.
+            One $99 payment keeps every current and future benefit in the same place.
           </p>
         </div>
 
@@ -73,7 +72,7 @@ export function MembershipTerms() {
               {membershipPolicyLinks.map(([label, href]) => (
                 <li key={href}>
                   <Link
-                    className="inline-flex min-h-11 items-center font-semibold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
+                    className="inline-flex min-h-11 min-w-11 items-center justify-center font-semibold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
                     href={href}
                   >
                     {label}

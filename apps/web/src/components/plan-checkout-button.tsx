@@ -26,6 +26,7 @@ export function PlanCheckoutButton({
   accountLabel,
   checkoutEnabled,
   customerEmail,
+  darkSurface = false,
   label,
   lookupKey,
   planId
@@ -33,6 +34,7 @@ export function PlanCheckoutButton({
   accountLabel: string;
   checkoutEnabled: boolean;
   customerEmail: string | null;
+  darkSurface?: boolean;
   label: string;
   lookupKey: string | null;
   planId: MembershipTier;
@@ -45,7 +47,11 @@ export function PlanCheckoutButton({
     return (
       <Link
         href="/login?next=/pricing"
-        className="block w-full rounded-md bg-cocoa px-6 py-4 text-center text-sm font-bold text-white transition-colors hover:bg-charcoal"
+        className={`block w-full rounded-md px-6 py-4 text-center text-sm font-bold transition-colors ${
+          darkSurface
+            ? "bg-white text-cocoa hover:bg-sand"
+            : "bg-cocoa text-white hover:bg-charcoal"
+        }`}
       >
         {accountLabel}
       </Link>
@@ -58,11 +64,19 @@ export function PlanCheckoutButton({
         <button
           type="button"
           disabled
-          className="w-full cursor-not-allowed rounded-md border border-dune bg-cream px-6 py-4 text-sm font-bold text-cocoa/60"
+          className={`w-full cursor-not-allowed rounded-md border px-6 py-4 text-sm font-bold ${
+            darkSurface
+              ? "border-white/30 bg-white/10 text-white/60"
+              : "border-dune bg-cream text-cocoa/60"
+          }`}
         >
           Checkout unavailable
         </button>
-        <p className="text-center text-xs font-medium text-cocoa/65">
+        <p
+          className={`text-center text-xs font-medium ${
+            darkSurface ? "text-white/65" : "text-cocoa/65"
+          }`}
+        >
           Billing is temporarily unavailable. No payment can be started.
         </p>
       </div>
@@ -113,12 +127,21 @@ export function PlanCheckoutButton({
         type="button"
         onClick={startCheckout}
         disabled={isPending}
-        className="w-full rounded-md bg-cocoa px-6 py-4 text-sm font-bold text-white transition-colors hover:bg-charcoal disabled:cursor-not-allowed disabled:opacity-60"
+        className={`w-full rounded-md px-6 py-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+          darkSurface
+            ? "bg-white text-cocoa hover:bg-sand"
+            : "bg-cocoa text-white hover:bg-charcoal"
+        }`}
       >
         {isPending ? "Opening checkout..." : label}
       </button>
       {message ? (
-        <p aria-live="polite" className="text-sm font-medium text-clay">
+        <p
+          aria-live="polite"
+          className={`text-sm font-medium ${
+            darkSurface ? "text-white/80" : "text-clay"
+          }`}
+        >
           {message}
         </p>
       ) : null}

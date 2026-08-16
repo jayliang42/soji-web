@@ -2,7 +2,7 @@ import type Stripe from "stripe";
 import { reportOperationalError } from "@/lib/observability";
 import { getStripeClient } from "@/lib/stripe";
 
-export type CheckoutReturnKind = "product" | "subscription";
+export type CheckoutReturnKind = "product" | "membership";
 export type CheckoutReturnState =
   | "confirmed"
   | "incomplete"
@@ -57,7 +57,7 @@ export async function getCheckoutReturnStatus({
     return { kind, state: "unavailable" };
   }
 
-  const expectedMode = kind === "product" ? "payment" : "subscription";
+  const expectedMode = "payment";
   const belongsToUser =
     session.client_reference_id === userId && session.metadata?.userId === userId;
 

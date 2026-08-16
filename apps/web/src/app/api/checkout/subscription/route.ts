@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
   if (authError && !isMissingAuthSession(authError)) {
     await reportOperationalError("stripe.checkout.auth_lookup_failed", authError, {
-      checkoutMode: "subscription"
+      checkoutMode: "membership"
     });
     return NextResponse.json(
       { error: "Authentication is temporarily unavailable." },
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     await reportOperationalError(
       "stripe.checkout.rate_limit_unavailable",
       new Error(rateLimit.reason),
-      { checkoutMode: "subscription" }
+      { checkoutMode: "membership" }
     );
     return NextResponse.json(
       { error: "Checkout protection is temporarily unavailable." },
@@ -173,6 +173,7 @@ export async function POST(request: NextRequest) {
   }
 
   const metadata = {
+    kind: "membership",
     lookupKey: plan.stripePriceLookupKey ?? "",
     planId: plan.id,
     userId: user.id
@@ -187,7 +188,7 @@ export async function POST(request: NextRequest) {
   }
   if (claim.outcome === "existing_subscription") {
     return NextResponse.json(
-      { error: "An existing membership must be managed from your account." },
+      { error: "An existing Full Access purchase is already attached to this account." },
       { status: 409 }
     );
   }
@@ -209,10 +210,8 @@ export async function POST(request: NextRequest) {
       {
         allow_promotion_codes: true,
         client_reference_id: user.id,
-        consent_collection: {
-          terms_of_service: "required"
-        },
-        mode: "subscription",
+        consent_collection: { terms_of_service: "required" },
+        mode: "payment",
         ...(customerId
           ? { customer: customerId }
           : { customer_email: user.email }),
@@ -221,23 +220,26 @@ export async function POST(request: NextRequest) {
         custom_text: {
           submit: {
             message:
-              "By subscribing, you agree to the GS学院 Terms. Your membership renews monthly until canceled."
+              "By purchasing, you agree to the GS学院 Terms. This is a one-time $99 payment."
           }
         },
         expires_at: checkoutExpiresAt,
-        subscription_data: {
-          metadata
+        payment_intent_data: {
+          metadata: {
+            ...metadata,
+            kind: "membership"
+          }
         },
         success_url: `${siteUrl}/account?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${siteUrl}/pricing?checkout=cancelled`
       },
       {
-        idempotencyKey: `soji:checkout:subscription:${user.id}:${parsed.data.requestId}`
+        idempotencyKey: `soji:checkout:membership:${user.id}:${parsed.data.requestId}`
       }
     );
   } catch (error) {
     await reportOperationalError("stripe.checkout.session_create_failed", error, {
-      checkoutMode: "subscription",
+      checkoutMode: "membership",
       planId: plan.id
     });
     return NextResponse.json(
@@ -250,7 +252,7 @@ export async function POST(request: NextRequest) {
     await reportOperationalError(
       "stripe.checkout.session_url_missing",
       new Error("stripe_checkout_session_url_missing"),
-      { checkoutMode: "subscription", planId: plan.id }
+      { checkoutMode: "membership", planId: plan.id }
     );
     return NextResponse.json(
       { error: "Checkout could not be started." },

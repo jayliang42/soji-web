@@ -9,7 +9,8 @@ export type EntitlementKey =
   | "office_hours.join"
   | "community.vip_access"
   | "contact.unlock"
-  | "product.digital";
+  | "product.digital"
+  | "product.case_study_single";
 
 export type ContentType =
   | "article"
@@ -37,8 +38,8 @@ export type BillingEventStatus =
 export interface MembershipPlan {
   id: MembershipTier;
   name: string;
-  monthlyPrice: number;
-  annualPrice?: number;
+  price: number;
+  billingType: "one_time" | "recurring";
   stripePriceLookupKey?: string;
   revenueCatEntitlement?: string;
   description: string;

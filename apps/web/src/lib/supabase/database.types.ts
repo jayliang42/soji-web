@@ -196,6 +196,7 @@ export type Database = {
       }
       membership_plans: {
         Row: {
+          billing_type: string
           description: string
           id: Database["public"]["Enums"]["membership_tier"]
           monthly_price: number
@@ -204,6 +205,7 @@ export type Database = {
           stripe_lookup_key: string | null
         }
         Insert: {
+          billing_type?: string
           description: string
           id: Database["public"]["Enums"]["membership_tier"]
           monthly_price: number
@@ -212,6 +214,7 @@ export type Database = {
           stripe_lookup_key?: string | null
         }
         Update: {
+          billing_type?: string
           description?: string
           id?: Database["public"]["Enums"]["membership_tier"]
           monthly_price?: number
@@ -220,6 +223,63 @@ export type Database = {
           stripe_lookup_key?: string | null
         }
         Relationships: []
+      }
+      membership_purchases: {
+        Row: {
+          created_at: string
+          dispute_id: string | null
+          dispute_observed_at: string | null
+          dispute_status: string | null
+          id: string
+          plan_id: Database["public"]["Enums"]["membership_tier"]
+          provider: Database["public"]["Enums"]["billing_provider"]
+          provider_payment_id: string
+          status: string
+          status_observed_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dispute_id?: string | null
+          dispute_observed_at?: string | null
+          dispute_status?: string | null
+          id?: string
+          plan_id: Database["public"]["Enums"]["membership_tier"]
+          provider: Database["public"]["Enums"]["billing_provider"]
+          provider_payment_id: string
+          status: string
+          status_observed_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dispute_id?: string | null
+          dispute_observed_at?: string | null
+          dispute_status?: string | null
+          id?: string
+          plan_id?: Database["public"]["Enums"]["membership_tier"]
+          provider?: Database["public"]["Enums"]["billing_provider"]
+          provider_payment_id?: string
+          status?: string
+          status_observed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membership_purchases_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "membership_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "membership_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       office_hour_sessions: {
         Row: {
@@ -1007,6 +1067,10 @@ export type Database = {
         Args: { p_product_id: string; p_storage_path: string }
         Returns: string
       }
+      recompute_full_access_profile: {
+        Args: { p_user_id: string }
+        Returns: Database["public"]["Enums"]["membership_tier"]
+      }
       recompute_stripe_subscription_access: {
         Args: { p_effective_observed_at?: string; p_subscription_id: string }
         Returns: Database["public"]["Enums"]["membership_tier"]
@@ -1033,6 +1097,11 @@ export type Database = {
           status: string
         }[]
       }
+      release_product_checkout: {
+        Args: { p_product_slug: string }
+        Returns: boolean
+      }
+      release_subscription_checkout: { Args: never; Returns: boolean }
       replace_product_asset: {
         Args: {
           p_content_type: string
@@ -1063,6 +1132,33 @@ export type Database = {
           changed_at: string
           previous_role: Database["public"]["Enums"]["user_role"]
         }[]
+      }
+      sync_stripe_membership_dispute: {
+        Args: {
+          p_observed_at?: string
+          p_provider_dispute_id: string
+          p_provider_payment_id: string
+          p_status: string
+        }
+        Returns: Database["public"]["Enums"]["membership_tier"]
+      }
+      sync_stripe_membership_purchase: {
+        Args: {
+          p_observed_at?: string
+          p_plan_id: Database["public"]["Enums"]["membership_tier"]
+          p_provider_payment_id: string
+          p_status: string
+          p_user_id: string
+        }
+        Returns: Database["public"]["Enums"]["membership_tier"]
+      }
+      sync_stripe_membership_refund: {
+        Args: {
+          p_observed_at?: string
+          p_provider_payment_id: string
+          p_status: string
+        }
+        Returns: Database["public"]["Enums"]["membership_tier"]
       }
       sync_stripe_product_dispute: {
         Args: {

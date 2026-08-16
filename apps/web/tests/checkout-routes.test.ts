@@ -94,9 +94,9 @@ function subscriptionStripe() {
         active: true,
         currency: "usd",
         id: "price_server_full_access",
-        lookup_key: "full_access_monthly",
-        recurring: { interval: "month", interval_count: 1 },
-        type: "recurring",
+        lookup_key: "full_access_once",
+        recurring: null,
+        type: "one_time",
         unit_amount: 9_900
       }
     ]
@@ -252,7 +252,7 @@ describe("checkout route validation", () => {
     expect(listPrices).toHaveBeenCalledWith({
       active: true,
       limit: 100,
-      lookup_keys: ["full_access_monthly"]
+      lookup_keys: ["full_access_once"]
     });
     expect(checkoutMocks.getExistingStripeCustomerId).toHaveBeenCalledWith(
       supabase,
@@ -269,20 +269,22 @@ describe("checkout route validation", () => {
         custom_text: {
           submit: {
             message:
-              "By subscribing, you agree to the Soji Terms. Your membership renews monthly until canceled."
+              "By purchasing, you agree to the GS学院 Terms. This is a one-time $99 payment."
           }
         },
         expires_at: 1_784_032_500,
         line_items: [{ price: "price_server_full_access", quantity: 1 }],
         metadata: {
-          lookupKey: "full_access_monthly",
+          kind: "membership",
+          lookupKey: "full_access_once",
           planId: "tier_1",
           userId: "00000000-0000-4000-8000-000000000101"
         },
-        mode: "subscription",
-        subscription_data: {
+        mode: "payment",
+        payment_intent_data: {
           metadata: {
-            lookupKey: "full_access_monthly",
+            kind: "membership",
+            lookupKey: "full_access_once",
             planId: "tier_1",
             userId: "00000000-0000-4000-8000-000000000101"
           }
@@ -292,7 +294,7 @@ describe("checkout route validation", () => {
       },
       {
         idempotencyKey:
-          "soji:checkout:subscription:00000000-0000-4000-8000-000000000101:00000000-0000-4000-8000-000000000501"
+          "soji:checkout:membership:00000000-0000-4000-8000-000000000101:00000000-0000-4000-8000-000000000501"
       }
     );
   });
@@ -311,18 +313,24 @@ describe("checkout route validation", () => {
     const response = await createProductCheckout(
       request(
         "/api/checkout/product",
-        JSON.stringify({ productSlug: "wealth-guide", requestId })
+        JSON.stringify({
+          productSlug: "wealth-guide",
+          requestId,
+          returnTo: "pricing"
+        })
       )
     );
 
     expect(response.status).toBe(200);
     expect(createSession).toHaveBeenCalledWith(
       expect.objectContaining({
+        cancel_url:
+          "http://localhost:3000/pricing?purchase=cancelled&product=wealth-guide#case-study-offers",
         consent_collection: { terms_of_service: "required" },
         custom_text: {
           submit: {
             message:
-              "By purchasing, you agree to the Soji Terms and acknowledge the digital-product refund policy."
+              "By purchasing, you agree to the GS学院 Terms and acknowledge the digital-product refund policy."
           }
         },
         mode: "payment"
@@ -423,7 +431,7 @@ describe("checkout route validation", () => {
     [
       "existing_subscription",
       null,
-      "An existing membership must be managed from your account."
+      "An existing Full Access purchase is already attached to this account."
     ],
     [
       "checkout_in_progress",
@@ -599,7 +607,7 @@ describe("checkout route validation", () => {
     expect(checkoutMocks.reportOperationalError).toHaveBeenCalledWith(
       "stripe.checkout.auth_lookup_failed",
       authError,
-      { checkoutMode: "subscription" }
+      { checkoutMode: "membership" }
     );
   });
 

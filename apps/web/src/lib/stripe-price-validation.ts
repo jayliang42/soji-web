@@ -25,6 +25,7 @@ export type StripeMembershipCatalogFailureReason =
   | "stripe_membership_price_inactive"
   | "stripe_membership_price_lookup_failed"
   | "stripe_membership_price_missing"
+  | "stripe_membership_price_must_be_one_time"
   | "stripe_membership_price_must_be_monthly";
 
 export type StripeMembershipCatalogValidation =
@@ -83,16 +84,23 @@ export async function validateStripeMembershipCatalog({
         reason: "stripe_membership_price_currency_mismatch"
       };
     }
-    if (price.unit_amount !== plan.monthlyPrice * 100) {
+    if (price.unit_amount !== plan.price * 100) {
       return {
         ok: false,
         reason: "stripe_membership_price_amount_mismatch"
       };
     }
+    if (plan.billingType === "one_time" && price.type !== "one_time") {
+      return {
+        ok: false,
+        reason: "stripe_membership_price_must_be_one_time"
+      };
+    }
     if (
-      price.type !== "recurring" ||
-      price.recurring?.interval !== "month" ||
-      price.recurring.interval_count !== 1
+      plan.billingType === "recurring" &&
+      (price.type !== "recurring" ||
+        price.recurring?.interval !== "month" ||
+        price.recurring.interval_count !== 1)
     ) {
       return {
         ok: false,

@@ -11,56 +11,43 @@ async function expectNoHorizontalOverflow(
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
 }
 
-test("home presents four clear starting paths", async ({ page }) => {
+test("home presents preview, guidance, and both case-study purchase paths", async ({
+  page
+}) => {
   await page.goto("/");
 
-  const paths = page.getByRole("region", {
-    name: "Choose the next step that fits today."
+  await expect(page.getByRole("link", { name: "Read a preview" })).toHaveAttribute(
+    "href",
+    "/library"
+  );
+  await expect(
+    page.getByRole("link", { name: "Explore membership" })
+  ).toHaveAttribute("href", "/pricing");
+
+  const outcomes = page.getByTestId("home-outcomes");
+  await expect(outcomes.getByRole("listitem")).toHaveCount(4);
+  await expect(
+    outcomes.getByRole("heading", { name: "直面非传统背景" })
+  ).toBeVisible();
+
+  const caseStudies = page.getByRole("region", {
+    name: "55篇真实录取案例，按你的需要解锁。"
   });
-  const expectedLinks = [
-    ["Explore the library", "/library?focus=start"],
-    ["Browse practical tools", "/products"],
-    ["Find your membership", "/pricing#plan-finder-heading"],
-    ["See office hours", "/office-hours"]
-  ] as const;
-
-  for (const [name, href] of expectedLinks) {
-    await expect(paths.getByRole("link", { name })).toHaveAttribute("href", href);
-  }
-
-  await expect(paths.getByText("Free previews", { exact: true })).toBeVisible();
-  await expect(paths.getByText("From $49 once", { exact: true })).toBeVisible();
-  await expect(paths.getByText("From $29 monthly", { exact: true })).toBeVisible();
+  await expect(caseStudies.getByText("$5", { exact: true })).toBeVisible();
+  await expect(caseStudies.getByText("$99", { exact: true })).toBeVisible();
+  await expect(
+    caseStudies.getByRole("link", { name: "查看解锁方式" })
+  ).toHaveAttribute("href", "/pricing#case-study-offers");
+  await expect(
+    caseStudies.getByRole("heading", { name: "单篇真实录取案例" })
+  ).toBeVisible();
+  await expect(
+    caseStudies.getByRole("heading", { name: "55篇真实录取案例合集" })
+  ).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
 
-test("home membership overview leads into pricing detail", async ({ page }) => {
-  await page.goto("/");
-
-  const membership = page.getByRole("region", {
-    name: "Three depths of access, one clear comparison."
-  });
-  await expect(
-    membership.getByRole("link", { name: /^tier 1\b/iu })
-  ).toHaveAttribute("href", "/pricing#plan-tier_1");
-  await expect(
-    membership.getByRole("link", { name: /^tier 2\b/iu })
-  ).toHaveAttribute("href", "/pricing#plan-tier_2");
-  await expect(
-    membership.getByRole("link", { name: /^tier 3\b/iu })
-  ).toHaveAttribute("href", "/pricing#plan-tier_3");
-  await expect(page.getByText("Create account to join", { exact: false })).toHaveCount(
-    0
-  );
-
-  await membership.getByRole("link", { name: "Use the plan finder" }).click();
-  await expect(page).toHaveURL(/\/pricing#plan-finder-heading$/u);
-  await expect(
-    page.getByRole("heading", { name: "Find your best starting point." })
-  ).toBeInViewport();
-});
-
-test("home decision links remain usable at narrow widths", async ({
+test("home case-study actions remain usable at narrow widths", async ({
   page
 }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("mobile"));
@@ -69,24 +56,13 @@ test("home decision links remain usable at narrow widths", async ({
     await page.setViewportSize({ height: 844, width });
     await page.goto("/");
 
-    const paths = page.getByRole("region", {
-      name: "Choose the next step that fits today."
-    });
-    const links = paths.getByRole("link");
-    const linkCount = await links.count();
-
-    expect(linkCount).toBe(4);
-    for (let index = 0; index < linkCount; index += 1) {
-      const box = await links.nth(index).boundingBox();
-      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
-      expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
-    }
-
-    const membership = page.getByRole("region", {
-      name: "Three depths of access, one clear comparison."
-    });
-    for (const name of ["Use the plan finder", "Compare every benefit"]) {
-      const box = await membership.getByRole("link", { name }).boundingBox();
+    for (const name of [
+      "Read a preview",
+      "Explore membership",
+      "查看解锁方式",
+      "先看案例目录"
+    ]) {
+      const box = await page.getByRole("link", { name }).boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
       expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
     }

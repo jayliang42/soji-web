@@ -489,6 +489,40 @@ describe("Stripe webhook state synchronization", () => {
     );
   });
 
+  it("derives one-time Full Access inside the membership purchase RPC", async () => {
+    syncMocks.rpc.mockResolvedValue({ data: "tier_1", error: null });
+    const event = {
+      created: 1784124000,
+      data: {
+        object: {
+          id: "cs_membership_once",
+          metadata: { kind: "membership", planId: "tier_1", userId },
+          mode: "payment",
+          payment_intent: "pi_membership_once",
+          payment_status: "paid"
+        }
+      },
+      type: "checkout.session.completed"
+    } as unknown as Stripe.Event;
+
+    await expect(processStripeEvent(event, {} as Stripe)).resolves.toEqual({
+      action: "synced_membership_purchase",
+      effectiveTier: "tier_1",
+      planId: "tier_1",
+      userId
+    });
+    expect(syncMocks.rpc).toHaveBeenCalledWith(
+      "sync_stripe_membership_purchase",
+      {
+        p_observed_at: "2026-07-15T14:00:00.000Z",
+        p_plan_id: "tier_1",
+        p_provider_payment_id: "pi_membership_once",
+        p_status: "paid",
+        p_user_id: userId
+      }
+    );
+  });
+
   it("fails a paid product Checkout receipt without ownership metadata", async () => {
     const event = {
       data: {
@@ -655,6 +689,48 @@ describe("Stripe webhook state synchronization", () => {
     }
   );
 
+  it("synchronizes a one-time Full Access refund through its membership RPC", async () => {
+    syncMocks.rpc.mockResolvedValue({ data: "free", error: null });
+    const invoicePaymentsList = vi.fn();
+    const event = {
+      created: 1784127600,
+      data: {
+        object: {
+          amount: 9_900,
+          amount_refunded: 9_900,
+          currency: "usd",
+          id: "ch_membership_refund",
+          payment_intent: {
+            id: "pi_membership_refund",
+            metadata: { kind: "membership", planId: "tier_1", userId }
+          },
+          refunded: true
+        }
+      },
+      type: "charge.refunded"
+    } as unknown as Stripe.Event;
+
+    await expect(
+      processStripeEvent(event, {
+        invoicePayments: { list: invoicePaymentsList }
+      } as unknown as Stripe)
+    ).resolves.toEqual({
+      action: "synced_membership_refund",
+      effectiveTier: "free",
+      paymentId: "pi_membership_refund",
+      status: "refunded"
+    });
+    expect(invoicePaymentsList).not.toHaveBeenCalled();
+    expect(syncMocks.rpc).toHaveBeenCalledWith(
+      "sync_stripe_membership_refund",
+      {
+        p_observed_at: "2026-07-15T15:00:00.000Z",
+        p_provider_payment_id: "pi_membership_refund",
+        p_status: "refunded"
+      }
+    );
+  });
+
   it.each([
     {
       amountRefunded: 500,
@@ -794,6 +870,48 @@ describe("Stripe webhook state synchronization", () => {
       p_provider_payment_id: "pi_dispute_test",
       p_status: "needs_response"
     });
+  });
+
+  it("synchronizes a one-time Full Access dispute through its membership RPC", async () => {
+    syncMocks.rpc.mockResolvedValue({ data: "free", error: null });
+    const invoicePaymentsList = vi.fn();
+    const event = {
+      created: 1784127600,
+      data: {
+        object: {
+          charge: "ch_membership_dispute",
+          id: "du_membership_dispute",
+          payment_intent: {
+            id: "pi_membership_dispute",
+            metadata: { kind: "membership", planId: "tier_1", userId }
+          },
+          status: "needs_response"
+        }
+      },
+      type: "charge.dispute.created"
+    } as unknown as Stripe.Event;
+
+    await expect(
+      processStripeEvent(event, {
+        invoicePayments: { list: invoicePaymentsList }
+      } as unknown as Stripe)
+    ).resolves.toEqual({
+      action: "synced_membership_dispute",
+      disputeId: "du_membership_dispute",
+      effectiveTier: "free",
+      paymentId: "pi_membership_dispute",
+      status: "needs_response"
+    });
+    expect(invoicePaymentsList).not.toHaveBeenCalled();
+    expect(syncMocks.rpc).toHaveBeenCalledWith(
+      "sync_stripe_membership_dispute",
+      {
+        p_observed_at: "2026-07-15T15:00:00.000Z",
+        p_provider_dispute_id: "du_membership_dispute",
+        p_provider_payment_id: "pi_membership_dispute",
+        p_status: "needs_response"
+      }
+    );
   });
 
   it("resolves a dispute PaymentIntent through its Charge when Stripe omits it", async () => {

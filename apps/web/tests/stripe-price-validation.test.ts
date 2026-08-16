@@ -29,9 +29,9 @@ function membershipPrice(
     currency: "usd",
     id: `price_${plan.id}`,
     lookup_key: plan.stripePriceLookupKey,
-    recurring: { interval: "month", interval_count: 1 },
-    type: "recurring",
-    unit_amount: plan.monthlyPrice * 100,
+    recurring: null,
+    type: "one_time",
+    unit_amount: plan.price * 100,
     ...overrides
   } as Stripe.Price;
 }
@@ -100,7 +100,7 @@ describe("Stripe product price validation", () => {
 });
 
 describe("Stripe membership catalog validation", () => {
-  it("accepts one active monthly USD price at the exact amount for the full plan", async () => {
+  it("accepts one active one-time USD price at the exact amount for the full plan", async () => {
     const stripe = stripeWithMembershipCatalog(
       membershipPlans.map((plan) => membershipPrice(plan))
     );
@@ -119,10 +119,9 @@ describe("Stripe membership catalog validation", () => {
     [{ currency: "cad" }, "stripe_membership_price_currency_mismatch"],
     [{ unit_amount: 1 }, "stripe_membership_price_amount_mismatch"],
     [
-      { recurring: { interval: "year", interval_count: 1 } },
-      "stripe_membership_price_must_be_monthly"
-    ],
-    [{ type: "one_time", recurring: null }, "stripe_membership_price_must_be_monthly"]
+      { type: "recurring", recurring: { interval: "month", interval_count: 1 } },
+      "stripe_membership_price_must_be_one_time"
+    ]
   ] as const)("rejects incompatible membership price state %#", async (price, reason) => {
     const plan = membershipPlans[0];
     const stripe = stripeWithMembershipCatalog([

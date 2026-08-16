@@ -152,7 +152,7 @@ describe("checkout route rate limiting", () => {
     expect(routeMocks.reportOperationalError).toHaveBeenCalledWith(
       "stripe.checkout.rate_limit_unavailable",
       expect.any(Error),
-      { checkoutMode: "subscription" }
+      { checkoutMode: "membership" }
     );
   });
 
@@ -167,9 +167,9 @@ describe("checkout route rate limiting", () => {
               active: true,
               currency: "usd",
               id: "price_membership",
-              lookup_key: "full_access_monthly",
-              recurring: { interval: "month", interval_count: 1 },
-              type: "recurring",
+              lookup_key: "full_access_once",
+              recurring: null,
+              type: "one_time",
               unit_amount: 9900
             }
           ]
@@ -193,10 +193,10 @@ describe("checkout route rate limiting", () => {
       expect.objectContaining({
         customer: "cus_existing",
         expires_at: 1784032500,
-        mode: "subscription"
+        mode: "payment"
       }),
       {
-        idempotencyKey: `soji:checkout:subscription:user_123:${requestId}`
+        idempotencyKey: `soji:checkout:membership:user_123:${requestId}`
       }
     );
     expect(create.mock.calls[0]?.[0]).not.toHaveProperty("customer_email");
@@ -205,7 +205,7 @@ describe("checkout route rate limiting", () => {
   it.each([
     [
       "existing_subscription",
-      "An existing membership must be managed from your account."
+      "An existing Full Access purchase is already attached to this account."
     ],
     [
       "checkout_in_progress",
@@ -222,9 +222,9 @@ describe("checkout route rate limiting", () => {
               active: true,
               currency: "usd",
               id: "price_membership",
-              lookup_key: "full_access_monthly",
-              recurring: { interval: "month", interval_count: 1 },
-              type: "recurring",
+              lookup_key: "full_access_once",
+              recurring: null,
+              type: "one_time",
               unit_amount: 9900
             }
           ]
@@ -263,9 +263,9 @@ describe("checkout route rate limiting", () => {
               active: true,
               currency: "usd",
               id: "price_membership",
-              lookup_key: "full_access_monthly",
-              recurring: { interval: "month", interval_count: 1 },
-              type: "recurring",
+              lookup_key: "full_access_once",
+              recurring: null,
+              type: "one_time",
               unit_amount: 9900
             }
           ]
@@ -302,9 +302,9 @@ describe("checkout route rate limiting", () => {
               active: true,
               currency: "usd",
               id: "price_membership",
-              lookup_key: "full_access_monthly",
-              recurring: { interval: "month", interval_count: 1 },
-              type: "recurring",
+              lookup_key: "full_access_once",
+              recurring: null,
+              type: "one_time",
               unit_amount: 9900
             }
           ]
@@ -340,9 +340,9 @@ describe("checkout route rate limiting", () => {
               active: true,
               currency: "usd",
               id: "price_wrong_amount",
-              lookup_key: "full_access_monthly",
-              recurring: { interval: "month", interval_count: 1 },
-              type: "recurring",
+              lookup_key: "full_access_once",
+              recurring: null,
+              type: "one_time",
               unit_amount: 1
             }
           ]

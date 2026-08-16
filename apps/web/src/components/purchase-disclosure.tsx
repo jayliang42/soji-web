@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 type PurchaseDisclosureProps =
-  | { priceLabel: string; variant: "membership" }
-  | { priceLabel?: never; variant: "product" };
+  | { darkSurface?: boolean; priceLabel: string; variant: "membership" }
+  | { darkSurface?: boolean; priceLabel?: never; variant: "product" };
 
 const disclosureLinks = [
   ["Terms", "/terms"],
@@ -12,19 +12,19 @@ const disclosureLinks = [
 ] as const;
 
 export function PurchaseDisclosure(props: PurchaseDisclosureProps) {
+  const strongClassName = props.darkSurface ? "text-white" : "text-cocoa";
   const description =
     props.variant === "membership" ? (
       <>
-        <strong className="font-bold text-cocoa">
-          {props.priceLabel} billed monthly until canceled.
+        <strong className={`font-bold ${strongClassName}`}>
+          {props.priceLabel} paid once.
         </strong>{" "}
-        Cancel from Account through the Stripe Customer Portal. Cancellation
-        stops future renewal; access continues according to your paid period
-        and billing status.
+        Full Access does not renew automatically. Review the refund policy
+        before paying.
       </>
     ) : (
       <>
-        <strong className="font-bold text-cocoa">One-time purchase.</strong>{" "}
+        <strong className={`font-bold ${strongClassName}`}>One-time purchase.</strong>{" "}
         Delivered to your GS学院 account. Review the digital-product refund
         policy before paying.
       </>
@@ -37,7 +37,11 @@ export function PurchaseDisclosure(props: PurchaseDisclosureProps) {
           ? "Membership purchase terms"
           : "Digital product purchase terms"
       }
-      className="mt-5 border-t border-dune pt-5 text-sm font-medium leading-[1.55] text-cocoa/72"
+      className={`mt-5 border-t pt-5 text-sm font-medium leading-[1.55] ${
+        props.darkSurface
+          ? "border-white/25 text-white/80"
+          : "border-dune text-cocoa/72"
+      }`}
     >
       <p>{description}</p>
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5">
@@ -45,7 +49,11 @@ export function PurchaseDisclosure(props: PurchaseDisclosureProps) {
           <li key={href}>
             <Link
               href={href}
-              className="inline-flex min-h-11 items-center font-semibold text-clay underline decoration-clay/40 underline-offset-4 hover:decoration-clay"
+              className={`inline-flex min-h-11 items-center font-semibold underline underline-offset-4 ${
+                props.darkSurface
+                  ? "text-white decoration-white/40 hover:decoration-white"
+                  : "text-clay decoration-clay/40 hover:decoration-clay"
+              }`}
             >
               {label}
             </Link>

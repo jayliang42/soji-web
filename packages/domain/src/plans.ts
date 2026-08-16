@@ -11,10 +11,11 @@ export const membershipPlans: MembershipPlan[] = [
   {
     id: "tier_1",
     name: "Full Access",
-    monthlyPrice: 99,
-    stripePriceLookupKey: "full_access_monthly",
+    price: 99,
+    billingType: "one_time",
+    stripePriceLookupKey: "full_access_once",
     description:
-      "One membership for the complete library, every digital product, live support, and all member benefits.",
+      "One payment for the complete library, every digital product, live support, and all member benefits.",
     featured: true,
     entitlements: [
       "content.basic",
@@ -226,7 +227,7 @@ export const productOffers: ProductOffer[] = [
       "解锁一篇真实录取案例，聚焦一个具体申请问题，看清背景、选择与结果之间的关系。",
     price: 5,
     priceLabel: "$5",
-    entitlement: "product.digital",
+    entitlement: "product.case_study_single",
     bullets: [
       "一次性解锁 1 篇案例",
       "围绕真实客户问题展开分析",

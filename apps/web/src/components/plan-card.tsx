@@ -52,9 +52,9 @@ export function PlanCard({
             {plan.name}
           </h3>
           <p className="mt-4 font-display text-5xl font-bold leading-none text-cocoa">
-            ${plan.monthlyPrice}
+            ${plan.price}
             <span className="ml-3 text-base font-medium text-cocoa/58">
-              / month
+              one time
             </span>
           </p>
         </div>
@@ -125,9 +125,9 @@ export function PlanCard({
           className="mt-4 text-center text-xs font-medium leading-5 text-cocoa/70"
         >
           <strong className="font-bold text-cocoa">
-            ${plan.monthlyPrice} billed monthly until canceled.
+            ${plan.price} paid once.
           </strong>{" "}
-          Manage or cancel from Account.
+          Full Access does not renew.
         </p>
       </div>
     </article>

@@ -19,6 +19,7 @@ const entitlementKeys = [
   "office_hours.join",
   "community.vip_access",
   "contact.unlock",
+  "product.case_study_single",
   "product.digital"
 ] as const satisfies readonly EntitlementKey[];
 

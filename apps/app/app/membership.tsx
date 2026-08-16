@@ -24,7 +24,7 @@ export default function MembershipScreen() {
             }}
           >
             <Text style={{ fontSize: 20, fontWeight: "700", color: "#20150d" }}>
-              {plan.name} · ${plan.monthlyPrice}/mo
+              {plan.name} · ${plan.price} one time
             </Text>
             <Text style={{ color: "#6d5547", marginTop: 8 }}>{plan.description}</Text>
           </View>

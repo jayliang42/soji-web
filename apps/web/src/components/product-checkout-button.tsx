@@ -31,7 +31,8 @@ export function ProductCheckoutButton({
   nextPath = "/products",
   purchaseStateAvailable,
   productId,
-  productSlug
+  productSlug,
+  returnTo = "products"
 }: {
   accessPaused: boolean;
   alreadyPurchased: boolean;
@@ -43,6 +44,7 @@ export function ProductCheckoutButton({
   purchaseStateAvailable: boolean;
   productId?: string;
   productSlug: string;
+  returnTo?: "pricing" | "products";
 }) {
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -149,7 +151,8 @@ export function ProductCheckoutButton({
           },
           body: JSON.stringify({
             productSlug,
-            requestId
+            requestId,
+            returnTo
           })
         });
 

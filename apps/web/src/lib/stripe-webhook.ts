@@ -293,6 +293,41 @@ async function syncProductPurchase(
   } as const;
 }
 
+async function syncMembershipPurchase(
+  session: Stripe.Checkout.Session,
+  observedAt: string
+) {
+  const supabase = requireAdminClient();
+  const userId = session.metadata?.userId;
+  const planId = toPlanId(session.metadata?.planId);
+  const paymentId = getObjectId(session.payment_intent) ?? session.id;
+
+  if (!isUuid(userId) || !planId) {
+    throw new Error("stripe_membership_metadata_missing");
+  }
+
+  const { data: effectiveTier, error } = await supabase.rpc(
+    "sync_stripe_membership_purchase",
+    {
+      p_observed_at: observedAt,
+      p_plan_id: planId,
+      p_provider_payment_id: paymentId,
+      p_status: session.payment_status ?? "paid",
+      p_user_id: userId
+    }
+  );
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    action: "synced_membership_purchase",
+    effectiveTier: effectiveTier as MembershipTier,
+    planId,
+    userId
+  } as const;
+}
+
 type PaymentIntentClassification =
   | {
       kind: "product";
@@ -302,6 +337,10 @@ type PaymentIntentClassification =
       kind: "subscription";
       paymentId: string;
       subscription: Stripe.Subscription;
+    }
+  | {
+      kind: "membership";
+      paymentId: string;
     }
   | {
       kind: "unmapped";
@@ -315,6 +354,10 @@ async function classifyPaymentIntent(
   const paymentId = paymentIntent.id;
   const userId = paymentIntent.metadata.userId;
   const productId = paymentIntent.metadata.productId;
+
+  if (paymentIntent.metadata.kind === "membership" && isUuid(userId)) {
+    return { kind: "membership", paymentId };
+  }
 
   if (isUuid(userId) && isUuid(productId)) {
     return { kind: "product", paymentId };
@@ -416,6 +459,60 @@ async function syncProductRefund(
   } as const;
 }
 
+async function syncMembershipRefund(
+  paymentId: string,
+  status: "partially_refunded" | "refunded",
+  observedAt: string
+) {
+  const supabase = requireAdminClient();
+  const { data: effectiveTier, error } = await supabase.rpc(
+    "sync_stripe_membership_refund",
+    {
+      p_observed_at: observedAt,
+      p_provider_payment_id: paymentId,
+      p_status: status
+    }
+  );
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    action: "synced_membership_refund",
+    effectiveTier: effectiveTier as MembershipTier,
+    paymentId,
+    status
+  } as const;
+}
+
+async function syncMembershipDispute(
+  classification: Extract<PaymentIntentClassification, { kind: "membership" }>,
+  dispute: Stripe.Dispute,
+  observedAt: string
+) {
+  const supabase = requireAdminClient();
+  const { data: effectiveTier, error } = await supabase.rpc(
+    "sync_stripe_membership_dispute",
+    {
+      p_observed_at: observedAt,
+      p_provider_dispute_id: dispute.id,
+      p_provider_payment_id: classification.paymentId,
+      p_status: dispute.status
+    }
+  );
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    action: "synced_membership_dispute",
+    disputeId: dispute.id,
+    effectiveTier: effectiveTier as MembershipTier,
+    paymentId: classification.paymentId,
+    status: dispute.status
+  } as const;
+}
+
 async function syncSubscriptionAdjustment({
   amount,
   currency,
@@ -485,6 +582,9 @@ async function syncRefund(
   }
   if (classification.kind === "product") {
     return syncProductRefund(classification.paymentId, status, observedAt);
+  }
+  if (classification.kind === "membership") {
+    return syncMembershipRefund(classification.paymentId, status, observedAt);
   }
 
   const result = await syncSubscriptionAdjustment({
@@ -559,6 +659,10 @@ async function syncDispute(
     } as const;
   }
 
+  if (classification.kind === "membership") {
+    return syncMembershipDispute(classification, dispute, observedAt);
+  }
+
   const supabase = requireAdminClient();
   const { data: disputeStatus, error } = await supabase.rpc(
     "sync_stripe_product_dispute",
@@ -606,6 +710,9 @@ export async function processStripeEvent(event: Stripe.Event, stripe: Stripe) {
       (session.payment_status === "paid" ||
         session.payment_status === "no_payment_required")
     ) {
+      if (session.metadata?.kind === "membership") {
+        return syncMembershipPurchase(session, observedAt);
+      }
       return syncProductPurchase(session, observedAt);
     }
 

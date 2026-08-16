@@ -1,4 +1,4 @@
-import { activeSubscriptionStatuses, getPlanByTier } from "@soji/domain";
+import { activeSubscriptionStatuses } from "@soji/domain";
 import type { AdminMetric } from "@soji/types";
 import type { Tables } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -36,20 +36,13 @@ export async function getAdminMetricsSnapshot(): Promise<AdminMetricsSnapshot> {
   }
 
   const subscriptions: SubscriptionRow[] = subscriptionsQuery.data ?? [];
-  const monthlyRevenue = subscriptions.reduce((total, subscription) => {
-    return total + (getPlanByTier(subscription.plan_id)?.monthlyPrice ?? 0);
-  }, 0);
 
   return {
     metrics: [
       {
-        detail: "Calculated from active and trialing subscription records",
-        label: "MRR",
-        value: new Intl.NumberFormat("en-US", {
-          currency: "USD",
-          maximumFractionDigits: 0,
-          style: "currency"
-        }).format(monthlyRevenue)
+        detail: "Active and trialing records from the retired recurring plan",
+        label: "Legacy subscriptions",
+        value: String(subscriptions.length)
       },
       {
         detail: "Profiles currently registered in Supabase",

@@ -9,6 +9,7 @@ const entitlementLabels: Record<EntitlementKey, string> = {
   "library.templates": "Downloadable templates",
   "monthly.updates": "Monthly update drops",
   "office_hours.join": "Live office hours",
+  "product.case_study_single": "Single case study access",
   "product.digital": "Digital product access"
 };
 

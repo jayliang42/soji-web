@@ -421,13 +421,13 @@ begin
       '00000000-0000-4000-8000-000000000121',
       'sub_phase2_adjustment',
       'cus_phase2_adjustment',
-      'tier_2',
+      'tier_1',
       'active',
       '2026-09-01T12:00:00Z',
       null,
       '2026-07-26T12:00:00Z'
     ),
-    'tier_2'::membership_tier,
+    'tier_1'::membership_tier,
     'an eligible subscription starts with its plan tier'
   );
   return next is(
@@ -442,7 +442,7 @@ begin
     (
       select count(*)
       from public.plan_entitlements
-      where plan_id = 'tier_2'
+      where plan_id = 'tier_1'
     ),
     'eligible subscription access is derived atomically from the plan'
   );
@@ -452,7 +452,7 @@ begin
       from public.profiles
       where id = '00000000-0000-4000-8000-000000000121'
     ),
-    'tier_2'::membership_tier,
+    'tier_1'::membership_tier,
     'eligible subscription access updates the effective profile tier'
   );
 
@@ -492,7 +492,7 @@ begin
     (
       select count(*)
       from public.plan_entitlements
-      where plan_id = 'tier_2'
+      where plan_id = 'tier_1'
     ),
     'a partial membership refund preserves otherwise-eligible access'
   );
@@ -561,7 +561,7 @@ begin
       '00000000-0000-4000-8000-000000000121',
       'sub_phase2_adjustment',
       'cus_phase2_adjustment',
-      'tier_2',
+      'tier_1',
       'active',
       '2026-09-02T12:00:00Z',
       null,
@@ -651,7 +651,7 @@ begin
       'pi_phase2_later',
       '2026-07-26T12:04:00Z'
     ),
-    'tier_2'::membership_tier,
+    'tier_1'::membership_tier,
     'a later verified paid payment restores an eligible subscription'
   );
   return next ok(
@@ -676,7 +676,7 @@ begin
     (
       select count(*)
       from public.plan_entitlements
-      where plan_id = 'tier_2'
+      where plan_id = 'tier_1'
     ),
     'later paid evidence atomically restores plan entitlements'
   );
@@ -875,7 +875,7 @@ begin
     '00000000-0000-4000-8000-000000000125',
     'sub_phase2_reconciliation_stale',
     'cus_phase2_reconciliation',
-    'tier_2',
+    'tier_1',
     'active',
     '2026-09-05T12:00:00Z',
     null,
@@ -885,7 +885,7 @@ begin
     '00000000-0000-4000-8000-000000000125',
     'sub_phase2_reconciliation_concurrent',
     'cus_phase2_reconciliation',
-    'tier_2',
+    'tier_1',
     'active',
     '2026-09-05T12:00:00Z',
     null,
@@ -925,7 +925,7 @@ begin
     '00000000-0000-4000-8000-000000000125',
     'sub_phase2_reconciliation_concurrent',
     'cus_phase2_reconciliation',
-    'tier_2',
+    'tier_1',
     'active',
     '2026-09-05T12:00:00Z',
     null,
@@ -1046,13 +1046,13 @@ begin
       '00000000-0000-4000-8000-000000000125',
       'sub_phase2_reconciliation_stale',
       'cus_phase2_reconciliation',
-      'tier_2',
+      'tier_1',
       'active',
       '2026-09-05T12:00:00Z',
       null,
       '2026-07-26T12:29:00Z'
     ),
-    'tier_2'::membership_tier,
+    'tier_1'::membership_tier,
     'an authoritative current-provider observation repairs synthetic closure'
   );
   return next ok(
@@ -1069,7 +1069,7 @@ begin
     '00000000-0000-4000-8000-000000000125',
     'sub_phase2_reconciliation_concurrent',
     'cus_phase2_reconciliation',
-    'tier_2',
+    'tier_1',
     'canceled',
     '2026-09-05T12:00:00Z',
     '2026-07-26T12:33:00Z',
@@ -1080,13 +1080,13 @@ begin
       '00000000-0000-4000-8000-000000000125',
       'sub_phase2_reconciliation_concurrent',
       'cus_phase2_reconciliation',
-      'tier_2',
+      'tier_1',
       'active',
       '2026-09-05T12:00:00Z',
       null,
       '2026-07-26T12:34:00Z'
     ),
-    'tier_2'::membership_tier,
+    'tier_1'::membership_tier,
     'provider-terminal closure remains monotonic while another plan is active'
   );
   return next ok(
@@ -1167,7 +1167,7 @@ begin
     (
       select count(*)
       from public.plan_entitlements
-      where plan_id = 'tier_2'
+      where plan_id = 'tier_1'
     ),
     'an eligible dispute win restores plan entitlements'
   );

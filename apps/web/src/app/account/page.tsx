@@ -96,7 +96,7 @@ function getReturnKind({ checkout, purchase }: { checkout?: string; purchase?: s
     return "product" satisfies CheckoutReturnKind;
   }
   if (checkout === "success") {
-    return "subscription" satisfies CheckoutReturnKind;
+    return "membership" satisfies CheckoutReturnKind;
   }
   return null;
 }
@@ -274,7 +274,8 @@ export default async function AccountPage({
   );
   const hasExistingMembership =
     !accountTruthUnavailable &&
-    hasOpenStripeMembership(subscriptions.items);
+    (entitlements.includes("content.all") ||
+      hasOpenStripeMembership(subscriptions.items));
   const showMembershipOptions = params.view === "subscriptions";
   const shouldCheckBillingReadiness =
     !snapshot.error &&
@@ -496,9 +497,9 @@ export default async function AccountPage({
           >
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="text-sm font-bold uppercase text-cocoa/70">Membership billing</p>
+                <p className="text-sm font-bold uppercase text-cocoa/70">Membership access</p>
                 <h2 id="subscriptions-heading" className="mt-2 font-display text-2xl font-semibold text-cocoa">
-                  Subscriptions
+                  Full Access
                 </h2>
               </div>
               {!accountTruthUnavailable ? (
@@ -512,7 +513,7 @@ export default async function AccountPage({
                 >
                   {showMembershipOptions
                     ? "Hide membership options"
-                    : "Upgrade membership"}
+                    : "View membership options"}
                 </Link>
               ) : null}
             </div>
@@ -595,7 +596,9 @@ export default async function AccountPage({
                   </div>
                 ) : (
                   <p className="mt-4 text-sm text-cocoa/70">
-                    No membership subscriptions have been recorded for this account.
+                    {hasExistingMembership
+                      ? "Full Access is active on this account. The $99 purchase does not renew automatically."
+                      : "No Full Access purchase has been recorded for this account."}
                   </p>
                 )}
               </>

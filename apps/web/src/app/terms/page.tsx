@@ -49,11 +49,9 @@ export default function TermsPage() {
           content: (
             <>
               <p>
-                A paid membership renews monthly at the displayed price until
-                canceled. You can cancel from Account through the Stripe
-                Customer Portal. Cancellation stops a future renewal; access
-                follows the paid-period and current billing state shown in your
-                account.
+                Full Access is a one-time $99 purchase. It does not renew
+                automatically, and access remains attached to the account that
+                completed the purchase, subject to the published refund policy.
               </p>
               <p>
                 A failed payment, full refund, or unresolved payment dispute may

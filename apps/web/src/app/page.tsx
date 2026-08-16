@@ -250,7 +250,7 @@ export default async function HomePage() {
               <li key={offer.id}>
                 <Link
                   className="group grid min-h-40 gap-4 px-1 py-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-4"
-                  href={`/products/${offer.slug}` as Route}
+                  href={"/pricing#case-study-offers" as Route}
                 >
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
