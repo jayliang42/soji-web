@@ -74,6 +74,35 @@ const unavailableLaunchData: LaunchDataReadiness = {
   officeHoursOperational: false
 };
 
+function getStripeReadinessDiagnostics(error: unknown) {
+  const configuredKey = process.env.STRIPE_SECRET_KEY ?? "";
+  const diagnostics: Record<string, boolean | number | string> = {
+    stripeKeyHasSurroundingWhitespace:
+      configuredKey !== configuredKey.trim(),
+    stripeKeyLength: configuredKey.length,
+    stripeKeyStartsWithLive: configuredKey.startsWith("sk_live_")
+  };
+
+  if (error instanceof Error) {
+    diagnostics.errorName = error.name;
+  }
+
+  if (typeof error === "object" && error !== null) {
+    const candidate = error as Record<string, unknown>;
+    if (typeof candidate.type === "string") {
+      diagnostics.stripeErrorType = candidate.type;
+    }
+    if (typeof candidate.code === "string") {
+      diagnostics.stripeErrorCode = candidate.code;
+    }
+    if (typeof candidate.statusCode === "number") {
+      diagnostics.stripeStatusCode = candidate.statusCode;
+    }
+  }
+
+  return diagnostics;
+}
+
 export const READINESS_CACHE_MS = 60_000;
 
 let readinessCache:
@@ -247,6 +276,9 @@ export async function probeOperationalReadiness(): Promise<OperationalReadiness>
       logOperationalEvent(
         createOperationalLog({
           context: {
+            ...getStripeReadinessDiagnostics(
+              "error" in stripeResult ? stripeResult.error : undefined
+            ),
             reason:
               "reason" in stripeResult
                 ? stripeResult.reason
