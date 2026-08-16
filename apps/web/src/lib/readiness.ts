@@ -2,6 +2,10 @@ import { membershipPlans } from "@soji/domain";
 import { getBillingDeliveryReadiness } from "@/lib/billing-readiness";
 import { getCustomerPolicyReadiness } from "@/lib/customer-policy";
 import { validateOfficeHourDestination } from "@/lib/launch-inputs";
+import {
+  createOperationalLog,
+  logOperationalEvent
+} from "@/lib/observability";
 import { getStripeClient } from "@/lib/stripe";
 import { validateStripeMembershipCatalog } from "@/lib/stripe-price-validation";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -238,6 +242,21 @@ export async function probeOperationalReadiness(): Promise<OperationalReadiness>
       publicProbe,
       stripeProbe
     ]);
+
+    if (!stripeResult.ok) {
+      logOperationalEvent(
+        createOperationalLog({
+          context: {
+            reason:
+              "reason" in stripeResult
+                ? stripeResult.reason
+                : "stripe_not_configured"
+          },
+          event: "stripe.catalog.validation_failed",
+          level: "warn"
+        })
+      );
+    }
 
     return {
       ...launchData,
