@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { membershipPlans, productOffers } from "@soji/domain";
+import Link from "next/link";
 import { CaseStudyOfferGrid } from "@/components/case-study-offer-grid";
 import { DataUnavailable } from "@/components/data-state";
 import { MembershipTerms } from "@/components/membership-terms";
@@ -212,6 +213,16 @@ export default async function PricingPage({
         </div>
 
         <MembershipTerms />
+        <p className="mt-5 max-w-3xl text-sm font-medium leading-6 text-cocoa/72">
+          购买前请阅读
+          <Link
+            href="/refund-policy"
+            className="mx-1 font-bold text-clay underline decoration-clay/40 underline-offset-4 hover:decoration-clay"
+          >
+            退款政策
+          </Link>
+          。所有产品均为电子产品，付款完成后不予退款；付款即表示同意相关条款。
+        </p>
       </section>
     </main>
   );

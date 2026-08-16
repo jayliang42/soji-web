@@ -3,74 +3,61 @@ import type { Metadata } from "next";
 import { PolicyLayout } from "@/components/policy-layout";
 
 export const metadata: Metadata = {
-  title: "Refund policy",
+  title: "退款政策",
   description:
-    "How GS学院 reviews membership and digital-product refund requests and how refunds affect access.",
+    "GS学院电子产品的退款政策：付款完成后不支持退款，付款即表示同意本政策。",
   alternates: { canonical: "/refund-policy" }
 };
 
 export default function RefundPolicyPage() {
   return (
     <PolicyLayout
-      eyebrow="Customer policy"
-      title="Refund policy"
-      summary="This review draft explains the baseline used by GS学院's current billing and access system. Rights required by applicable law still apply."
-      updatedAt="July 27, 2026"
+      eyebrow="购买政策"
+      title="退款政策"
+      summary="GS学院提供的案例、资料和其他下载内容均为电子产品。付款完成后，订单即视为最终完成且不予退款；付款即表示你已阅读并同意本政策。"
+      updatedAt="August 16, 2026"
       sections={[
         {
-          id: "memberships",
-          title: "Membership charges",
-          content: (
-            <p>
-              Membership charges are generally non-refundable after billing.
-              Contact <Link href="/support">Support</Link> promptly if you see a
-              duplicate charge, a technical failure that prevented access, or a
-              mistake involving a first charge. The facts can be reviewed, and
-              any refund required by applicable law will be honored.
-            </p>
-          )
-        },
-        {
-          id: "products",
-          title: "Digital products",
-          content: (
-            <p>
-              Digital products are generally final after account access or
-              download becomes available. A duplicate purchase, inaccessible
-              delivery, materially defective file, or refund required by
-              applicable law may be reviewed through Support.
-            </p>
-          )
-        },
-        {
-          id: "access",
-          title: "How a refund changes access",
+          id: "digital-products",
+          title: "电子产品不予退款",
           content: (
             <>
               <p>
-                A full refund revokes the access associated with that membership
-                charge or product purchase. A partial refund does not, by
-                itself, restore or revoke access; the underlying paid period or
-                purchase state remains authoritative.
+                GS学院销售的真实录取案例、资料、模板和其他下载内容均为电子产品。付款完成后，所有订单均为最终订单，不支持退款、退换或因改变主意、未使用内容等原因取消付款。
               </p>
               <p>
-                An open payment dispute pauses the affected delivery while it is
-                reviewed. A lost dispute keeps access ended. A resolved dispute
-                restores access only when the underlying subscription or
-                purchase is otherwise eligible and has not been fully refunded.
+                该政策适用于单篇案例和55篇案例合集。请在付款前确认账号、购买内容和价格信息。
               </p>
             </>
           )
         },
         {
-          id: "request",
-          title: "Request a review",
+          id: "payment-consent",
+          title: "付款即表示同意",
           content: (
             <p>
-              Use <Link href="/support">Support</Link> and include the account
-              email, transaction date, item or membership name, and a short
-              description. Never send a full card number, password, or
-              authentication code.
+              在支付页面完成付款，即表示你已阅读、理解并同意{" "}
+              <Link href="/terms">GS学院条款</Link>和本
+              <Link href="/refund-policy">退款政策</Link>，并接受电子产品付款后不予退款的规则。
+            </p>
+          )
+        },
+        {
+          id: "access",
+          title: "交付与账号访问",
+          content: (
+            <p>
+              付款后，内容会绑定到付款时使用的GS学院账号。如果遇到账号登录、内容交付或文件访问问题，请联系{" "}
+              <Link href="/support">Support</Link>，我们会协助核查和解决访问问题；这不改变电子产品不予退款的政策。
+            </p>
+          )
+        },
+        {
+          id: "legal-rights",
+          title: "法律规定的权利",
+          content: (
+            <p>
+              如果适用法律明确要求提供退款或其他消费者救济措施，本政策不限制这些法定权利。除法律强制要求外，GS学院不提供电子产品退款。
             </p>
           )
         }

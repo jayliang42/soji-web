@@ -41,11 +41,11 @@ const supportPaths: ReadonlyArray<{
     label: "I need a purchase or download"
   },
   {
-    action: "Review refund steps",
+    action: "View access help",
     description:
-      "See which membership and digital-product situations GS学院 can review before contacting us.",
-    href: "/refund-policy#request",
-    label: "I want to request a refund review"
+      "Review the digital-product policy and access steps before contacting Support.",
+    href: "/refund-policy#access",
+    label: "I have a post-purchase access issue"
   }
 ] as const;
 

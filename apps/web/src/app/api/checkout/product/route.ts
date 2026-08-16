@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
         custom_text: {
           submit: {
             message:
-              "By purchasing, you agree to the GS学院 Terms and acknowledge the digital-product refund policy."
+              "By paying, you agree to the GS学院 Terms and Refund Policy. Digital products are final and non-refundable."
           }
         },
         expires_at: checkoutExpiresAt,

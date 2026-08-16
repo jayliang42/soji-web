@@ -24,9 +24,11 @@ export function PurchaseDisclosure(props: PurchaseDisclosureProps) {
       </>
     ) : (
       <>
-        <strong className={`font-bold ${strongClassName}`}>One-time purchase.</strong>{" "}
-        Delivered to your GS学院 account. Review the digital-product refund
-        policy before paying.
+        <strong className={`font-bold ${strongClassName}`}>
+          电子产品付款后不予退款。
+        </strong>{" "}
+        付款即表示你已阅读并同意
+        <Link href="/refund-policy">退款政策</Link>，内容会交付到你的GS学院账号。
       </>
     );
 
