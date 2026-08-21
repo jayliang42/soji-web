@@ -289,8 +289,8 @@ export default async function HomePage() {
       >
         <div className="relative aspect-[2.1/1] min-h-[280px] overflow-hidden sm:min-h-[360px] md:min-h-[470px]">
           <Image
-            src="/new-york-editorial-hero.png"
-            alt="Blue-hour Manhattan brownstones with glowing windows and a distant bridge"
+            src="/new-york-editorial-hero-v2.png"
+            alt="Rainy West Village street with warm cafe windows, brownstones, and a yellow taxi"
             fill
             sizes="100vw"
             className="object-cover object-center"
