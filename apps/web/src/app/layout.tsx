@@ -7,12 +7,6 @@ import { getSessionSnapshot } from "@/lib/session";
 import "./globals.css";
 
 const siteUrl = getSiteUrl() ?? "http://localhost:3000";
-const exploreLinks: ReadonlyArray<readonly [string, Route]> = [
-  ["Library", "/library"],
-  ["Membership", "/pricing"],
-  ["Office Hours", "/office-hours"],
-  ["Account", "/account"]
-] as const;
 const supportPolicyLinks: ReadonlyArray<readonly [string, Route]> = [
   ["Support", "/support" as Route],
   ["Privacy", "/privacy" as Route],
@@ -95,35 +89,17 @@ export default async function RootLayout({
           {children}
         </div>
         <footer className="border-t border-dune bg-shell px-6 py-12 md:py-16">
-          <div className="mx-auto grid max-w-6xl gap-6 text-sm text-cocoa/70 sm:grid-cols-2 md:grid-cols-[1.5fr_0.75fr_1fr] md:gap-10">
-            <div className="sm:col-span-2 md:col-span-1">
-              <Link
-                href="/"
-                className="inline-flex min-h-11 items-center text-xl font-black text-cocoa"
-              >
-                GS学院
-              </Link>
-              <p className="mt-2 max-w-sm font-medium leading-6">
-                BayArea珊瑚海 is an editorial money membership for calmer,
-                better-informed decisions.
-              </p>
-            </div>
-            <nav aria-label="Explore">
+          <div className="mx-auto grid max-w-6xl gap-10 text-sm text-cocoa/70 md:grid-cols-[0.75fr_1.25fr] md:gap-16">
+            <nav aria-label="Office Hours">
               <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
-                Explore
+                Office Hours
               </h2>
-              <ul className="mt-2 grid font-semibold">
-                {exploreLinks.map(([label, href]) => (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      className="inline-flex min-h-11 items-center transition-colors hover:text-clay"
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <Link
+                href="/office-hours"
+                className="mt-2 inline-flex min-h-11 items-center font-semibold transition-colors hover:text-clay"
+              >
+                Office Hours
+              </Link>
             </nav>
             <nav aria-label="Support and policies">
               <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">

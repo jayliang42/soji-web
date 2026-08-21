@@ -283,20 +283,18 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-cocoa text-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between md:py-20">
-          <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase text-white/70">Start reading</p>
-            <h2 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
-              Begin with the ideas that can change your next money decision.
-            </h2>
-          </div>
-          <Link
-            href="/library"
-            className="w-fit shrink-0 rounded-md bg-white px-6 py-3.5 text-sm font-bold text-cocoa transition-colors hover:bg-sand"
-          >
-            Browse the library
-          </Link>
+      <section
+        aria-label="纽约城市影像"
+        className="border-y border-dune bg-cocoa"
+      >
+        <div className="relative aspect-[2.1/1] min-h-[280px] overflow-hidden sm:min-h-[360px] md:min-h-[470px]">
+          <Image
+            src="/new-york-editorial-hero.png"
+            alt="Blue-hour Manhattan brownstones with glowing windows and a distant bridge"
+            fill
+            sizes="100vw"
+            className="object-cover object-center"
+          />
         </div>
       </section>
     </main>
