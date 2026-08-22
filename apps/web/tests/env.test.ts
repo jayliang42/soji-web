@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getCheckoutReturnSiteUrl,
   getClientSiteUrl,
   getOpsAlertConfigState,
   getSiteUrl,
@@ -78,6 +79,35 @@ describe("site URL policy", () => {
     expect(
       getClientSiteUrl("https://preview.example", "", "production")
     ).toBeNull();
+  });
+
+  it("keeps Checkout returns on the same trusted production origin", () => {
+    expect(
+      getCheckoutReturnSiteUrl(
+        "https://soji-web.vercel.app/api/checkout/subscription",
+        "https://gr8tfuture.com",
+        "production"
+      )
+    ).toBe("https://soji-web.vercel.app");
+    expect(
+      getCheckoutReturnSiteUrl(
+        "https://soji-web-h4qgy6ykk-szjasonliang-7817s-projects.vercel.app/api/checkout/subscription",
+        "https://gr8tfuture.com",
+        "production"
+      )
+    ).toBe(
+      "https://soji-web-h4qgy6ykk-szjasonliang-7817s-projects.vercel.app"
+    );
+  });
+
+  it("falls back to the configured canonical origin for an untrusted Checkout host", () => {
+    expect(
+      getCheckoutReturnSiteUrl(
+        "https://untrusted.example/api/checkout/subscription",
+        "https://gr8tfuture.com",
+        "production"
+      )
+    ).toBe("https://gr8tfuture.com");
   });
 });
 

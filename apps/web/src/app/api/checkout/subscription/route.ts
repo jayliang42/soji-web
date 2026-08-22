@@ -7,7 +7,7 @@ import {
 } from "@/lib/billing-readiness";
 import { subscriptionCheckoutPayloadSchema } from "@/lib/checkout";
 import { getCheckoutCustomerPolicyReadiness } from "@/lib/customer-policy";
-import { getSiteUrl } from "@/lib/env";
+import { getCheckoutReturnSiteUrl } from "@/lib/env";
 import { reportOperationalError } from "@/lib/observability";
 import {
   consumeCheckoutRateLimit,
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const siteUrl = getSiteUrl();
+  const siteUrl = getCheckoutReturnSiteUrl(request.url);
   if (!siteUrl) {
     return NextResponse.json(
       { error: "Checkout return URLs are not configured." },

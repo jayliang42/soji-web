@@ -8,7 +8,7 @@ const checkoutMocks = vi.hoisted(() => ({
   getBillingDeliveryReadiness: vi.fn(),
   getCustomerPolicyReadiness: vi.fn(),
   getExistingStripeCustomerId: vi.fn(),
-  getSiteUrl: vi.fn(),
+  getCheckoutReturnSiteUrl: vi.fn(),
   getStripeClient: vi.fn(),
   reportOperationalError: vi.fn(),
   claimProductCheckout: vi.fn(),
@@ -44,7 +44,7 @@ vi.mock("@/lib/stripe-customer", () => ({
   getExistingStripeCustomerId: checkoutMocks.getExistingStripeCustomerId
 }));
 vi.mock("@/lib/env", () => ({
-  getSiteUrl: checkoutMocks.getSiteUrl
+  getCheckoutReturnSiteUrl: checkoutMocks.getCheckoutReturnSiteUrl
 }));
 vi.mock("@/lib/observability", () => ({
   reportOperationalError: checkoutMocks.reportOperationalError
@@ -159,7 +159,9 @@ describe("checkout route validation", () => {
       reasons: [],
       supportUrl: "https://support.soji.co/help"
     });
-    checkoutMocks.getSiteUrl.mockReturnValue("http://localhost:3000");
+    checkoutMocks.getCheckoutReturnSiteUrl.mockReturnValue(
+      "http://localhost:3000"
+    );
     checkoutMocks.getExistingStripeCustomerId.mockResolvedValue(null);
     checkoutMocks.consumeCheckoutRateLimit.mockResolvedValue({
       allowed: true,
@@ -231,7 +233,7 @@ describe("checkout route validation", () => {
     }
   );
 
-  it("uses authenticated identity, the newest bound Customer, canonical URLs, and server plan data", async () => {
+  it("uses authenticated identity, the newest bound Customer, same-origin URLs, and server plan data", async () => {
     const supabase = authenticatedSupabase();
     const { createCustomer, createSession, listPrices, stripe } =
       subscriptionStripe();
@@ -257,6 +259,9 @@ describe("checkout route validation", () => {
     expect(checkoutMocks.getExistingStripeCustomerId).toHaveBeenCalledWith(
       supabase,
       "00000000-0000-4000-8000-000000000101"
+    );
+    expect(checkoutMocks.getCheckoutReturnSiteUrl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/checkout/subscription"
     );
     expect(createCustomer).not.toHaveBeenCalled();
     expect(createSession).toHaveBeenCalledWith(
@@ -334,6 +339,48 @@ describe("checkout route validation", () => {
           }
         },
         mode: "payment"
+      }),
+      expect.objectContaining({
+        idempotencyKey: expect.stringContaining(requestId)
+      })
+    );
+  });
+
+  it("uses the resolved request origin for product Checkout returns", async () => {
+    const createSession = vi
+      .fn()
+      .mockResolvedValue({ url: "https://checkout.stripe.test/product" });
+    checkoutMocks.getStripeClient.mockReturnValue({
+      checkout: { sessions: { create: createSession } }
+    });
+    checkoutMocks.createSupabaseServerClient.mockResolvedValue(
+      productSupabase()
+    );
+    checkoutMocks.getCheckoutReturnSiteUrl.mockReturnValue(
+      "https://soji-web.vercel.app"
+    );
+
+    const response = await createProductCheckout(
+      request(
+        "/api/checkout/product",
+        JSON.stringify({
+          productSlug: "wealth-guide",
+          requestId,
+          returnTo: "pricing"
+        })
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(checkoutMocks.getCheckoutReturnSiteUrl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/checkout/product"
+    );
+    expect(createSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cancel_url:
+          "https://soji-web.vercel.app/pricing?purchase=cancelled&product=wealth-guide#case-study-offers",
+        success_url:
+          "https://soji-web.vercel.app/account?purchase=success&session_id={CHECKOUT_SESSION_ID}"
       }),
       expect.objectContaining({
         idempotencyKey: expect.stringContaining(requestId)
@@ -614,7 +661,7 @@ describe("checkout route validation", () => {
   });
 
   it("fails closed before billing work when the return origin is invalid", async () => {
-    checkoutMocks.getSiteUrl.mockReturnValue(null);
+    checkoutMocks.getCheckoutReturnSiteUrl.mockReturnValue(null);
     checkoutMocks.getStripeClient.mockReturnValue({});
     checkoutMocks.createSupabaseServerClient.mockResolvedValue({
       auth: {
