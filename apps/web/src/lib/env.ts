@@ -70,7 +70,8 @@ const trustedCheckoutReturnOrigins = new Set([
 function isTrustedSojiVercelCheckoutOrigin(url: URL) {
   return (
     url.protocol === "https:" &&
-    url.hostname.startsWith("soji-web-") &&
+    (url.hostname.startsWith("soji-") ||
+      url.hostname.startsWith("soji-web-")) &&
     url.hostname.endsWith("-szjasonliang-7817s-projects.vercel.app")
   );
 }

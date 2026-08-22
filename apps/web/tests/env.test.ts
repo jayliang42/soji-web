@@ -91,12 +91,12 @@ describe("site URL policy", () => {
     ).toBe("https://soji-web.vercel.app");
     expect(
       getCheckoutReturnSiteUrl(
-        "https://soji-web-h4qgy6ykk-szjasonliang-7817s-projects.vercel.app/api/checkout/subscription",
+        "https://soji-ifmbjlsbt-szjasonliang-7817s-projects.vercel.app/api/checkout/subscription",
         "https://gr8tfuture.com",
         "production"
       )
     ).toBe(
-      "https://soji-web-h4qgy6ykk-szjasonliang-7817s-projects.vercel.app"
+      "https://soji-ifmbjlsbt-szjasonliang-7817s-projects.vercel.app"
     );
   });
 
