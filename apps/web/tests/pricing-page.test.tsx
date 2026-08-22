@@ -166,27 +166,20 @@ describe("pricing checkout safety", () => {
     expect(html).not.toMatch(/type="checkbox"/u);
   });
 
-  it("releases the Full Access retry guard after a cancelled Stripe checkout", async () => {
-    const supabase = { rpc: vi.fn() };
-    pricingMocks.createSupabaseServerClient.mockResolvedValue(supabase);
-
+  it("defers a cancelled Full Access checkout to authenticated cleanup", async () => {
     const html = renderToStaticMarkup(
       await PricingPage({
         searchParams: Promise.resolve({ checkout: "cancelled" })
       })
     );
 
-    expect(pricingMocks.releaseSubscriptionCheckout).toHaveBeenCalledWith(
-      supabase
-    );
+    expect(pricingMocks.createSupabaseServerClient).not.toHaveBeenCalled();
+    expect(pricingMocks.releaseSubscriptionCheckout).not.toHaveBeenCalled();
     expect(pricingMocks.releaseProductCheckout).not.toHaveBeenCalled();
     expect(html).toContain("账号没有被扣款，可以重新发起结账");
   });
 
-  it("releases only the cancelled $5 product retry guard", async () => {
-    const supabase = { rpc: vi.fn() };
-    pricingMocks.createSupabaseServerClient.mockResolvedValue(supabase);
-
+  it("does not release a cancelled $5 product guard before Stripe is expired", async () => {
     await PricingPage({
       searchParams: Promise.resolve({
         product: "case-study-single",
@@ -194,10 +187,8 @@ describe("pricing checkout safety", () => {
       })
     });
 
-    expect(pricingMocks.releaseProductCheckout).toHaveBeenCalledWith(
-      supabase,
-      "case-study-single"
-    );
+    expect(pricingMocks.createSupabaseServerClient).not.toHaveBeenCalled();
+    expect(pricingMocks.releaseProductCheckout).not.toHaveBeenCalled();
     expect(pricingMocks.releaseSubscriptionCheckout).not.toHaveBeenCalled();
   });
 });

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(302);
+select plan(306);
 
 insert into auth.users (id, email)
 values
@@ -103,7 +103,7 @@ select ok(
 select ok(
   not has_function_privilege(
     'anon',
-    'public.release_product_checkout(text)',
+    'public.release_product_checkout(text,timestamptz)',
     'execute'
   ),
   'anonymous clients cannot release a product checkout'
@@ -111,7 +111,7 @@ select ok(
 select ok(
   has_function_privilege(
     'authenticated',
-    'public.release_product_checkout(text)',
+    'public.release_product_checkout(text,timestamptz)',
     'execute'
   ),
   'authenticated clients can release a product checkout'
@@ -119,7 +119,7 @@ select ok(
 select ok(
   not has_function_privilege(
     'anon',
-    'public.release_subscription_checkout()',
+    'public.release_subscription_checkout(timestamptz)',
     'execute'
   ),
   'anonymous clients cannot release a membership checkout'
@@ -127,7 +127,7 @@ select ok(
 select ok(
   has_function_privilege(
     'authenticated',
-    'public.release_subscription_checkout()',
+    'public.release_subscription_checkout(timestamptz)',
     'execute'
   ),
   'authenticated clients can release a membership checkout'
@@ -1224,6 +1224,7 @@ create temporary table subscription_checkout_claim_baseline as
 select expires_at
 from public.subscription_checkout_intents
 where user_id = '00000000-0000-4000-8000-000000000101';
+grant select on subscription_checkout_claim_baseline to authenticated;
 
 set local role authenticated;
 select results_eq(
@@ -1274,6 +1275,12 @@ set
   created_at = clock_timestamp() - interval '36 minutes',
   expires_at = clock_timestamp() - interval '1 minute'
 where user_id = '00000000-0000-4000-8000-000000000101';
+update subscription_checkout_claim_baseline
+set expires_at = (
+  select expires_at
+  from public.subscription_checkout_intents
+  where user_id = '00000000-0000-4000-8000-000000000101'
+);
 set local role authenticated;
 select results_eq(
   $$
@@ -1295,6 +1302,11 @@ select is(
   '00000000-0000-4000-8000-000000000702'::uuid,
   'the replacement claim records the new request id'
 );
+create temporary table subscription_checkout_replacement as
+select expires_at
+from public.subscription_checkout_intents
+where user_id = '00000000-0000-4000-8000-000000000101';
+grant select on subscription_checkout_replacement to authenticated;
 
 set local role authenticated;
 select set_config(
@@ -1303,7 +1315,32 @@ select set_config(
   true
 );
 select is(
-  public.release_subscription_checkout(),
+  public.release_subscription_checkout(
+    (select expires_at from subscription_checkout_claim_baseline)
+  ),
+  false,
+  'an expired Session cannot release a newer subscription checkout claim'
+);
+reset role;
+select is(
+  (
+    select count(*)
+    from public.subscription_checkout_intents
+    where user_id = '00000000-0000-4000-8000-000000000101'
+  ),
+  1::bigint,
+  'a mismatched subscription Session preserves the newer checkout claim'
+);
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-4000-8000-000000000101","role":"authenticated"}',
+  true
+);
+select is(
+  public.release_subscription_checkout(
+    (select expires_at from subscription_checkout_replacement)
+  ),
   true,
   'a signed-in user can release a cancelled checkout immediately'
 );
@@ -1666,6 +1703,7 @@ select expires_at
 from public.product_checkout_intents
 where user_id = '00000000-0000-4000-8000-000000000101'
   and product_id = '00000000-0000-4000-8000-000000000201';
+grant select on product_checkout_claim_baseline to authenticated;
 
 set local role authenticated;
 select results_eq(
@@ -1735,6 +1773,13 @@ set
   expires_at = clock_timestamp() - interval '1 minute'
 where user_id = '00000000-0000-4000-8000-000000000101'
   and product_id = '00000000-0000-4000-8000-000000000201';
+update product_checkout_claim_baseline
+set expires_at = (
+  select expires_at
+  from public.product_checkout_intents
+  where user_id = '00000000-0000-4000-8000-000000000101'
+    and product_id = '00000000-0000-4000-8000-000000000201'
+);
 set local role authenticated;
 select results_eq(
   $$
@@ -1758,6 +1803,12 @@ select is(
   '00000000-0000-4000-8000-000000000802'::uuid,
   'the replacement product claim records the new request id'
 );
+create temporary table product_checkout_replacement as
+select expires_at
+from public.product_checkout_intents
+where user_id = '00000000-0000-4000-8000-000000000101'
+  and product_id = '00000000-0000-4000-8000-000000000201';
+grant select on product_checkout_replacement to authenticated;
 
 set local role authenticated;
 select set_config(
@@ -1766,7 +1817,35 @@ select set_config(
   true
 );
 select is(
-  public.release_product_checkout('atomic-purchase-test'),
+  public.release_product_checkout(
+    'atomic-purchase-test',
+    (select expires_at from product_checkout_claim_baseline)
+  ),
+  false,
+  'an expired Session cannot release a newer product checkout claim'
+);
+reset role;
+select is(
+  (
+    select count(*)
+    from public.product_checkout_intents
+    where user_id = '00000000-0000-4000-8000-000000000101'
+      and product_id = '00000000-0000-4000-8000-000000000201'
+  ),
+  1::bigint,
+  'a mismatched product Session preserves the newer checkout claim'
+);
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-4000-8000-000000000101","role":"authenticated"}',
+  true
+);
+select is(
+  public.release_product_checkout(
+    'atomic-purchase-test',
+    (select expires_at from product_checkout_replacement)
+  ),
   true,
   'a signed-in user can release one cancelled product checkout immediately'
 );

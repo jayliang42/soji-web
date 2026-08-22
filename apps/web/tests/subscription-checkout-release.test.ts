@@ -9,39 +9,37 @@ vi.mock("@/lib/observability", () => ({
   reportOperationalError: releaseMocks.reportOperationalError
 }));
 
-import { releaseProductCheckout } from "@/lib/product-checkout-release";
+import { releaseSubscriptionCheckout } from "@/lib/subscription-checkout-release";
 
 const checkoutExpiresAt = "2026-07-13T12:15:00.000Z";
 
-describe("cancelled product checkout release", () => {
+describe("cancelled membership checkout release", () => {
   beforeEach(() => releaseMocks.reportOperationalError.mockReset());
 
-  it("releases only the authenticated user's named product claim", async () => {
+  it("releases only the matching authenticated checkout claim", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: true, error: null });
     const client = { rpc } as unknown as SupabaseClient;
 
     await expect(
-      releaseProductCheckout(client, "case-study-single", checkoutExpiresAt)
+      releaseSubscriptionCheckout(client, checkoutExpiresAt)
     ).resolves.toEqual({ ok: true, released: true });
-    expect(rpc).toHaveBeenCalledWith("release_product_checkout", {
-      p_checkout_expires_at: checkoutExpiresAt,
-      p_product_slug: "case-study-single"
+    expect(rpc).toHaveBeenCalledWith("release_subscription_checkout", {
+      p_checkout_expires_at: checkoutExpiresAt
     });
   });
 
-  it("reports and fails closed when the release RPC is unavailable", async () => {
+  it("fails closed when the guarded release RPC is unavailable", async () => {
     const error = { message: "rpc unavailable" };
     const client = {
       rpc: vi.fn().mockResolvedValue({ data: null, error })
     } as unknown as SupabaseClient;
 
     await expect(
-      releaseProductCheckout(client, "case-study-single", checkoutExpiresAt)
+      releaseSubscriptionCheckout(client, checkoutExpiresAt)
     ).resolves.toEqual({ ok: false, reason: "rpc unavailable" });
     expect(releaseMocks.reportOperationalError).toHaveBeenCalledWith(
-      "stripe.checkout.product_release_failed",
-      error,
-      { productSlug: "case-study-single" }
+      "stripe.checkout.subscription_release_failed",
+      error
     );
   });
 });

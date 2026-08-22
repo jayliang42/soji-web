@@ -191,6 +191,7 @@ export async function POST(request: NextRequest) {
 
   const metadata = {
     entitlementId: product.entitlement_id ?? "",
+    kind: "product",
     productId: product.id,
     productSlug: product.slug,
     userId: user.id
@@ -283,5 +284,5 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ sessionId: session.id, url: session.url });
 }

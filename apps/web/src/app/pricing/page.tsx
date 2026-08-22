@@ -15,14 +15,11 @@ import {
 } from "@/lib/billing-readiness";
 import { hasStripeConfig } from "@/lib/env";
 import { getProductSnapshot } from "@/lib/products";
-import { releaseProductCheckout } from "@/lib/product-checkout-release";
 import {
   isDeliveredPurchaseStatus,
   isPurchaseDisputeBlockingAccess
 } from "@/lib/purchase-status";
 import { getSessionSnapshot } from "@/lib/session";
-import { releaseSubscriptionCheckout } from "@/lib/subscription-checkout-release";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "解锁录取案例",
@@ -44,20 +41,6 @@ export default async function PricingPage({
     getProductSnapshot(),
     searchParams
   ]);
-
-  if (
-    params.checkout === "cancelled" ||
-    (params.purchase === "cancelled" && params.product)
-  ) {
-    const supabase = await createSupabaseServerClient();
-    if (supabase) {
-      if (params.checkout === "cancelled") {
-        await releaseSubscriptionCheckout(supabase);
-      } else if (params.product) {
-        await releaseProductCheckout(supabase, params.product);
-      }
-    }
-  }
 
   const [purchases, subscriptions] = await Promise.all([
     getAccountPurchases(session.user?.id, session.source),

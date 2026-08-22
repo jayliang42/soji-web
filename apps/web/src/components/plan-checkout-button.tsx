@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
 import type { MembershipTier } from "@soji/types";
+import { rememberCheckoutReturnSession } from "@/components/checkout-return-cleanup";
 import { shouldRotateCheckoutRequestId } from "@/lib/checkout";
 
 type CheckoutResponse = {
   url?: string;
+  sessionId?: string;
   error?: string | Record<string, unknown>;
 };
 
@@ -107,13 +109,14 @@ export function PlanCheckoutButton({
 
         const payload = (await response.json().catch(() => null)) as CheckoutResponse | null;
 
-        if (!response.ok || !payload?.url) {
+        if (!response.ok || !payload?.url || !payload.sessionId) {
           if (shouldRotateCheckoutRequestId(response.status)) {
             requestIdRef.current = null;
           }
           throw new Error(getErrorMessage(payload?.error));
         }
 
+        rememberCheckoutReturnSession(payload.sessionId);
         window.location.assign(payload.url);
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Checkout failed.");

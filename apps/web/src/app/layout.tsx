@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata, Route } from "next";
 import { Suspense } from "react";
+import { CheckoutReturnCleanup } from "@/components/checkout-return-cleanup";
 import { PublicNavigation } from "@/components/public-navigation";
 import { getSiteUrl } from "@/lib/env";
 import { getSessionSnapshot } from "@/lib/session";
@@ -56,6 +57,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
+        <CheckoutReturnCleanup />
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>

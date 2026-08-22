@@ -490,9 +490,11 @@ describe("checkout route validation", () => {
     );
 
     expect(await first.json()).toEqual({
+      sessionId: "cs_same_intent",
       url: "https://checkout.stripe.test/cs_same_intent"
     });
     expect(await retry.json()).toEqual({
+      sessionId: "cs_same_intent",
       url: "https://checkout.stripe.test/cs_same_intent"
     });
     expect(checkoutMocks.claimSubscriptionCheckout).toHaveBeenNthCalledWith(

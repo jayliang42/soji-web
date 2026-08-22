@@ -19,6 +19,16 @@ export const productCheckoutPayloadSchema = z
   })
   .strict();
 
+export const checkoutCancellationPayloadSchema = z
+  .object({
+    sessionId: z
+      .string()
+      .min(1)
+      .max(255)
+      .regex(/^cs_(?:test|live)_[A-Za-z0-9]+$/)
+  })
+  .strict();
+
 export function shouldRotateCheckoutRequestId(status: number) {
   return status >= 400 && status < 500;
 }

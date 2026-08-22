@@ -1098,10 +1098,13 @@ export type Database = {
         }[]
       }
       release_product_checkout: {
-        Args: { p_product_slug: string }
+        Args: { p_checkout_expires_at: string; p_product_slug: string }
         Returns: boolean
       }
-      release_subscription_checkout: { Args: never; Returns: boolean }
+      release_subscription_checkout: {
+        Args: { p_checkout_expires_at: string }
+        Returns: boolean
+      }
       replace_product_asset: {
         Args: {
           p_content_type: string
