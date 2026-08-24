@@ -22,6 +22,9 @@ describe("browser mutation trust boundary", () => {
   it("protects session-backed mutations but excludes reads and provider webhooks", () => {
     expect(isProtectedBrowserMutation("/api/admin/content", "POST")).toBe(true);
     expect(isProtectedBrowserMutation("/api/checkout/product", "POST")).toBe(true);
+    expect(
+      isProtectedBrowserMutation("/api/account/purchases/claim", "POST")
+    ).toBe(true);
     expect(isProtectedBrowserMutation("/api/auth/bootstrap", "POST")).toBe(true);
     expect(isProtectedBrowserMutation("/api/admin/billing-events", "GET")).toBe(false);
     expect(isProtectedBrowserMutation("/api/webhooks/stripe", "POST")).toBe(false);

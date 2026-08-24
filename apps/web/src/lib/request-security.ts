@@ -1,5 +1,8 @@
 const protectedMutationPrefixes = ["/api/admin/", "/api/checkout/"] as const;
-const protectedMutationPaths = new Set(["/api/auth/bootstrap"]);
+const protectedMutationPaths = new Set([
+  "/api/account/purchases/claim",
+  "/api/auth/bootstrap"
+]);
 const safeMethods = new Set(["GET", "HEAD", "OPTIONS"]);
 
 export function isProtectedBrowserMutation(pathname: string, method: string) {

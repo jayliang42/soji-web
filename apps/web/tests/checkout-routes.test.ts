@@ -8,11 +8,16 @@ const checkoutMocks = vi.hoisted(() => ({
   getBillingDeliveryReadiness: vi.fn(),
   getCustomerPolicyReadiness: vi.fn(),
   getExistingStripeCustomerId: vi.fn(),
+  getGuestCheckoutBrowser: vi.fn(),
   getCheckoutReturnSiteUrl: vi.fn(),
   getStripeClient: vi.fn(),
   reportOperationalError: vi.fn(),
+  attachGuestMembershipCheckoutSession: vi.fn(),
   claimProductCheckout: vi.fn(),
-  claimSubscriptionCheckout: vi.fn()
+  claimSubscriptionCheckout: vi.fn(),
+  consumeGuestMembershipCheckoutRateLimit: vi.fn(),
+  reserveGuestMembershipCheckout: vi.fn(),
+  setGuestCheckoutBrowserCookie: vi.fn()
 }));
 
 vi.mock("@/lib/billing-readiness", () => ({
@@ -42,6 +47,15 @@ vi.mock("@/lib/stripe", () => ({
 }));
 vi.mock("@/lib/stripe-customer", () => ({
   getExistingStripeCustomerId: checkoutMocks.getExistingStripeCustomerId
+}));
+vi.mock("@/lib/guest-membership-checkout", () => ({
+  attachGuestMembershipCheckoutSession:
+    checkoutMocks.attachGuestMembershipCheckoutSession,
+  consumeGuestMembershipCheckoutRateLimit:
+    checkoutMocks.consumeGuestMembershipCheckoutRateLimit,
+  getGuestCheckoutBrowser: checkoutMocks.getGuestCheckoutBrowser,
+  reserveGuestMembershipCheckout: checkoutMocks.reserveGuestMembershipCheckout,
+  setGuestCheckoutBrowserCookie: checkoutMocks.setGuestCheckoutBrowserCookie
 }));
 vi.mock("@/lib/env", () => ({
   getCheckoutReturnSiteUrl: checkoutMocks.getCheckoutReturnSiteUrl
@@ -163,6 +177,11 @@ describe("checkout route validation", () => {
       "http://localhost:3000"
     );
     checkoutMocks.getExistingStripeCustomerId.mockResolvedValue(null);
+    checkoutMocks.getGuestCheckoutBrowser.mockReturnValue({
+      browserHmac:
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      browserId: "00000000-0000-4000-8000-000000000701"
+    });
     checkoutMocks.consumeCheckoutRateLimit.mockResolvedValue({
       allowed: true,
       ok: true
@@ -171,6 +190,21 @@ describe("checkout route validation", () => {
       expiresAt: "2026-07-14T12:35:00.000Z",
       ok: true,
       outcome: "claimed"
+    });
+    checkoutMocks.consumeGuestMembershipCheckoutRateLimit.mockResolvedValue({
+      allowed: true,
+      ok: true,
+      remaining: 4,
+      resetAt: "2026-07-14T12:10:00.000Z"
+    });
+    checkoutMocks.reserveGuestMembershipCheckout.mockResolvedValue({
+      checkoutId: "00000000-0000-4000-8000-000000000702",
+      expiresAt: "2026-07-14T12:35:00.000Z",
+      ok: true,
+      outcome: "reserved"
+    });
+    checkoutMocks.attachGuestMembershipCheckoutSession.mockResolvedValue({
+      ok: true
     });
     checkoutMocks.claimProductCheckout.mockResolvedValue({
       expiresAt: "2026-07-14T12:35:00.000Z",
@@ -613,10 +647,139 @@ describe("checkout route validation", () => {
     expect(checkoutMocks.createSupabaseServerClient).not.toHaveBeenCalled();
   });
 
-  it.each([
-    ["product", createProductCheckout, "/api/checkout/product", { productSlug: "wealth-guide", requestId }],
-    ["subscription", createSubscriptionCheckout, "/api/checkout/subscription", { planId: "tier_1", requestId }]
-  ])("returns 401 for a missing %s checkout session without alerting", async (_mode, handler, path, body) => {
+  it("creates a server-priced guest membership Checkout before sign in", async () => {
+    const createSession = vi.fn().mockResolvedValue({
+      expires_at: 1_784_032_500,
+      id: "cs_test_guest_checkout",
+      url: "https://checkout.stripe.test/guest"
+    });
+    checkoutMocks.getStripeClient.mockReturnValue({
+      checkout: { sessions: { create: createSession } },
+      prices: {
+        list: vi.fn().mockResolvedValue({
+          data: [
+            {
+              active: true,
+              currency: "usd",
+              id: "price_server_full_access",
+              lookup_key: "full_access_once",
+              recurring: null,
+              type: "one_time",
+              unit_amount: 9_900
+            }
+          ]
+        })
+      }
+    });
+    checkoutMocks.createSupabaseServerClient.mockResolvedValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: null },
+          error: new AuthSessionMissingError()
+        })
+      }
+    });
+
+    const response = await createSubscriptionCheckout(
+      request(
+        "/api/checkout/subscription",
+        JSON.stringify({ planId: "tier_1", requestId })
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(createSession).toHaveBeenCalledWith(
+      {
+        allow_promotion_codes: true,
+        cancel_url:
+          "http://localhost:3000/pricing?checkout=cancelled&guest=1",
+        client_reference_id: "00000000-0000-4000-8000-000000000702",
+        consent_collection: { terms_of_service: "required" },
+        custom_text: {
+          submit: {
+            message:
+              "By purchasing, you agree to the GS学院 Terms. This is a one-time $99 payment."
+          }
+        },
+        expires_at: 1_784_032_500,
+        line_items: [{ price: "price_server_full_access", quantity: 1 }],
+        metadata: {
+          guestCheckoutId: "00000000-0000-4000-8000-000000000702",
+          kind: "guest_membership",
+          lookupKey: "full_access_once",
+          planId: "tier_1"
+        },
+        mode: "payment",
+        payment_intent_data: {
+          metadata: {
+            guestCheckoutId: "00000000-0000-4000-8000-000000000702",
+            kind: "guest_membership",
+            lookupKey: "full_access_once",
+            planId: "tier_1"
+          }
+        },
+        success_url: "http://localhost:3000/checkout/claim"
+      },
+      {
+        idempotencyKey:
+          "soji:checkout:guest-membership:00000000-0000-4000-8000-000000000702:00000000-0000-4000-8000-000000000501"
+      }
+    );
+    expect(createSession.mock.calls[0]?.[0]).not.toHaveProperty("customer");
+    expect(createSession.mock.calls[0]?.[0]).not.toHaveProperty(
+      "customer_email"
+    );
+    expect(checkoutMocks.attachGuestMembershipCheckoutSession).toHaveBeenCalledWith(
+      {
+        browserHmac:
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        checkoutId: "00000000-0000-4000-8000-000000000702",
+        checkoutSessionId: "cs_test_guest_checkout",
+        requestId,
+        stripeExpiresAt: "2026-07-14T12:35:00.000Z"
+      }
+    );
+    expect(checkoutMocks.setGuestCheckoutBrowserCookie).toHaveBeenCalledWith(
+      expect.anything(),
+      "00000000-0000-4000-8000-000000000701"
+    );
+  });
+
+  it("fails closed before Stripe lookup when the guest limiter denies checkout", async () => {
+    const listPrices = vi.fn();
+    checkoutMocks.getStripeClient.mockReturnValue({
+      checkout: { sessions: { create: vi.fn() } },
+      prices: { list: listPrices }
+    });
+    checkoutMocks.createSupabaseServerClient.mockResolvedValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: null },
+          error: new AuthSessionMissingError()
+        })
+      }
+    });
+    checkoutMocks.consumeGuestMembershipCheckoutRateLimit.mockResolvedValue({
+      allowed: false,
+      ok: true,
+      remaining: 0,
+      resetAt: "2026-07-14T12:10:00.000Z"
+    });
+
+    const response = await createSubscriptionCheckout(
+      request(
+        "/api/checkout/subscription",
+        JSON.stringify({ planId: "tier_1", requestId })
+      )
+    );
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("300");
+    expect(listPrices).not.toHaveBeenCalled();
+    expect(checkoutMocks.reserveGuestMembershipCheckout).not.toHaveBeenCalled();
+  });
+
+  it("returns 401 for a missing product checkout session without alerting", async () => {
     checkoutMocks.getStripeClient.mockReturnValue({});
     checkoutMocks.createSupabaseServerClient.mockResolvedValue({
       auth: {
@@ -627,7 +790,12 @@ describe("checkout route validation", () => {
       }
     });
 
-    const response = await handler(request(path, JSON.stringify(body)));
+    const response = await createProductCheckout(
+      request(
+        "/api/checkout/product",
+        JSON.stringify({ productSlug: "wealth-guide", requestId })
+      )
+    );
 
     expect(response.status).toBe(401);
     expect(checkoutMocks.reportOperationalError).not.toHaveBeenCalled();
