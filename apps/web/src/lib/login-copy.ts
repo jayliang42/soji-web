@@ -12,7 +12,7 @@ const defaultCopy: LoginPageCopy = {
     "GS学院 will return you to the guide or library view that brought you here.",
   destinationLabel: "your reading",
   description:
-    "Create an account before checkout so your membership, purchases, and content access stay attached to the same profile.",
+    "Sign in to keep your purchases, content access, and account history together.",
   panelDescription:
     "Use email or Google to access previews, member essays, templates, and account history.",
   panelTitle: "Unlock the library",
@@ -21,6 +21,20 @@ const defaultCopy: LoginPageCopy = {
 
 export function getLoginPageCopy(nextPath: string): LoginPageCopy {
   const pathname = nextPath.split(/[?#]/u, 1)[0] || "/";
+
+  if (pathname === "/checkout/claim") {
+    return {
+      destinationDescription:
+        "登录后，我们会使用账号邮箱查找并绑定刚完成的购买。",
+      destinationLabel: "购买领取页面",
+      description:
+        "请使用付款时填写的邮箱登录或创建账号。登录后，购买内容会自动加入你的账号。",
+      panelDescription:
+        "使用付款邮箱继续。我们不会要求你再次付款或输入订单号。",
+      panelTitle: "登录并领取",
+      title: "登录并领取你的购买"
+    };
+  }
 
   if (pathname === "/pricing") {
     return {

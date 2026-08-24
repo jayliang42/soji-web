@@ -98,7 +98,6 @@ export default async function PricingPage({
 
   let billingReady = false;
   if (
-    customerEmail &&
     !session.error &&
     hasStripeConfig() &&
     (needsProductCheckout || needsMembershipCheckout)

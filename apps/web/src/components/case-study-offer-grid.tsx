@@ -126,7 +126,6 @@ export function CaseStudyOfferGrid({
             ) : (
               <>
                 <PlanCheckoutButton
-                  accountLabel="登录后解锁完整合集"
                   checkoutEnabled={entry.checkoutEnabled}
                   customerEmail={customerEmail}
                   darkSurface

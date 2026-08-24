@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
 import type { MembershipTier } from "@soji/types";
 import { rememberCheckoutReturnSession } from "@/components/checkout-return-cleanup";
@@ -25,7 +24,6 @@ function getErrorMessage(error: CheckoutResponse["error"]) {
 }
 
 export function PlanCheckoutButton({
-  accountLabel,
   checkoutEnabled,
   customerEmail,
   darkSurface = false,
@@ -33,7 +31,6 @@ export function PlanCheckoutButton({
   lookupKey,
   planId
 }: {
-  accountLabel: string;
   checkoutEnabled: boolean;
   customerEmail: string | null;
   darkSurface?: boolean;
@@ -44,21 +41,6 @@ export function PlanCheckoutButton({
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const requestIdRef = useRef<string | null>(null);
-
-  if (!customerEmail) {
-    return (
-      <Link
-        href="/login?next=/pricing"
-        className={`block w-full rounded-md px-6 py-4 text-center text-sm font-bold transition-colors ${
-          darkSurface
-            ? "bg-white text-cocoa hover:bg-sand"
-            : "bg-cocoa text-white hover:bg-charcoal"
-        }`}
-      >
-        {accountLabel}
-      </Link>
-    );
-  }
 
   if (!checkoutEnabled) {
     return (
@@ -116,7 +98,9 @@ export function PlanCheckoutButton({
           throw new Error(getErrorMessage(payload?.error));
         }
 
-        rememberCheckoutReturnSession(payload.sessionId);
+        if (shouldRememberMembershipCheckoutSession(customerEmail)) {
+          rememberCheckoutReturnSession(payload.sessionId);
+        }
         window.location.assign(payload.url);
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Checkout failed.");
@@ -138,6 +122,15 @@ export function PlanCheckoutButton({
       >
         {isPending ? "Opening checkout..." : label}
       </button>
+      <p
+        className={`text-center text-xs font-medium leading-5 ${
+          darkSurface ? "text-white/70" : "text-cocoa/70"
+        }`}
+      >
+        {customerEmail
+          ? `购买将绑定到 ${maskEmail(customerEmail)}。`
+          : "无需先注册。付款后使用付款邮箱登录或创建账号，内容会自动绑定。"}
+      </p>
       {message ? (
         <p
           aria-live="polite"
@@ -150,4 +143,19 @@ export function PlanCheckoutButton({
       ) : null}
     </div>
   );
+}
+
+export function shouldRememberMembershipCheckoutSession(
+  customerEmail: string | null
+) {
+  return Boolean(customerEmail);
+}
+
+export function maskEmail(email: string) {
+  const separatorIndex = email.lastIndexOf("@");
+  if (separatorIndex <= 0 || separatorIndex === email.length - 1) {
+    return "当前登录账号";
+  }
+
+  return `${email.slice(0, 1)}***@${email.slice(separatorIndex + 1)}`;
 }

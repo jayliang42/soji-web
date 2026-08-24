@@ -105,7 +105,6 @@ export function PlanCard({
           </Link>
         ) : checkoutEnabled || customerEmail ? (
           <PlanCheckoutButton
-            accountLabel={`Create account to unlock ${plan.name}`}
             checkoutEnabled={checkoutEnabled}
             customerEmail={customerEmail}
             label="Unlock everything"

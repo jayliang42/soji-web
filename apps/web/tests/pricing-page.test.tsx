@@ -107,6 +107,34 @@ describe("pricing checkout safety", () => {
     expect(html).not.toContain("monthly");
   });
 
+  it("keeps the purchase CTA available before sign in", async () => {
+    pricingMocks.getSessionSnapshot.mockResolvedValue({
+      entitlements: [],
+      source: "supabase",
+      user: null
+    });
+
+    const html = renderToStaticMarkup(
+      await PricingPage({ searchParams: Promise.resolve({}) })
+    );
+
+    expect(html).toContain("一次性解锁全部 55 篇");
+    expect(html).toContain(
+      "无需先注册。付款后使用付款邮箱登录或创建账号，内容会自动绑定。"
+    );
+    expect(html).not.toContain("登录后解锁完整合集");
+    expect(pricingMocks.getBillingDeliveryReadiness).toHaveBeenCalledOnce();
+  });
+
+  it("masks the signed-in account email beside the purchase CTA", async () => {
+    const html = renderToStaticMarkup(
+      await PricingPage({ searchParams: Promise.resolve({}) })
+    );
+
+    expect(html).toContain("购买将绑定到 m***@example.com。");
+    expect(html).not.toContain("购买将绑定到 member@example.com。");
+  });
+
   it("routes an existing Full Access owner away from both duplicate checkouts", async () => {
     pricingMocks.getSessionSnapshot.mockResolvedValue({
       ...signedInSession,

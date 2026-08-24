@@ -17,6 +17,14 @@ describe("login page intent copy", () => {
     );
   });
 
+  it("returns a paid guest to the purchase claim task", () => {
+    const copy = getLoginPageCopy("/checkout/claim");
+
+    expect(copy.title).toBe("登录并领取你的购买");
+    expect(copy.description).toContain("付款时填写的邮箱");
+    expect(copy.panelDescription).toContain("不会要求你再次付款");
+  });
+
   it("matches product list and detail purchases", () => {
     expect(getLoginPageCopy("/products").title).toBe(
       "Sign in to complete your purchase"
