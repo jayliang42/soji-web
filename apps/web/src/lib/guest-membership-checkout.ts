@@ -231,3 +231,160 @@ export async function claimGuestMembershipCheckout({
 
   return { ok: true, status: row.outcome } as const;
 }
+
+export async function recordGuestMembershipPayment({
+  amountTotal,
+  currency,
+  email,
+  observedAt,
+  paymentId,
+  paymentStatus,
+  sessionId
+}: {
+  amountTotal: number;
+  currency: string;
+  email: string | null;
+  observedAt: string;
+  paymentId: string;
+  paymentStatus: "no_payment_required" | "paid";
+  sessionId: string;
+}) {
+  const emailHmac = getGuestCheckoutEmailHmac(
+    email,
+    env.SUPABASE_SERVICE_ROLE_KEY
+  );
+  const supabase = getRpcClient();
+  if (!supabase || !emailHmac) {
+    return { ok: false, reason: "guest_checkout_payment_not_configured" } as const;
+  }
+
+  const { data, error } = await supabase.rpc(
+    "record_stripe_guest_full_access_payment",
+    {
+      p_amount_total: amountTotal,
+      p_currency: currency,
+      p_email_hmac: emailHmac,
+      p_observed_at: observedAt,
+      p_payment_status: paymentStatus,
+      p_provider_payment_id: paymentId,
+      p_stripe_checkout_session_id: sessionId
+    }
+  );
+  if (
+    error ||
+    (data !== "paid_unclaimed" &&
+      data !== "claimed" &&
+      data !== "refunded" &&
+      data !== "disputed")
+  ) {
+    return {
+      ok: false,
+      reason: error?.message ?? "guest_checkout_payment_record_invalid"
+    } as const;
+  }
+
+  return { ok: true, status: data } as const;
+}
+
+export async function syncGuestMembershipRefund({
+  observedAt,
+  paymentId,
+  status
+}: {
+  observedAt: string;
+  paymentId: string;
+  status: "partially_refunded" | "refunded";
+}) {
+  const supabase = getRpcClient();
+  if (!supabase) {
+    return { ok: false, reason: "supabase_service_role_not_configured" } as const;
+  }
+
+  const { data, error } = await supabase.rpc(
+    "sync_stripe_guest_full_access_refund",
+    {
+      p_observed_at: observedAt,
+      p_provider_payment_id: paymentId,
+      p_status: status
+    }
+  );
+  const row = getSingleRow(data);
+  if (error || !row || typeof row.outcome !== "string") {
+    return {
+      ok: false,
+      reason: error?.message ?? "guest_checkout_refund_sync_invalid"
+    } as const;
+  }
+
+  return { ok: true, outcome: row.outcome } as const;
+}
+
+export async function syncGuestMembershipDispute({
+  disputeId,
+  observedAt,
+  paymentId,
+  status
+}: {
+  disputeId: string;
+  observedAt: string;
+  paymentId: string;
+  status: string;
+}) {
+  const supabase = getRpcClient();
+  if (!supabase) {
+    return { ok: false, reason: "supabase_service_role_not_configured" } as const;
+  }
+
+  const { data, error } = await supabase.rpc(
+    "sync_stripe_guest_full_access_dispute",
+    {
+      p_observed_at: observedAt,
+      p_provider_dispute_id: disputeId,
+      p_provider_payment_id: paymentId,
+      p_status: status
+    }
+  );
+  const row = getSingleRow(data);
+  if (error || !row || typeof row.outcome !== "string") {
+    return {
+      ok: false,
+      reason: error?.message ?? "guest_checkout_dispute_sync_invalid"
+    } as const;
+  }
+
+  return { ok: true, outcome: row.outcome } as const;
+}
+
+export async function closeGuestMembershipCheckoutBySession({
+  observedAt,
+  reason,
+  sessionId
+}: {
+  observedAt: string;
+  reason: "cancelled" | "expired";
+  sessionId: string;
+}) {
+  const supabase = getRpcClient();
+  if (!supabase) {
+    return { ok: false, reason: "supabase_service_role_not_configured" } as const;
+  }
+
+  const { data, error } = await supabase.rpc(
+    "close_guest_full_access_checkout",
+    {
+      p_browser_hmac: undefined,
+      p_observed_at: observedAt,
+      p_reason: reason,
+      p_request_id: undefined,
+      p_stripe_checkout_session_id: sessionId
+    }
+  );
+  if (error || typeof data !== "string") {
+    return {
+      ok: false,
+      reason: error?.message ?? "guest_checkout_close_invalid"
+    } as const;
+  }
+
+  return { ok: true, status: data } as const;
+}

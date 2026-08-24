@@ -2,6 +2,12 @@ import Stripe from "stripe";
 import { randomUUID } from "node:crypto";
 import { getPlanByTier } from "@soji/domain";
 import type { MembershipTier } from "@soji/types";
+import {
+  closeGuestMembershipCheckoutBySession,
+  recordGuestMembershipPayment,
+  syncGuestMembershipDispute,
+  syncGuestMembershipRefund
+} from "@/lib/guest-membership-checkout";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
 
@@ -328,6 +334,50 @@ async function syncMembershipPurchase(
   } as const;
 }
 
+async function syncGuestMembershipPurchase(
+  session: Stripe.Checkout.Session,
+  observedAt: string
+) {
+  const guestCheckoutId = session.metadata?.guestCheckoutId;
+  const planId = toPlanId(session.metadata?.planId);
+  const plan = planId ? getPlanByTier(planId) : null;
+  const paymentId = getObjectId(session.payment_intent) ?? session.id;
+
+  if (
+    !isUuid(guestCheckoutId) ||
+    session.client_reference_id !== guestCheckoutId ||
+    session.metadata?.kind !== "guest_membership" ||
+    !plan ||
+    plan.billingType !== "one_time" ||
+    session.metadata.lookupKey !== plan.stripePriceLookupKey ||
+    session.amount_total !== plan.price * 100 ||
+    session.currency?.toLowerCase() !== "usd"
+  ) {
+    throw new Error("stripe_guest_membership_metadata_invalid");
+  }
+
+  const result = await recordGuestMembershipPayment({
+    amountTotal: session.amount_total,
+    currency: session.currency,
+    email: session.customer_details?.email ?? null,
+    observedAt,
+    paymentId,
+    paymentStatus: session.payment_status as
+      | "no_payment_required"
+      | "paid",
+    sessionId: session.id
+  });
+  if (!result.ok) {
+    throw new Error(result.reason);
+  }
+
+  return {
+    action: "recorded_guest_membership_payment",
+    guestCheckoutId,
+    status: result.status
+  } as const;
+}
+
 type PaymentIntentClassification =
   | {
       kind: "product";
@@ -343,6 +393,11 @@ type PaymentIntentClassification =
       paymentId: string;
     }
   | {
+      guestCheckoutId: string;
+      kind: "guest_membership";
+      paymentId: string;
+    }
+  | {
       kind: "unmapped";
       paymentId: string;
     };
@@ -354,6 +409,14 @@ async function classifyPaymentIntent(
   const paymentId = paymentIntent.id;
   const userId = paymentIntent.metadata.userId;
   const productId = paymentIntent.metadata.productId;
+  const guestCheckoutId = paymentIntent.metadata.guestCheckoutId;
+
+  if (
+    paymentIntent.metadata.kind === "guest_membership" &&
+    isUuid(guestCheckoutId)
+  ) {
+    return { guestCheckoutId, kind: "guest_membership", paymentId };
+  }
 
   if (paymentIntent.metadata.kind === "membership" && isUuid(userId)) {
     return { kind: "membership", paymentId };
@@ -586,6 +649,22 @@ async function syncRefund(
   if (classification.kind === "membership") {
     return syncMembershipRefund(classification.paymentId, status, observedAt);
   }
+  if (classification.kind === "guest_membership") {
+    const result = await syncGuestMembershipRefund({
+      observedAt,
+      paymentId: classification.paymentId,
+      status
+    });
+    if (!result.ok) {
+      throw new Error(result.reason);
+    }
+    return {
+      action: "synced_guest_membership_refund",
+      guestCheckoutId: classification.guestCheckoutId,
+      paymentId: classification.paymentId,
+      status
+    } as const;
+  }
 
   const result = await syncSubscriptionAdjustment({
     amount: charge.amount_refunded,
@@ -662,6 +741,24 @@ async function syncDispute(
   if (classification.kind === "membership") {
     return syncMembershipDispute(classification, dispute, observedAt);
   }
+  if (classification.kind === "guest_membership") {
+    const result = await syncGuestMembershipDispute({
+      disputeId: dispute.id,
+      observedAt,
+      paymentId: classification.paymentId,
+      status: dispute.status
+    });
+    if (!result.ok) {
+      throw new Error(result.reason);
+    }
+    return {
+      action: "synced_guest_membership_dispute",
+      disputeId: dispute.id,
+      guestCheckoutId: classification.guestCheckoutId,
+      paymentId: classification.paymentId,
+      status: dispute.status
+    } as const;
+  }
 
   const supabase = requireAdminClient();
   const { data: disputeStatus, error } = await supabase.rpc(
@@ -710,6 +807,9 @@ export async function processStripeEvent(event: Stripe.Event, stripe: Stripe) {
       (session.payment_status === "paid" ||
         session.payment_status === "no_payment_required")
     ) {
+      if (session.metadata?.kind === "guest_membership") {
+        return syncGuestMembershipPurchase(session, observedAt);
+      }
       if (session.metadata?.kind === "membership") {
         return syncMembershipPurchase(session, observedAt);
       }
@@ -725,6 +825,24 @@ export async function processStripeEvent(event: Stripe.Event, stripe: Stripe) {
         paymentStatus: session.payment_status
       } as const;
     }
+  }
+
+  if (
+    event.type === "checkout.session.expired" &&
+    event.data.object.metadata?.kind === "guest_membership"
+  ) {
+    const result = await closeGuestMembershipCheckoutBySession({
+      observedAt,
+      reason: "expired",
+      sessionId: event.data.object.id
+    });
+    if (!result.ok) {
+      throw new Error(result.reason);
+    }
+    return {
+      action: "closed_guest_membership_checkout",
+      status: result.status
+    } as const;
   }
 
   if (event.type === "checkout.session.async_payment_failed") {

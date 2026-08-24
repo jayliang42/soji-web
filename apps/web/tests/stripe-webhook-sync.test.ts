@@ -2,15 +2,26 @@ import type Stripe from "stripe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const syncMocks = vi.hoisted(() => ({
+  closeGuestMembershipCheckoutBySession: vi.fn(),
   createSupabaseAdminClient: vi.fn(),
   customerEq: vi.fn(),
   from: vi.fn(),
   providerEq: vi.fn(),
-  rpc: vi.fn()
+  recordGuestMembershipPayment: vi.fn(),
+  rpc: vi.fn(),
+  syncGuestMembershipDispute: vi.fn(),
+  syncGuestMembershipRefund: vi.fn()
 }));
 
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: syncMocks.createSupabaseAdminClient
+}));
+vi.mock("@/lib/guest-membership-checkout", () => ({
+  closeGuestMembershipCheckoutBySession:
+    syncMocks.closeGuestMembershipCheckoutBySession,
+  recordGuestMembershipPayment: syncMocks.recordGuestMembershipPayment,
+  syncGuestMembershipDispute: syncMocks.syncGuestMembershipDispute,
+  syncGuestMembershipRefund: syncMocks.syncGuestMembershipRefund
 }));
 
 import {
@@ -27,6 +38,7 @@ import {
 
 const userId = "00000000-0000-4000-8000-000000000101";
 const productId = "00000000-0000-4000-8000-000000000201";
+const guestCheckoutId = "00000000-0000-4000-8000-000000000301";
 
 function subscription(
   overrides: Partial<Stripe.Subscription> = {}
@@ -92,13 +104,26 @@ describe("Stripe webhook state synchronization", () => {
   const claimToken = "00000000-0000-4000-8000-000000000777";
 
   beforeEach(() => {
-    syncMocks.rpc.mockReset();
-    syncMocks.from.mockReset();
-    syncMocks.providerEq.mockReset();
-    syncMocks.customerEq.mockReset();
+    for (const mock of Object.values(syncMocks)) mock.mockReset();
     syncMocks.createSupabaseAdminClient.mockReturnValue({
       from: syncMocks.from,
       rpc: syncMocks.rpc
+    });
+    syncMocks.closeGuestMembershipCheckoutBySession.mockResolvedValue({
+      ok: true,
+      status: "expired"
+    });
+    syncMocks.recordGuestMembershipPayment.mockResolvedValue({
+      ok: true,
+      status: "paid_unclaimed"
+    });
+    syncMocks.syncGuestMembershipDispute.mockResolvedValue({
+      ok: true,
+      outcome: "disputed"
+    });
+    syncMocks.syncGuestMembershipRefund.mockResolvedValue({
+      ok: true,
+      outcome: "refunded"
     });
   });
 
@@ -1332,5 +1357,185 @@ describe("Stripe webhook state synchronization", () => {
       )
     ).rejects.toThrow("reconciliation_token_customer_mismatch");
     expect(syncMocks.rpc).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    "checkout.session.completed",
+    "checkout.session.async_payment_succeeded"
+  ] as const)("records a paid guest membership from %s", async (eventType) => {
+    const event = {
+      created: 1784124000,
+      data: {
+        object: {
+          amount_total: 9_900,
+          client_reference_id: guestCheckoutId,
+          currency: "usd",
+          customer_details: { email: "buyer@example.com" },
+          id: "cs_test_guest_paid",
+          metadata: {
+            guestCheckoutId,
+            kind: "guest_membership",
+            lookupKey: "full_access_once",
+            planId: "tier_1"
+          },
+          mode: "payment",
+          payment_intent: "pi_guest_paid",
+          payment_status: "paid"
+        }
+      },
+      type: eventType
+    } as unknown as Stripe.Event;
+
+    await expect(processStripeEvent(event, {} as Stripe)).resolves.toEqual({
+      action: "recorded_guest_membership_payment",
+      guestCheckoutId,
+      status: "paid_unclaimed"
+    });
+    expect(syncMocks.recordGuestMembershipPayment).toHaveBeenCalledWith({
+      amountTotal: 9_900,
+      currency: "usd",
+      email: "buyer@example.com",
+      observedAt: "2026-07-15T14:00:00.000Z",
+      paymentId: "pi_guest_paid",
+      paymentStatus: "paid",
+      sessionId: "cs_test_guest_paid"
+    });
+  });
+
+  it("rejects guest fulfillment when the paid amount is not the server plan", async () => {
+    const event = {
+      data: {
+        object: {
+          amount_total: 100,
+          client_reference_id: guestCheckoutId,
+          currency: "usd",
+          customer_details: { email: "buyer@example.com" },
+          id: "cs_test_guest_wrong_amount",
+          metadata: {
+            guestCheckoutId,
+            kind: "guest_membership",
+            lookupKey: "full_access_once",
+            planId: "tier_1"
+          },
+          mode: "payment",
+          payment_intent: "pi_guest_wrong_amount",
+          payment_status: "paid"
+        }
+      },
+      type: "checkout.session.completed"
+    } as unknown as Stripe.Event;
+
+    await expect(processStripeEvent(event, {} as Stripe)).rejects.toThrow(
+      "stripe_guest_membership_metadata_invalid"
+    );
+    expect(syncMocks.recordGuestMembershipPayment).not.toHaveBeenCalled();
+  });
+
+  it("routes a guest membership refund without invoice classification", async () => {
+    const invoicePaymentsList = vi.fn();
+    const event = {
+      created: 1784127600,
+      data: {
+        object: {
+          amount: 9_900,
+          amount_refunded: 9_900,
+          currency: "usd",
+          id: "ch_guest_refund",
+          payment_intent: {
+            id: "pi_guest_refund",
+            metadata: {
+              guestCheckoutId,
+              kind: "guest_membership"
+            }
+          },
+          refunded: true
+        }
+      },
+      type: "charge.refunded"
+    } as unknown as Stripe.Event;
+
+    await expect(
+      processStripeEvent(event, {
+        invoicePayments: { list: invoicePaymentsList }
+      } as unknown as Stripe)
+    ).resolves.toMatchObject({
+      action: "synced_guest_membership_refund",
+      guestCheckoutId,
+      paymentId: "pi_guest_refund",
+      status: "refunded"
+    });
+    expect(invoicePaymentsList).not.toHaveBeenCalled();
+    expect(syncMocks.syncGuestMembershipRefund).toHaveBeenCalledWith({
+      observedAt: "2026-07-15T15:00:00.000Z",
+      paymentId: "pi_guest_refund",
+      status: "refunded"
+    });
+  });
+
+  it("routes a guest membership dispute without invoice classification", async () => {
+    const invoicePaymentsList = vi.fn();
+    const event = {
+      created: 1784127600,
+      data: {
+        object: {
+          charge: "ch_guest_dispute",
+          id: "du_guest_dispute",
+          payment_intent: {
+            id: "pi_guest_dispute",
+            metadata: {
+              guestCheckoutId,
+              kind: "guest_membership"
+            }
+          },
+          status: "needs_response"
+        }
+      },
+      type: "charge.dispute.created"
+    } as unknown as Stripe.Event;
+
+    await expect(
+      processStripeEvent(event, {
+        invoicePayments: { list: invoicePaymentsList }
+      } as unknown as Stripe)
+    ).resolves.toMatchObject({
+      action: "synced_guest_membership_dispute",
+      disputeId: "du_guest_dispute",
+      guestCheckoutId,
+      paymentId: "pi_guest_dispute",
+      status: "needs_response"
+    });
+    expect(invoicePaymentsList).not.toHaveBeenCalled();
+    expect(syncMocks.syncGuestMembershipDispute).toHaveBeenCalledWith({
+      disputeId: "du_guest_dispute",
+      observedAt: "2026-07-15T15:00:00.000Z",
+      paymentId: "pi_guest_dispute",
+      status: "needs_response"
+    });
+  });
+
+  it("closes an expired guest Checkout without granting access", async () => {
+    const event = {
+      created: 1784127600,
+      data: {
+        object: {
+          id: "cs_test_guest_expired",
+          metadata: { kind: "guest_membership" }
+        }
+      },
+      type: "checkout.session.expired"
+    } as unknown as Stripe.Event;
+
+    await expect(processStripeEvent(event, {} as Stripe)).resolves.toEqual({
+      action: "closed_guest_membership_checkout",
+      status: "expired"
+    });
+    expect(
+      syncMocks.closeGuestMembershipCheckoutBySession
+    ).toHaveBeenCalledWith({
+      observedAt: "2026-07-15T15:00:00.000Z",
+      reason: "expired",
+      sessionId: "cs_test_guest_expired"
+    });
+    expect(syncMocks.recordGuestMembershipPayment).not.toHaveBeenCalled();
   });
 });
