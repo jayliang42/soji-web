@@ -14,7 +14,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 import CheckoutClaimPage from "@/app/checkout/claim/page";
-import { getPurchaseClaimCopy } from "@/components/purchase-claim-status";
+import {
+  getPurchaseClaimCopy,
+  getPurchaseClaimRetryNotice
+} from "@/components/purchase-claim-status";
 import { purchaseClaimLoginHref } from "@/lib/purchase-claim";
 
 describe("checkout claim page", () => {
@@ -47,13 +50,14 @@ describe("checkout claim page", () => {
     const html = renderToStaticMarkup(await CheckoutClaimPage());
 
     expect(html).toContain("领取你的购买");
-    expect(html).toContain("正在绑定你的购买");
+    expect(html).toContain("暂未找到可领取的购买");
+    expect(html).toContain("返回价格页");
     expect(html).toContain("不需要输入订单号");
     expect(html).not.toContain("member@example.com");
   });
 
   it.each([
-    ["processing", "正在绑定你的购买"],
+    ["processing", "暂未找到可领取的购买"],
     ["claimed", "购买已绑定"],
     ["email_mismatch", "暂时无法绑定购买"],
     ["invalid", "无法确认这笔购买"],
@@ -63,5 +67,11 @@ describe("checkout claim page", () => {
 
     expect(copy.title).toBe(title);
     expect(copy.description).not.toMatch(/[A-Z0-9._%+-]+@[A-Z0-9.-]+/iu);
+  });
+
+  it("gives a visible result when a manual retry is still processing", () => {
+    expect(getPurchaseClaimRetryNotice("processing")).toContain("已重新检查");
+    expect(getPurchaseClaimRetryNotice("processing")).toContain("尚未付款");
+    expect(getPurchaseClaimRetryNotice("claimed")).toBeNull();
   });
 });

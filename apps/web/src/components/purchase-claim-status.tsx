@@ -39,9 +39,9 @@ const claimCopy: Record<PurchaseClaimStatus, ClaimCopy> = {
   },
   processing: {
     description:
-      "我们正在确认付款并绑定到当前账号。请稍候，不要重复付款。",
-    eyebrow: "付款确认中",
-    title: "正在绑定你的购买"
+      "如果你刚完成付款，Stripe 确认可能仍在处理中；请稍候再检查。如果尚未付款，请返回价格页。",
+    eyebrow: "等待付款确认",
+    title: "暂未找到可领取的购买"
   }
 };
 
@@ -49,12 +49,24 @@ export function getPurchaseClaimCopy(status: PurchaseClaimStatus) {
   return claimCopy[status];
 }
 
+export function getPurchaseClaimRetryNotice(status: PurchaseClaimStatus) {
+  if (status === "processing") {
+    return "已重新检查：暂未找到已确认的付款。如果尚未付款，请返回价格页；如果刚完成付款，请稍后再试。";
+  }
+  if (status === "error") {
+    return "已重新检查，但领取服务暂时不可用。请稍后再试。";
+  }
+  return null;
+}
+
 export function PurchaseClaimStatus() {
   const [status, setStatus] = useState<PurchaseClaimStatus>("processing");
   const [isChecking, setIsChecking] = useState(true);
+  const [retryNotice, setRetryNotice] = useState<string | null>(null);
 
-  const checkClaim = useCallback(async () => {
+  const checkClaim = useCallback(async (isManualRetry = false) => {
     setIsChecking(true);
+    if (isManualRetry) setRetryNotice(null);
     const result = await requestPendingPurchaseClaim();
     if (result.kind === "redirect") {
       window.location.assign(result.href);
@@ -62,6 +74,9 @@ export function PurchaseClaimStatus() {
     }
 
     setStatus(result.status);
+    setRetryNotice(
+      isManualRetry ? getPurchaseClaimRetryNotice(result.status) : null
+    );
     setIsChecking(false);
   }, []);
 
@@ -95,14 +110,34 @@ export function PurchaseClaimStatus() {
           查看已解锁内容
         </Link>
       ) : status === "processing" || status === "error" ? (
-        <button
-          className="mt-6 min-h-11 rounded-md border border-cocoa px-5 py-3 text-sm font-bold text-cocoa disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={isChecking}
-          onClick={() => void checkClaim()}
-          type="button"
-        >
-          {isChecking ? "正在检查..." : "重新检查"}
-        </button>
+        <>
+          <div className="mt-6 flex flex-wrap items-center gap-4">
+            <button
+              className="min-h-11 rounded-md border border-cocoa px-5 py-3 text-sm font-bold text-cocoa disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isChecking}
+              onClick={() => void checkClaim(true)}
+              type="button"
+            >
+              {isChecking ? "正在检查..." : "重新检查"}
+            </button>
+            {status === "processing" ? (
+              <Link
+                className="inline-flex min-h-11 items-center font-bold text-clay underline decoration-clay/40 underline-offset-4 hover:decoration-clay"
+                href="/pricing"
+              >
+                返回价格页
+              </Link>
+            ) : null}
+          </div>
+          {retryNotice ? (
+            <p
+              className="mt-4 rounded-lg bg-cream px-4 py-3 text-sm font-medium leading-6 text-cocoa/75"
+              role="status"
+            >
+              {retryNotice}
+            </p>
+          ) : null}
+        </>
       ) : (
         <Link
           className="mt-6 inline-flex min-h-11 items-center font-bold text-clay underline decoration-clay/40 underline-offset-4 hover:decoration-clay"
