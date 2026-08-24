@@ -353,7 +353,6 @@ describe("checkout route validation", () => {
           userId: "00000000-0000-4000-8000-000000000101"
         },
         mode: "payment",
-        payment_method_types: ["card"],
         wallet_options: {
           link: { display: "never" }
         },
@@ -372,6 +371,9 @@ describe("checkout route validation", () => {
         idempotencyKey:
           "soji:checkout:membership:00000000-0000-4000-8000-000000000101:00000000-0000-4000-8000-000000000501"
       }
+    );
+    expect(createSession.mock.calls[0]?.[0]).not.toHaveProperty(
+      "payment_method_types"
     );
   });
 
@@ -410,7 +412,6 @@ describe("checkout route validation", () => {
           }
         },
         mode: "payment",
-        payment_method_types: ["card"],
         wallet_options: {
           link: { display: "never" }
         }
@@ -418,6 +419,9 @@ describe("checkout route validation", () => {
       expect.objectContaining({
         idempotencyKey: expect.stringContaining(requestId)
       })
+    );
+    expect(createSession.mock.calls[0]?.[0]).not.toHaveProperty(
+      "payment_method_types"
     );
   });
 
@@ -750,7 +754,6 @@ describe("checkout route validation", () => {
           planId: "tier_1"
         },
         mode: "payment",
-        payment_method_types: ["card"],
         wallet_options: {
           link: { display: "never" }
         },
@@ -768,6 +771,9 @@ describe("checkout route validation", () => {
         idempotencyKey:
           "soji:checkout:guest-membership:00000000-0000-4000-8000-000000000702:00000000-0000-4000-8000-000000000501"
       }
+    );
+    expect(createSession.mock.calls[0]?.[0]).not.toHaveProperty(
+      "payment_method_types"
     );
     expect(createSession.mock.calls[0]?.[0]).not.toHaveProperty("customer");
     expect(createSession.mock.calls[0]?.[0]).not.toHaveProperty(
