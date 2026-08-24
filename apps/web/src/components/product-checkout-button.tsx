@@ -12,15 +12,27 @@ type CheckoutResponse = {
 };
 
 function getErrorMessage(error: CheckoutResponse["error"]) {
-  if (!error) {
-    return "支付失败。";
+  if (typeof error !== "string") {
+    return "暂时无法开始支付，请稍后再试。";
   }
 
-  if (typeof error === "string") {
-    return error;
-  }
+  const messages: Record<string, string> = {
+    "A checkout for this product is already in progress. Return to it or try again after it expires.":
+      "此产品已有一笔付款正在进行，请返回原付款页面，或等其失效后再试。",
+    "Checkout test access is restricted.": "当前浏览器未获准使用测试支付。",
+    "The signed-in account needs an email address before checkout.":
+      "当前账号缺少邮箱地址，暂时无法支付。",
+    "This product is included with your Full Access membership.":
+      "Full Access 已包含此产品，无需重复购买。",
+    "This product is not available for purchase.": "此产品目前不可购买。",
+    "Too many checkout attempts. Try again later.":
+      "支付尝试次数过多，请稍后再试。",
+    "You already own this product. Access it from your account.":
+      "你已经购买此产品，可前往账号中心查看。",
+    customer_policy_not_ready: "支付政策配置尚未完成，暂时无法开始支付。"
+  };
 
-  return "支付失败，请稍后重试。";
+  return messages[error] ?? "暂时无法开始支付，请稍后再试。";
 }
 
 export function ProductCheckoutButton({
@@ -62,7 +74,7 @@ export function ProductCheckoutButton({
           下载已包含内容
         </a>
         <p className="max-w-xs text-xs font-medium text-cocoa/65">
-          Full Access 会员已包含，无需重复购买。
+          Full Access 已包含此内容，无需重复购买。
         </p>
       </div>
     );

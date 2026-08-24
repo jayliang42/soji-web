@@ -9,14 +9,14 @@ export type LoginPageCopy = {
 
 const defaultCopy: LoginPageCopy = {
   destinationDescription:
-    "GS学院 will return you to the guide or library view that brought you here.",
-  destinationLabel: "your reading",
+    "登录后会回到你刚才浏览的指南或内容库页面。",
+  destinationLabel: "继续阅读",
   description:
-    "Sign in to keep your purchases, content access, and account history together.",
+    "登录后可统一管理已购内容、访问权限和账号记录。",
   panelDescription:
-    "Use email or Google to access previews, member essays, templates, and account history.",
-  panelTitle: "Unlock the library",
-  title: "Sign in to continue reading"
+    "使用邮箱或 Google 登录，查看预览、会员文章、模板和账号记录。",
+  panelTitle: "进入内容库",
+  title: "登录后继续阅读"
 };
 
 export function getLoginPageCopy(nextPath: string): LoginPageCopy {
@@ -39,69 +39,69 @@ export function getLoginPageCopy(nextPath: string): LoginPageCopy {
   if (pathname === "/pricing") {
     return {
       destinationDescription:
-        "You will return to the membership comparison and can continue from the same decision.",
-      destinationLabel: "membership options",
+        "登录后会回到解锁方案页面，你可以从刚才的位置继续选择。",
+      destinationLabel: "解锁方案",
       description:
-        "Use one account for checkout, subscription management, and member access.",
+        "用同一个账号完成付款、管理购买记录并访问已解锁内容。",
       panelDescription:
-        "Sign in with email or Google, then return to the membership options you were reviewing.",
-      panelTitle: "Continue to membership",
-      title: "Sign in to choose your membership"
+        "使用邮箱或 Google 登录，然后返回你刚才查看的解锁方案。",
+      panelTitle: "继续选择方案",
+      title: "登录后选择解锁方案"
     };
   }
 
   if (pathname === "/products" || pathname.startsWith("/products/")) {
     return {
       destinationDescription:
-        "You will return to the shop, where your receipt and download can stay with this account.",
-      destinationLabel: "the shop",
+        "登录后会回到产品页面，收据和下载权限会保存在当前账号中。",
+      destinationLabel: "产品页面",
       description:
-        "Your receipt, download access, and purchase history stay attached to this account.",
+        "收据、下载权限和购买记录都会保存在当前账号中。",
       panelDescription:
-        "Sign in with email or Google, then return to the product you selected.",
-      panelTitle: "Continue to checkout",
-      title: "Sign in to complete your purchase"
+        "使用邮箱或 Google 登录，然后返回你刚才选择的产品。",
+      panelTitle: "继续购买",
+      title: "登录后完成购买"
     };
   }
 
   if (pathname === "/account") {
     return {
       destinationDescription:
-        "You will continue to memberships, purchases, downloads, and profile details in one place.",
-      destinationLabel: "your account",
+        "登录后可在一个页面查看访问权限、购买记录、下载内容和账号资料。",
+      destinationLabel: "账号中心",
       description:
-        "Review memberships, purchases, downloads, and billing controls in one place.",
-      panelDescription: "Use the email or Google account connected to your purchases.",
-      panelTitle: "Open your account",
-      title: "Sign in to your GS学院 account"
+        "在一个页面查看访问权限、购买记录、下载内容和付款信息。",
+      panelDescription: "请使用与你的购买记录关联的邮箱或 Google 账号。",
+      panelTitle: "进入账号中心",
+      title: "登录你的 GS学院账号"
     };
   }
 
   if (pathname === "/office-hours") {
     return {
       destinationDescription:
-        "You will return to the session schedule and see the access available to your membership.",
-      destinationLabel: "Office Hours",
+        "登录后会回到答疑日程，并显示当前账号可参加的场次。",
+      destinationLabel: "线上答疑",
       description:
-        "Use the account connected to your membership to view eligible sessions and replays.",
+        "请使用与访问权限关联的账号查看可参加的场次和回放。",
       panelDescription:
-        "Sign in with email or Google, then return to the Office Hours schedule.",
-      panelTitle: "Continue to Office Hours",
-      title: "Sign in to view Office Hours"
+        "使用邮箱或 Google 登录，然后返回线上答疑日程。",
+      panelTitle: "继续查看答疑",
+      title: "登录后查看线上答疑"
     };
   }
 
   if (pathname === "/reset-password") {
     return {
       destinationDescription:
-        "A new recovery email will bring you back to choose a replacement password.",
-      destinationLabel: "password recovery",
+        "新的重置邮件会带你返回网站设置新密码。",
+      destinationLabel: "密码重置",
       description:
-        "Request a fresh link if the previous recovery email expired or could not be completed.",
+        "如果之前的重置邮件已过期或无法完成，请申请一个新链接。",
       panelDescription:
-        "Enter the email connected to your account and we will send a new recovery link.",
-      panelTitle: "Start password recovery",
-      title: "Request a new password link"
+        "输入账号邮箱，我们会发送新的密码重置链接。",
+      panelTitle: "重置密码",
+      title: "申请新的密码重置链接"
     };
   }
 

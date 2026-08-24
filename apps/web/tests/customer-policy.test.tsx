@@ -247,13 +247,13 @@ describe("customer trust links", () => {
       <PurchaseDisclosure variant="product" />
     );
 
-    expect(membership).toContain("One billing rhythm for full access");
-    expect(membership).toContain("Pay $99 once");
-    expect(membership).toContain("no automatic renewal");
-    expect(membership).toContain("benefits attached to it");
-    expect(product).toContain("One-time purchase");
-    expect(product).toContain("Delivered to your GS学院 account");
-    expect(product).toContain("digital-product refund policy");
+    expect(membership).toContain("一次付款，完整访问");
+    expect(membership).toContain("一次支付 $99");
+    expect(membership).toContain("不会自动续费");
+    expect(membership).toContain("包含的权益");
+    expect(product).toContain("电子产品付款后不予退款");
+    expect(product).toContain("交付到你的 GS学院账号");
+    expect(product).toContain("退款政策");
 
     for (const html of [membership, product]) {
       for (const href of ["/terms", "/refund-policy", "/privacy", "/support"]) {

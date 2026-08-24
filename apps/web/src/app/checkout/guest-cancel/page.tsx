@@ -16,7 +16,7 @@ export default async function GuestCheckoutCancelPage({
   return (
     <main>
       <SectionShell
-        eyebrow="Checkout cancelled"
+        eyebrow="支付已取消"
         headingLevel={1}
         title="正在关闭未完成付款"
         description="我们会让这次 Stripe Checkout 失效，并清除待付款记录。"

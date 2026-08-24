@@ -19,7 +19,7 @@ export default async function CheckoutClaimPage() {
   return (
     <main>
       <SectionShell
-        eyebrow="Purchase access"
+        eyebrow="购买领取"
         headingLevel={1}
         title="领取你的购买"
         description="我们会通过当前登录账号的邮箱查找待领取购买，不需要输入订单号。"

@@ -5,10 +5,10 @@ type PurchaseDisclosureProps =
   | { darkSurface?: boolean; priceLabel?: never; variant: "product" };
 
 const disclosureLinks = [
-  ["Terms", "/terms"],
-  ["Refund policy", "/refund-policy"],
-  ["Privacy", "/privacy"],
-  ["Support", "/support"]
+  ["使用条款", "/terms"],
+  ["退款政策", "/refund-policy"],
+  ["隐私政策", "/privacy"],
+  ["帮助与支持", "/support"]
 ] as const;
 
 export function PurchaseDisclosure(props: PurchaseDisclosureProps) {
@@ -17,10 +17,9 @@ export function PurchaseDisclosure(props: PurchaseDisclosureProps) {
     props.variant === "membership" ? (
       <>
         <strong className={`font-bold ${strongClassName}`}>
-          {props.priceLabel} paid once.
+          一次性支付 {props.priceLabel}。
         </strong>{" "}
-        Full Access does not renew automatically. Review the refund policy
-        before paying.
+        Full Access 不会自动续费。付款前请阅读退款政策。
       </>
     ) : (
       <>
@@ -28,7 +27,7 @@ export function PurchaseDisclosure(props: PurchaseDisclosureProps) {
           电子产品付款后不予退款。
         </strong>{" "}
         付款即表示你已阅读并同意
-        <Link href="/refund-policy">退款政策</Link>，内容会交付到你的GS学院账号。
+        <Link href="/refund-policy">退款政策</Link>，内容会交付到你的 GS学院账号。
       </>
     );
 
@@ -36,8 +35,8 @@ export function PurchaseDisclosure(props: PurchaseDisclosureProps) {
     <aside
       aria-label={
         props.variant === "membership"
-          ? "Membership purchase terms"
-          : "Digital product purchase terms"
+          ? "会员购买条款"
+          : "数字产品购买条款"
       }
       className={`mt-5 border-t pt-5 text-sm font-medium leading-[1.55] ${
         props.darkSurface

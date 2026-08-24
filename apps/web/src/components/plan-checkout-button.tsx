@@ -12,15 +12,25 @@ type CheckoutResponse = {
 };
 
 function getErrorMessage(error: CheckoutResponse["error"]) {
-  if (!error) {
-    return "Checkout failed.";
+  if (typeof error !== "string") {
+    return "暂时无法开始支付，请稍后再试。";
   }
 
-  if (typeof error === "string") {
-    return error;
-  }
+  const messages: Record<string, string> = {
+    "An existing Full Access purchase is already attached to this account.":
+      "当前账号已拥有 Full Access，无需重复购买。",
+    "A membership checkout is already in progress. Return to it or try again after it expires.":
+      "当前已有一笔会员付款正在进行，请返回原付款页面，或等其失效后再试。",
+    "Checkout test access is restricted.": "当前浏览器未获准使用测试支付。",
+    "The signed-in account needs an email address before checkout.":
+      "当前账号缺少邮箱地址，暂时无法支付。",
+    "Too many checkout attempts. Try again later.":
+      "支付尝试次数过多，请稍后再试。",
+    "Unknown membership plan.": "无法识别所选方案。",
+    customer_policy_not_ready: "支付政策配置尚未完成，暂时无法开始支付。"
+  };
 
-  return "Checkout failed. Please try again.";
+  return messages[error] ?? "暂时无法开始支付，请稍后再试。";
 }
 
 export function PlanCheckoutButton({
@@ -54,14 +64,14 @@ export function PlanCheckoutButton({
               : "border-dune bg-cream text-cocoa/60"
           }`}
         >
-          Checkout unavailable
+          暂时无法支付
         </button>
         <p
           className={`text-center text-xs font-medium ${
             darkSurface ? "text-white/65" : "text-cocoa/65"
           }`}
         >
-          Billing is temporarily unavailable. No payment can be started.
+          付款服务暂时不可用，目前不会发起扣款。
         </p>
       </div>
     );
@@ -69,7 +79,7 @@ export function PlanCheckoutButton({
 
   function startCheckout() {
     if (!lookupKey) {
-      setMessage("This plan is missing a Stripe price lookup key.");
+      setMessage("此方案尚未配置付款价格，暂时无法支付。");
       return;
     }
 
@@ -103,7 +113,11 @@ export function PlanCheckoutButton({
         }
         window.location.assign(payload.url);
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Checkout failed.");
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "暂时无法开始支付，请稍后再试。"
+        );
       }
     });
   }
@@ -120,7 +134,7 @@ export function PlanCheckoutButton({
             : "bg-cocoa text-white hover:bg-charcoal"
         }`}
       >
-        {isPending ? "Opening checkout..." : label}
+        {isPending ? "正在打开支付页面…" : label}
       </button>
       <p
         className={`text-center text-xs font-medium leading-5 ${

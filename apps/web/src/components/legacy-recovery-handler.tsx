@@ -16,12 +16,12 @@ export function LegacyRecoveryHandler() {
       "",
       `${window.location.pathname}${window.location.search}`
     );
-    setMessage("Completing your secure password reset...");
+    setMessage("正在完成安全的密码重置…");
 
     void (async () => {
       const supabase = createSupabaseBrowserClient();
       if (!supabase) {
-        setMessage("Password reset is temporarily unavailable.");
+        setMessage("密码重置暂时不可用。");
         return;
       }
 
@@ -30,13 +30,13 @@ export function LegacyRecoveryHandler() {
         refresh_token: credentials.refreshToken
       });
       if (error) {
-        setMessage("This password reset link is invalid or has expired.");
+        setMessage("此密码重置链接无效或已过期。");
         return;
       }
 
       const response = await fetch("/api/auth/bootstrap", { method: "POST" });
       if (!response.ok) {
-        setMessage("Your account could not be initialized. Request a new reset link.");
+        setMessage("无法初始化账号，请申请新的重置链接。");
         return;
       }
 

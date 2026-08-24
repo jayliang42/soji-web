@@ -11,7 +11,7 @@ export function LogoutButton({ enabled }: { enabled: boolean }) {
 
   function handleLogout() {
     if (!enabled) {
-      setMessage("Supabase is not configured in this environment.");
+      setMessage("当前环境尚未配置 Supabase。");
       return;
     }
 
@@ -20,7 +20,7 @@ export function LogoutButton({ enabled }: { enabled: boolean }) {
         setMessage(null);
         const supabase = createSupabaseBrowserClient();
         if (!supabase) {
-          throw new Error("Supabase browser client is not available.");
+          throw new Error("Supabase 浏览器客户端不可用。");
         }
 
         const { error } = await supabase.auth.signOut();
@@ -31,7 +31,7 @@ export function LogoutButton({ enabled }: { enabled: boolean }) {
         router.push("/login");
         router.refresh();
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Sign out failed.");
+        setMessage(error instanceof Error ? error.message : "退出登录失败。");
       }
     });
   }
@@ -44,7 +44,7 @@ export function LogoutButton({ enabled }: { enabled: boolean }) {
         disabled={isPending}
         className="rounded-md border border-cocoa px-5 py-3 text-sm font-semibold text-cocoa disabled:opacity-50"
       >
-        {isPending ? "Signing out..." : "Sign out"}
+        {isPending ? "正在退出…" : "退出登录"}
       </button>
       {message ? <p className="text-sm text-clay">{message}</p> : null}
     </div>

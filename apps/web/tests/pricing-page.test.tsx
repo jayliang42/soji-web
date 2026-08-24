@@ -165,7 +165,7 @@ describe("pricing checkout safety", () => {
     );
 
     expect(html).toContain("购买状态暂时无法确认");
-    expect(html).toContain("Checkout unavailable");
+    expect(html).toContain("暂时无法支付");
     expect(html).toContain("立即解锁");
   });
 
@@ -188,9 +188,9 @@ describe("pricing checkout safety", () => {
       await PricingPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Digital product purchase terms");
-    expect(html).toContain("One billing rhythm for full access");
-    expect(html.split('href="/refund-policy"')).toHaveLength(4);
+    expect(html).toContain("数字产品购买条款");
+    expect(html).toContain("一次付款，完整访问");
+    expect(html.split('href="/refund-policy"')).toHaveLength(6);
     expect(html).not.toMatch(/type="checkbox"/u);
   });
 

@@ -4,16 +4,16 @@ import { getLoginPageCopy } from "@/lib/login-copy";
 describe("login page intent copy", () => {
   it("keeps the editorial default for library destinations", () => {
     expect(getLoginPageCopy("/library/money-reset-ritual").title).toBe(
-      "Sign in to continue reading"
+      "登录后继续阅读"
     );
   });
 
   it("matches the membership task", () => {
     expect(getLoginPageCopy("/pricing").title).toBe(
-      "Sign in to choose your membership"
+      "登录后选择解锁方案"
     );
     expect(getLoginPageCopy("/pricing#plan-tier_2").destinationLabel).toBe(
-      "membership options"
+      "解锁方案"
     );
   });
 
@@ -27,28 +27,28 @@ describe("login page intent copy", () => {
 
   it("matches product list and detail purchases", () => {
     expect(getLoginPageCopy("/products").title).toBe(
-      "Sign in to complete your purchase"
+      "登录后完成购买"
     );
     expect(getLoginPageCopy("/products/wealth-dashboard-template-pack").title).toBe(
-      "Sign in to complete your purchase"
+      "登录后完成购买"
     );
   });
 
   it("matches account management", () => {
     expect(getLoginPageCopy("/account").title).toBe(
-      "Sign in to your Soji account"
+      "登录你的 GS学院账号"
     );
     expect(getLoginPageCopy("/account?view=purchases").destinationLabel).toBe(
-      "your account"
+      "账号中心"
     );
   });
 
   it("matches office hours and password recovery", () => {
     expect(getLoginPageCopy("/office-hours").title).toBe(
-      "Sign in to view Office Hours"
+      "登录后查看线上答疑"
     );
     expect(getLoginPageCopy("/reset-password").title).toBe(
-      "Request a new password link"
+      "申请新的密码重置链接"
     );
   });
 

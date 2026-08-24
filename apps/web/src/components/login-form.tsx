@@ -20,10 +20,10 @@ type AuthMessage = {
 };
 
 const pendingLabels: Record<PendingOperation, string> = {
-  email_sign_in: "Signing in…",
-  email_sign_up: "Creating account…",
-  google: "Opening Google…",
-  recovery: "Sending reset link…"
+  email_sign_in: "正在登录…",
+  email_sign_up: "正在创建账号…",
+  google: "正在打开 Google…",
+  recovery: "正在发送重置链接…"
 };
 
 export function LoginForm({
@@ -75,7 +75,7 @@ export function LoginForm({
       const body = (await response.json().catch(() => null)) as
         | { reason?: string }
         | null;
-      throw new Error(body?.reason ?? "Failed to initialize the member profile.");
+      throw new Error(body?.reason ?? "无法初始化会员资料。");
     }
   }
 
@@ -87,7 +87,7 @@ export function LoginForm({
     if (!enabled) {
       setMessage({
         kind: "error",
-        text: "Sign-in is not configured in this environment yet."
+        text: "当前环境尚未配置登录功能。"
       });
       return;
     }
@@ -95,7 +95,7 @@ export function LoginForm({
     if (!email || !password) {
       setMessage({
         kind: "error",
-        text: "Enter both email and password."
+        text: "请输入邮箱和密码。"
       });
       return;
     }
@@ -108,7 +108,7 @@ export function LoginForm({
         setMessage(null);
         const supabase = createSupabaseBrowserClient();
         if (!supabase) {
-          throw new Error("Supabase browser client is not available.");
+          throw new Error("Supabase 浏览器客户端不可用。");
         }
 
         if (mode === "sign_in") {
@@ -161,7 +161,7 @@ export function LoginForm({
     if (!enabled) {
       setMessage({
         kind: "error",
-        text: "Google sign-in is not configured in this environment yet."
+        text: "当前环境尚未配置 Google 登录。"
       });
       return;
     }
@@ -172,12 +172,12 @@ export function LoginForm({
         setMessage(null);
         const supabase = createSupabaseBrowserClient();
         if (!supabase) {
-          throw new Error("Supabase browser client is not available.");
+          throw new Error("Supabase 浏览器客户端不可用。");
         }
 
         const siteUrl = getClientSiteUrl(window.location.origin);
         if (!siteUrl) {
-          throw new Error("Google sign-in is temporarily unavailable.");
+          throw new Error("Google 登录暂时不可用。");
         }
 
         const { error } = await supabase.auth.signInWithOAuth({
@@ -205,14 +205,14 @@ export function LoginForm({
     if (!enabled) {
       setMessage({
         kind: "error",
-        text: "Password reset is not configured in this environment yet."
+        text: "当前环境尚未配置密码重置功能。"
       });
       return;
     }
     if (!email) {
       setMessage({
         kind: "error",
-        text: "Enter your email first, then request a reset link."
+        text: "请先输入邮箱，再申请重置链接。"
       });
       return;
     }
@@ -224,7 +224,7 @@ export function LoginForm({
       if (!supabase) {
         setMessage({
           kind: "error",
-          text: "The reset email could not be sent. Try again shortly."
+          text: "无法发送重置邮件，请稍后再试。"
         });
         setPendingOperation(null);
         return;
@@ -233,17 +233,17 @@ export function LoginForm({
       try {
         const siteUrl = getClientSiteUrl(window.location.origin);
         if (!siteUrl) {
-          throw new Error("Canonical site URL is not configured.");
+          throw new Error("网站标准地址尚未配置。");
         }
         await requestPasswordRecovery(supabase.auth, email, siteUrl);
         setMessage({
           kind: "status",
-          text: "If an account matches that email, a password reset link is on its way."
+          text: "如果该邮箱对应一个账号，密码重置邮件很快会送达。"
         });
       } catch {
         setMessage({
           kind: "error",
-          text: "The reset email could not be sent. Try again shortly."
+          text: "无法发送重置邮件，请稍后再试。"
         });
       } finally {
         setPendingOperation(null);
@@ -260,15 +260,15 @@ export function LoginForm({
             ref={confirmationHeadingRef}
             tabIndex={-1}
           >
-            Check your inbox
+            请查看邮箱
           </h2>
           <p className="mt-3 text-sm leading-6 text-cocoa/80">
-            We sent a confirmation link to{" "}
-            <span className="font-semibold text-cocoa">{confirmationEmail}</span>.
-            Open it to finish creating your GS学院 account.
+            我们已向{" "}
+            <span className="font-semibold text-cocoa">{confirmationEmail}</span>
+            {" "}发送确认链接。打开链接即可完成 GS学院账号注册。
           </p>
           <p className="mt-2 text-sm leading-6 text-cocoa/70">
-            If it does not arrive, check spam or use a different email.
+            如果没有收到，请检查垃圾邮件，或改用其他邮箱。
           </p>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -282,7 +282,7 @@ export function LoginForm({
             }}
             type="button"
           >
-            Use a different email
+            使用其他邮箱
           </button>
           <button
             className="min-h-11 rounded-md px-5 py-3 text-sm font-semibold text-clay"
@@ -293,7 +293,7 @@ export function LoginForm({
             }}
             type="button"
           >
-            Return to sign in
+            返回登录
           </button>
         </div>
       </section>
@@ -318,11 +318,11 @@ export function LoginForm({
         ref={formHeadingRef}
         tabIndex={mode === "recovery" ? -1 : undefined}
       >
-        {mode === "recovery" ? "Reset your password" : heading}
+        {mode === "recovery" ? "重置密码" : heading}
       </h2>
       <p className="mt-3 max-w-xl text-cocoa/75">
         {mode === "recovery"
-          ? "Enter the email connected to your account. We will send a new link for choosing your password."
+          ? "输入与你的账号关联的邮箱，我们会发送一个设置新密码的链接。"
           : description}
       </p>
 
@@ -336,17 +336,17 @@ export function LoginForm({
           >
             {pendingOperation === "google"
               ? pendingLabels.google
-              : "Continue with Google"}
+              : "使用 Google 继续"}
           </button>
 
           <div className="my-6 flex items-center gap-3 text-sm text-cocoa/75">
             <span aria-hidden="true" className="h-px flex-1 bg-dune" />
-            <span>or continue with email</span>
+            <span>或使用邮箱继续</span>
             <span aria-hidden="true" className="h-px flex-1 bg-dune" />
           </div>
 
           <div
-            aria-label="Authentication mode"
+            aria-label="登录或注册"
             className="grid grid-cols-2 overflow-hidden rounded-md border border-dune text-sm"
             role="group"
           >
@@ -361,7 +361,7 @@ export function LoginForm({
               }}
               className={`min-h-11 border-r border-dune px-4 py-2 disabled:opacity-50 ${mode === "sign_in" ? "bg-clay text-white" : "bg-shell text-cocoa"}`}
             >
-              Sign in
+              登录
             </button>
             <button
               type="button"
@@ -374,7 +374,7 @@ export function LoginForm({
               }}
               className={`min-h-11 px-4 py-2 disabled:opacity-50 ${mode === "sign_up" ? "bg-clay text-white" : "bg-shell text-cocoa"}`}
             >
-              Create account
+              创建账号
             </button>
           </div>
         </>
@@ -382,7 +382,7 @@ export function LoginForm({
 
       <div className={`${mode === "recovery" ? "mt-8" : "mt-6"} grid gap-4`}>
         <label className="grid gap-2 text-sm text-cocoa/75">
-          Email
+          邮箱
           <input
             autoComplete="email"
             disabled={controlsDisabled}
@@ -396,7 +396,7 @@ export function LoginForm({
         </label>
         {mode !== "recovery" ? (
           <label className="grid gap-2 text-sm text-cocoa/75">
-            Password
+            密码
             <input
               autoComplete={
                 mode === "sign_in" ? "current-password" : "new-password"
@@ -410,14 +410,14 @@ export function LoginForm({
               className="min-h-12 rounded-md border border-dune bg-white px-4 py-3 text-cocoa outline-none disabled:bg-shell disabled:opacity-70"
               placeholder={
                 mode === "sign_in"
-                  ? "Your password"
-                  : "Create a strong password"
+                  ? "请输入密码"
+                  : "请设置一个安全密码"
               }
             />
           </label>
         ) : null}
         {mode === "sign_up" ? (
-          <p className="-mt-2 text-sm text-cocoa/65">Use at least 8 characters.</p>
+          <p className="-mt-2 text-sm text-cocoa/65">密码至少需要 8 个字符。</p>
         ) : null}
       </div>
 
@@ -431,10 +431,10 @@ export function LoginForm({
         pendingOperation === "recovery"
           ? pendingLabels[pendingOperation]
           : mode === "recovery"
-            ? "Send reset link"
+            ? "发送重置链接"
             : mode === "sign_in"
-              ? "Sign in with email"
-              : "Create account"}
+              ? "使用邮箱登录"
+              : "创建账号"}
       </button>
 
       {mode === "sign_in" ? (
@@ -448,7 +448,7 @@ export function LoginForm({
           }}
           className="mt-3 min-h-11 text-sm font-semibold text-clay disabled:opacity-50"
         >
-          Forgot password?
+          忘记密码？
         </button>
       ) : null}
 
@@ -462,7 +462,7 @@ export function LoginForm({
           }}
           type="button"
         >
-          Back to sign in
+          返回登录
         </button>
       ) : null}
 

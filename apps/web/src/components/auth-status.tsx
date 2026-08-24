@@ -15,19 +15,19 @@ export function AuthStatus({
   return (
     <div className="rounded-lg border border-dune bg-shell p-5 text-sm text-cocoa/80">
       <p className="font-semibold text-cocoa">
-        {user ? "Signed in" : "Not signed in"}
+        {user ? "已登录" : "尚未登录"}
       </p>
       <p className="mt-2">
         {user
-          ? `${user.email}${isDemo ? " is using demo access for local preview." : ""}`
-          : "Create an account to save purchases and unlock member-only content."}
+          ? `${user.email}${isDemo ? " 正在使用本地演示访问权限。" : ""}`
+          : "创建账号后可保存购买记录并解锁会员内容。"}
       </p>
       <div className="mt-4 flex gap-4">
         {user ? (
           <LogoutButton enabled={hasSupabaseConfig() && source === "supabase"} />
         ) : (
           <Link href="/login" className="font-semibold text-clay">
-            Login
+            登录
           </Link>
         )}
       </div>

@@ -22,12 +22,12 @@ describe("reset password page", () => {
 
     const html = renderToStaticMarkup(await ResetPasswordPage());
 
-    expect(html).toContain("This reset link is no longer valid.");
+    expect(html).toContain("此重置链接已失效");
     expect(html).toContain(
-      "Request a new password reset email and open the newest link."
+      "请申请新的密码重置邮件，并打开最新收到的链接。"
     );
-    expect(html).toContain("Request another link");
-    expect(html).not.toContain("Confirm new password");
+    expect(html).toContain("申请新链接");
+    expect(html).not.toContain("确认新密码");
   });
 
   it("shows the update form only for an authenticated Supabase session", async () => {
@@ -39,18 +39,18 @@ describe("reset password page", () => {
 
     const html = renderToStaticMarkup(await ResetPasswordPage());
 
-    expect(html).toContain("New password");
-    expect(html).toContain("Confirm new password");
-    expect(html).toContain("Update password");
-    expect(html).not.toContain("This reset link is no longer valid.");
+    expect(html).toContain("新密码");
+    expect(html).toContain("确认新密码");
+    expect(html).toContain("更新密码");
+    expect(html).not.toContain("此重置链接已失效");
 
     const source = readFileSync(
       new URL("../src/components/password-reset-form.tsx", import.meta.url),
       "utf8"
     );
-    expect(source).toContain("Password updated");
-    expect(source).toContain("Your new password is ready to use.");
-    expect(source).toContain("Continue to your account");
+    expect(source).toContain("密码已更新");
+    expect(source).toContain("现在可以使用新密码登录。");
+    expect(source).toContain("前往账号中心");
     expect(source).not.toContain("error.message");
   });
 });

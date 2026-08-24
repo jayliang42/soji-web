@@ -7,11 +7,11 @@ export type PublicAuthOperation =
 
 const publicAuthFailureMessages: Record<PublicAuthOperation, string> = {
   email_sign_in:
-    "We couldn't sign you in with those details. If you created the account with Google, use Continue with Google. Otherwise check your email and password or reset your password.",
+    "无法使用这些信息登录。如果你是使用 Google 创建的账号，请选择“使用 Google 继续”；否则请检查邮箱和密码，或重置密码。",
   email_sign_up:
-    "Account creation is temporarily unavailable. Try again shortly.",
+    "暂时无法创建账号，请稍后再试。",
   google:
-    "Google sign-in is temporarily unavailable. Try again or continue with email."
+    "Google 登录暂时不可用，请稍后再试或改用邮箱登录。"
 };
 
 export function isMissingAuthSession(error: unknown) {

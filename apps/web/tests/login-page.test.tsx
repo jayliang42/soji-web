@@ -18,19 +18,19 @@ describe("login page", () => {
       })
     );
 
-    expect(html).toContain("Sign in to your GS学院 account");
-    expect(html).toContain("Open your account");
-    expect(html).toContain("Continue to your account.");
-    expect(html).toContain("Browse public guides instead");
-    expect(html).toContain("Continue with Google");
-    expect(html).toContain("or continue with email");
-    expect(html).toContain("Sign in with email");
-    expect(html).toContain("Forgot password?");
-    expect(html.indexOf("Continue with Google")).toBeLessThan(
-      html.indexOf("or continue with email")
+    expect(html).toContain("登录你的 GS学院账号");
+    expect(html).toContain("进入账号中心");
+    expect(html).toContain("继续前往账号中心");
+    expect(html).toContain("暂时浏览公开指南");
+    expect(html).toContain("使用 Google 继续");
+    expect(html).toContain("或使用邮箱继续");
+    expect(html).toContain("使用邮箱登录");
+    expect(html).toContain("忘记密码？");
+    expect(html.indexOf("使用 Google 继续")).toBeLessThan(
+      html.indexOf("或使用邮箱继续")
     );
     expect(html).toContain('aria-busy="false"');
-    expect(html).not.toContain("Not signed in");
+    expect(html).not.toContain("尚未登录");
     expect(html).not.toContain('href="/login"');
   });
 
@@ -42,9 +42,9 @@ describe("login page", () => {
 
     expect(source).toContain("emailRedirectTo: getAuthCallbackUrl");
     expect(source).toContain("redirectTo: getAuthCallbackUrl");
-    expect(source).toContain("Check your inbox");
-    expect(source).toContain("Use a different email");
-    expect(source).toContain("Return to sign in");
+    expect(source).toContain("请查看邮箱");
+    expect(source).toContain("使用其他邮箱");
+    expect(source).toContain("返回登录");
     expect(source).toContain("getPublicAuthFailureMessage(operation)");
     expect(source).not.toContain("error.message");
     expect(source).not.toContain("/api/auth/bootstrap_test");
@@ -60,13 +60,13 @@ describe("login page", () => {
       })
     );
 
-    expect(html).toContain("The password reset link could not be completed.");
-    expect(html).toContain("Request a new password link");
-    expect(html).toContain("Reset your password");
-    expect(html).toContain("Send reset link");
-    expect(html).toContain("Back to sign in");
-    expect(html).not.toContain("Continue with Google");
-    expect(html).not.toContain(">Password<");
-    expect(html).not.toContain("Google sign-in could not be completed.");
+    expect(html).toContain("无法完成密码重置。");
+    expect(html).toContain("申请新的密码重置链接");
+    expect(html).toContain("重置密码");
+    expect(html).toContain("发送重置链接");
+    expect(html).toContain("返回登录");
+    expect(html).not.toContain("使用 Google 继续");
+    expect(html).not.toContain(">密码<");
+    expect(html).not.toContain("无法完成 Google 登录。");
   });
 });
