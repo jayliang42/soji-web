@@ -9,6 +9,7 @@ import {
 } from "@/lib/observability";
 import {
   beginBillingEventAttempt,
+  isRecoverableIgnoredGuestPaymentEvent,
   markBillingEventFailed,
   markBillingEventIgnored,
   markBillingEventProcessed,
@@ -61,6 +62,41 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
+  }
+
+  if (
+    billingEvent.duplicate &&
+    billingEvent.event.status === "ignored" &&
+    isRecoverableIgnoredGuestPaymentEvent(event)
+  ) {
+    try {
+      const result = await processStripeEvent(event, stripe);
+      return NextResponse.json({
+        duplicate: true,
+        received: true,
+        recovered: true,
+        result,
+        type: event.type
+      });
+    } catch (error) {
+      await reportOperationalError(
+        "stripe.webhook.ignored_guest_recovery_failed",
+        error,
+        {
+          billingEventId: billingEvent.event.id,
+          eventId: event.id,
+          eventType: event.type
+        }
+      );
+      return NextResponse.json(
+        {
+          error: "billing_event_processing_failed",
+          received: true,
+          type: event.type
+        },
+        { status: 500 }
+      );
+    }
   }
 
   if (

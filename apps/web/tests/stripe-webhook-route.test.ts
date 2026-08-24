@@ -6,6 +6,7 @@ const webhookMocks = vi.hoisted(() => ({
   createOperationalLog: vi.fn((value) => value),
   env: { STRIPE_WEBHOOK_SECRET: "whsec_test" as string | undefined },
   getStripeClient: vi.fn(),
+  isRecoverableIgnoredGuestPaymentEvent: vi.fn(),
   logOperationalEvent: vi.fn(),
   markBillingEventFailed: vi.fn(),
   markBillingEventIgnored: vi.fn(),
@@ -29,6 +30,8 @@ vi.mock("@/lib/stripe-webhook", () => ({
   markBillingEventFailed: webhookMocks.markBillingEventFailed,
   markBillingEventIgnored: webhookMocks.markBillingEventIgnored,
   markBillingEventProcessed: webhookMocks.markBillingEventProcessed,
+  isRecoverableIgnoredGuestPaymentEvent:
+    webhookMocks.isRecoverableIgnoredGuestPaymentEvent,
   processStripeEvent: webhookMocks.processStripeEvent,
   recordStripeBillingEvent: webhookMocks.recordStripeBillingEvent
 }));
@@ -49,6 +52,8 @@ describe("Stripe webhook boundary", () => {
   beforeEach(() => {
     webhookMocks.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
     webhookMocks.getStripeClient.mockReset();
+    webhookMocks.isRecoverableIgnoredGuestPaymentEvent.mockReset();
+    webhookMocks.isRecoverableIgnoredGuestPaymentEvent.mockReturnValue(false);
     webhookMocks.createOperationalLog.mockClear();
     webhookMocks.logOperationalEvent.mockClear();
     webhookMocks.reportOperationalError.mockClear();
@@ -171,6 +176,79 @@ describe("Stripe webhook boundary", () => {
       received: true,
       result: { action: "already_ignored" }
     });
+    expect(webhookMocks.beginBillingEventAttempt).not.toHaveBeenCalled();
+  });
+
+  it("recovers a previously ignored guest test payment from a signed resend", async () => {
+    const event = {
+      data: { object: { metadata: { kind: "guest_membership" } } },
+      id: "evt_guest_recovery",
+      livemode: false,
+      type: "checkout.session.completed"
+    };
+    webhookMocks.getStripeClient.mockReturnValue(configuredStripe(event));
+    webhookMocks.recordStripeBillingEvent.mockResolvedValue({
+      duplicate: true,
+      event: { id: "receipt-id", processed_at: null, status: "ignored" }
+    });
+    webhookMocks.isRecoverableIgnoredGuestPaymentEvent.mockReturnValue(true);
+    webhookMocks.processStripeEvent.mockResolvedValue({
+      action: "recorded_guest_membership_payment",
+      status: "paid_unclaimed"
+    });
+
+    const response = await POST(request({ "stripe-signature": "valid" }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      duplicate: true,
+      received: true,
+      recovered: true,
+      result: {
+        action: "recorded_guest_membership_payment",
+        status: "paid_unclaimed"
+      }
+    });
+    expect(webhookMocks.processStripeEvent).toHaveBeenCalledWith(
+      event,
+      webhookMocks.getStripeClient.mock.results[0]?.value
+    );
+    expect(webhookMocks.beginBillingEventAttempt).not.toHaveBeenCalled();
+  });
+
+  it("reports a guest payment recovery failure without exposing details", async () => {
+    const event = {
+      data: { object: { metadata: { kind: "guest_membership" } } },
+      id: "evt_guest_recovery_failed",
+      livemode: false,
+      type: "checkout.session.completed"
+    };
+    const sensitiveError = new Error("sensitive recovery failure");
+    webhookMocks.getStripeClient.mockReturnValue(configuredStripe(event));
+    webhookMocks.recordStripeBillingEvent.mockResolvedValue({
+      duplicate: true,
+      event: { id: "receipt-id", processed_at: null, status: "ignored" }
+    });
+    webhookMocks.isRecoverableIgnoredGuestPaymentEvent.mockReturnValue(true);
+    webhookMocks.processStripeEvent.mockRejectedValue(sensitiveError);
+
+    const response = await POST(request({ "stripe-signature": "valid" }));
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({
+      error: "billing_event_processing_failed",
+      received: true,
+      type: event.type
+    });
+    expect(webhookMocks.reportOperationalError).toHaveBeenCalledWith(
+      "stripe.webhook.ignored_guest_recovery_failed",
+      sensitiveError,
+      {
+        billingEventId: "receipt-id",
+        eventId: event.id,
+        eventType: event.type
+      }
+    );
     expect(webhookMocks.beginBillingEventAttempt).not.toHaveBeenCalled();
   });
 

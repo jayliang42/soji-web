@@ -784,6 +784,26 @@ async function syncDispute(
   } as const;
 }
 
+function isProductionStripeTestRuntime() {
+  return (
+    process.env.VERCEL_ENV === "production" &&
+    process.env.STRIPE_SECRET_KEY?.trim().startsWith("sk_test_") === true
+  );
+}
+
+export function isRecoverableIgnoredGuestPaymentEvent(event: Stripe.Event) {
+  if (
+    !isProductionStripeTestRuntime() ||
+    event.livemode !== false ||
+    (event.type !== "checkout.session.completed" &&
+      event.type !== "checkout.session.async_payment_succeeded")
+  ) {
+    return false;
+  }
+
+  return event.data.object.metadata?.kind === "guest_membership";
+}
+
 export async function processStripeEvent(event: Stripe.Event, stripe: Stripe) {
   const observedAt =
     stripeTimestampToIso(event.created) ?? new Date().toISOString();
@@ -793,7 +813,11 @@ export async function processStripeEvent(event: Stripe.Event, stripe: Stripe) {
     event.type === "checkout.session.expired" &&
     event.data.object.metadata?.kind === "guest_membership";
 
-  if (isProductionNonLiveEvent && !isGuestCheckoutExpiry) {
+  if (
+    isProductionNonLiveEvent &&
+    !isGuestCheckoutExpiry &&
+    !isProductionStripeTestRuntime()
+  ) {
     return {
       action: "ignored",
       reason: "non_live_event_in_production"

@@ -28,6 +28,7 @@ import {
   beginBillingEventAttempt,
   beginStripeCustomerReconciliation,
   closeMissingCustomerSubscriptions,
+  isRecoverableIgnoredGuestPaymentEvent,
   markBillingEventFailed,
   markBillingEventIgnored,
   markBillingEventProcessed,
@@ -130,6 +131,7 @@ describe("Stripe webhook state synchronization", () => {
 
   it("never grants production entitlement from a non-live Stripe event", async () => {
     vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_live_placeholder");
     const event = {
       created: 1784124000,
       data: {
@@ -149,8 +151,45 @@ describe("Stripe webhook state synchronization", () => {
       action: "ignored",
       reason: "non_live_event_in_production"
     });
+    expect(isRecoverableIgnoredGuestPaymentEvent(event)).toBe(false);
     expect(syncMocks.rpc).not.toHaveBeenCalled();
     expect(syncMocks.recordGuestMembershipPayment).not.toHaveBeenCalled();
+  });
+
+  it("processes a signed non-live guest payment when Production uses a Stripe test key", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_placeholder");
+    const event = {
+      created: 1787598586,
+      data: {
+        object: {
+          amount_total: 9_900,
+          client_reference_id: guestCheckoutId,
+          currency: "usd",
+          customer_details: { email: "buyer@example.com" },
+          id: "cs_test_guest_production",
+          metadata: {
+            guestCheckoutId,
+            kind: "guest_membership",
+            lookupKey: "full_access_once",
+            planId: "tier_1"
+          },
+          mode: "payment",
+          payment_intent: "pi_test_guest_production",
+          payment_status: "paid"
+        }
+      },
+      livemode: false,
+      type: "checkout.session.completed"
+    } as unknown as Stripe.Event;
+
+    expect(isRecoverableIgnoredGuestPaymentEvent(event)).toBe(true);
+    await expect(processStripeEvent(event, {} as Stripe)).resolves.toMatchObject({
+      action: "recorded_guest_membership_payment",
+      guestCheckoutId,
+      status: "paid_unclaimed"
+    });
+    expect(syncMocks.recordGuestMembershipPayment).toHaveBeenCalledOnce();
   });
 
   it("claims each billing processing attempt through one service-role RPC", async () => {
