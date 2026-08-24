@@ -8,6 +8,19 @@ import { env } from "@/lib/env";
 
 const hmacPattern = /^[0-9a-f]{64}$/;
 
+export function isRestrictedCheckoutTestRuntime({
+  nodeEnv,
+  stripeSecretKey
+}: {
+  nodeEnv: string | null | undefined;
+  stripeSecretKey: string | null | undefined;
+}) {
+  return (
+    nodeEnv === "production" &&
+    stripeSecretKey?.trim().startsWith("sk_test_") === true
+  );
+}
+
 export function isCheckoutTestBrowserAllowed({
   browserId,
   expectedBrowserHmac,
@@ -21,10 +34,7 @@ export function isCheckoutTestBrowserAllowed({
   nodeEnv: string | null | undefined;
   stripeSecretKey: string | null | undefined;
 }) {
-  const isRestrictedTestRuntime =
-    nodeEnv === "production" &&
-    stripeSecretKey?.trim().startsWith("sk_test_");
-  if (!isRestrictedTestRuntime) {
+  if (!isRestrictedCheckoutTestRuntime({ nodeEnv, stripeSecretKey })) {
     return true;
   }
 

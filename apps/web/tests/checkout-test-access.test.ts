@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { isCheckoutTestBrowserAllowed } from "@/lib/checkout-test-access";
+import {
+  isCheckoutTestBrowserAllowed,
+  isRestrictedCheckoutTestRuntime
+} from "@/lib/checkout-test-access";
 import { getGuestCheckoutBrowserHmac } from "@/lib/guest-checkout-identity";
 
 const browserId = "00000000-0000-4000-8000-000000000951";
@@ -7,6 +10,27 @@ const hmacSecret = "test-guest-checkout-hmac-secret-value";
 const expectedBrowserHmac = getGuestCheckoutBrowserHmac(browserId, hmacSecret);
 
 describe("production Stripe test access", () => {
+  it("restricts only production runtimes that use a Stripe test key", () => {
+    expect(
+      isRestrictedCheckoutTestRuntime({
+        nodeEnv: "production",
+        stripeSecretKey: "sk_test_placeholder"
+      })
+    ).toBe(true);
+    expect(
+      isRestrictedCheckoutTestRuntime({
+        nodeEnv: "development",
+        stripeSecretKey: "sk_test_placeholder"
+      })
+    ).toBe(false);
+    expect(
+      isRestrictedCheckoutTestRuntime({
+        nodeEnv: "production",
+        stripeSecretKey: "sk_live_placeholder"
+      })
+    ).toBe(false);
+  });
+
   it("does not restrict live Stripe Checkout", () => {
     expect(
       isCheckoutTestBrowserAllowed({
