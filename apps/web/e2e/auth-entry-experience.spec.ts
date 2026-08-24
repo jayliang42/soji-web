@@ -17,7 +17,7 @@ test("default sign in uses account-specific intent", async ({ page }) => {
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Sign in to your Soji account"
+      name: "Sign in to your GS学院 account"
     })
   ).toBeVisible();
   await expect(

@@ -7,7 +7,7 @@ export type PublicAuthOperation =
 
 const publicAuthFailureMessages: Record<PublicAuthOperation, string> = {
   email_sign_in:
-    "We couldn't sign you in with those details. Check your email and password and try again.",
+    "We couldn't sign you in with those details. If you created the account with Google, use Continue with Google. Otherwise check your email and password or reset your password.",
   email_sign_up:
     "Account creation is temporarily unavailable. Try again shortly.",
   google:
