@@ -23,6 +23,9 @@ describe("browser mutation trust boundary", () => {
     expect(isProtectedBrowserMutation("/api/admin/content", "POST")).toBe(true);
     expect(isProtectedBrowserMutation("/api/checkout/product", "POST")).toBe(true);
     expect(
+      isProtectedBrowserMutation("/api/checkout/test-access", "POST")
+    ).toBe(true);
+    expect(
       isProtectedBrowserMutation("/api/account/purchases/claim", "POST")
     ).toBe(true);
     expect(isProtectedBrowserMutation("/api/auth/bootstrap", "POST")).toBe(true);
