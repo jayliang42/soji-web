@@ -234,7 +234,7 @@ describe("account billing management readiness", () => {
     expect(html).toContain(">浏览资料库<");
     expect(html).toContain('href="/office-hours"');
     expect(html).toContain(">查看线上答疑<");
-    expect(html).toContain(">浏览实用工具<");
+    expect(html).not.toContain(">浏览实用工具<");
   });
 
   it("shows plan choices inside Account for the subscriptions view", async () => {

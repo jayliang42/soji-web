@@ -74,8 +74,6 @@ export default async function LibraryPage(props?: LibraryPageProps) {
         {snapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
-              alternativeHref="/products"
-              alternativeLabel="浏览实用工具"
               title="暂时无法加载内容库"
               description="我们没有显示任何受限内容，请稍后再试。"
               note="重新连接期间，你的访问权限和收藏不会改变。"

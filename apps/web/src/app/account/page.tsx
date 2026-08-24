@@ -580,18 +580,6 @@ export default async function AccountPage({
                     →
                   </span>
                 </Link>
-                <Link
-                  href="/products"
-                  className="group flex min-h-11 items-center justify-between rounded-lg bg-shell px-4 text-sm font-bold text-cocoa transition-colors hover:text-clay"
-                >
-                  浏览实用工具
-                  <span
-                    aria-hidden="true"
-                    className="transition-transform group-hover:translate-x-1 motion-reduce:transform-none"
-                  >
-                    →
-                  </span>
-                </Link>
               </div>
             </article>
           </div>

@@ -176,7 +176,7 @@ describe("content detail reading experience", () => {
     expect(html).toContain('id="choose-a-next-move"');
     expect(html).toContain("选择下一步最有帮助的内容");
     expect(html).toContain('href="/library"');
-    expect(html).toContain('href="/products"');
+    expect(html).not.toContain('href="/products"');
     expect(html).toContain('href="/office-hours"');
     expect(html).toContain("继续阅读");
     expect(html).toContain("已包含在你的会员权益中");

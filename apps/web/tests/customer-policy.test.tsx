@@ -218,19 +218,15 @@ describe("public customer policy pages", () => {
 });
 
 describe("customer trust links", () => {
-  it("groups Explore and all five support links in the global footer", async () => {
+  it("keeps Office Hours and all five support links in the global footer", async () => {
     const html = renderToStaticMarkup(
       await RootLayout({ children: <main>Page</main> })
     );
 
-    expect(html).toContain("网站内容");
+    expect(html).toContain("线上答疑");
     expect(html).toContain("支持与政策");
     for (const href of [
-      "/library",
-      "/pricing",
-      "/products",
       "/office-hours",
-      "/account",
       ...Object.values(customerPolicyRoutes)
     ]) {
       expect(html).toContain(`href="${href}"`);

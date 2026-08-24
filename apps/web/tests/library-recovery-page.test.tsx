@@ -37,7 +37,7 @@ describe("library collection recovery", () => {
     expect(html).toContain("连接暂时中断");
     expect(html).toContain("暂时无法加载内容库");
     expect(html).toContain("重新加载");
-    expect(html).toContain(">浏览实用工具</a>");
+    expect(html).not.toContain(">浏览实用工具</a>");
     expect(html).toContain(
       "重新连接期间，你的访问权限和收藏不会改变。"
     );

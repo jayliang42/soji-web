@@ -15,13 +15,6 @@ const supportPolicyLinks: ReadonlyArray<readonly [string, Route]> = [
   ["退款政策", "/refund-policy" as Route],
   ["财务信息免责声明", "/financial-disclaimer" as Route]
 ] as const;
-const exploreLinks: ReadonlyArray<readonly [string, Route]> = [
-  ["内容库", "/library" as Route],
-  ["价格", "/pricing" as Route],
-  ["实用工具", "/products" as Route],
-  ["线上答疑", "/office-hours" as Route],
-  ["账户", "/account" as Route]
-] as const;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -98,23 +91,17 @@ export default async function RootLayout({
           {children}
         </div>
         <footer className="border-t border-dune bg-shell px-6 py-12 md:py-16">
-          <div className="mx-auto grid max-w-6xl gap-10 text-sm text-cocoa/70 md:grid-cols-2 md:gap-16">
-            <nav aria-label="网站内容">
+          <div className="mx-auto grid max-w-6xl gap-10 text-sm text-cocoa/70 md:grid-cols-[0.75fr_1.25fr] md:gap-16">
+            <nav aria-label="线上答疑">
               <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
-                网站内容
+                线上答疑
               </h2>
-              <ul className="mt-2 grid font-semibold">
-                {exploreLinks.map(([label, href]) => (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      className="inline-flex min-h-11 items-center transition-colors hover:text-clay"
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <Link
+                href="/office-hours"
+                className="mt-2 inline-flex min-h-11 items-center font-semibold transition-colors hover:text-clay"
+              >
+                查看线上答疑
+              </Link>
             </nav>
             <nav aria-label="支持与政策">
               <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
