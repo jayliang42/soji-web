@@ -179,6 +179,9 @@ async function createGuestMembershipCheckout({
         metadata,
         mode: "payment",
         payment_method_types: ["card"],
+        wallet_options: {
+          link: { display: "never" }
+        },
         payment_intent_data: { metadata },
         success_url: `${siteUrl}/checkout/claim`
       },
@@ -423,6 +426,9 @@ export async function POST(request: NextRequest) {
         line_items: [{ price: priceId, quantity: 1 }],
         metadata,
         payment_method_types: ["card"],
+        wallet_options: {
+          link: { display: "never" }
+        },
         custom_text: {
           submit: {
             message:

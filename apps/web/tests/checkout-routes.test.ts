@@ -354,6 +354,9 @@ describe("checkout route validation", () => {
         },
         mode: "payment",
         payment_method_types: ["card"],
+        wallet_options: {
+          link: { display: "never" }
+        },
         payment_intent_data: {
           metadata: {
             kind: "membership",
@@ -407,7 +410,10 @@ describe("checkout route validation", () => {
           }
         },
         mode: "payment",
-        payment_method_types: ["card"]
+        payment_method_types: ["card"],
+        wallet_options: {
+          link: { display: "never" }
+        }
       }),
       expect.objectContaining({
         idempotencyKey: expect.stringContaining(requestId)
@@ -745,6 +751,9 @@ describe("checkout route validation", () => {
         },
         mode: "payment",
         payment_method_types: ["card"],
+        wallet_options: {
+          link: { display: "never" }
+        },
         payment_intent_data: {
           metadata: {
             guestCheckoutId: "00000000-0000-4000-8000-000000000702",

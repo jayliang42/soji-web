@@ -250,6 +250,9 @@ export async function POST(request: NextRequest) {
         line_items: [{ price: priceId, quantity: 1 }],
         metadata,
         payment_method_types: ["card"],
+        wallet_options: {
+          link: { display: "never" }
+        },
         custom_text: {
           submit: {
             message:
