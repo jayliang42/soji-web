@@ -353,6 +353,7 @@ describe("checkout route validation", () => {
           userId: "00000000-0000-4000-8000-000000000101"
         },
         mode: "payment",
+        payment_method_types: ["card"],
         payment_intent_data: {
           metadata: {
             kind: "membership",
@@ -402,10 +403,11 @@ describe("checkout route validation", () => {
         custom_text: {
           submit: {
             message:
-              "By purchasing, you agree to the GS学院 Terms and acknowledge the digital-product refund policy."
+              "By paying, you agree to the GS学院 Terms and Refund Policy. Digital products are final and non-refundable."
           }
         },
-        mode: "payment"
+        mode: "payment",
+        payment_method_types: ["card"]
       }),
       expect.objectContaining({
         idempotencyKey: expect.stringContaining(requestId)
@@ -742,6 +744,7 @@ describe("checkout route validation", () => {
           planId: "tier_1"
         },
         mode: "payment",
+        payment_method_types: ["card"],
         payment_intent_data: {
           metadata: {
             guestCheckoutId: "00000000-0000-4000-8000-000000000702",

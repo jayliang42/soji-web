@@ -249,6 +249,7 @@ export async function POST(request: NextRequest) {
           : { customer_email: user.email }),
         line_items: [{ price: priceId, quantity: 1 }],
         metadata,
+        payment_method_types: ["card"],
         custom_text: {
           submit: {
             message:
