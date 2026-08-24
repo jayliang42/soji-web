@@ -126,7 +126,7 @@ describe("account billing management readiness", () => {
     const html = renderToStaticMarkup(<AccountLoading />);
 
     expect(html).toContain('role="status"');
-    expect(html).toContain("Loading account billing…");
+    expect(html).toContain("正在加载账户和账单信息…");
     expect(html).toContain('data-loading-section="current-tier"');
     expect(html).toContain('data-loading-section="subscriptions"');
     expect(html).toContain('data-loading-section="purchases"');
@@ -159,12 +159,12 @@ describe("account billing management readiness", () => {
 
     const html = await renderAccount();
 
-    expect(html).toContain("Account services are temporarily unavailable");
-    expect(html).toContain("Membership unavailable");
-    expect(html).toContain("Benefits could not be verified.");
+    expect(html).toContain("账户服务暂不可用");
+    expect(html).toContain("会员状态不可用");
+    expect(html).toContain("暂时无法核实权益。");
     expect(html).not.toMatch(/\bFree\b/);
     expect(html).not.toContain("No paid benefits are active yet.");
-    expect(html).not.toContain("Foundational monthly essays");
+    expect(html).not.toContain("基础月度文章");
   });
 
   it("suppresses successful billing truth and actions when session truth is degraded", async () => {
@@ -195,16 +195,16 @@ describe("account billing management readiness", () => {
 
     const html = await renderAccount({ view: "subscriptions" });
 
-    expect(html).toContain("Subscriptions could not be verified");
-    expect(html).toContain("Purchases could not be verified");
-    expect(html).not.toContain(">Active<");
-    expect(html).not.toContain("Access active");
-    expect(html).not.toContain("Download available");
-    expect(html).not.toContain("Download file");
-    expect(html).not.toContain("Manage billing");
-    expect(html).not.toContain("Billing unavailable");
-    expect(html).not.toContain("Upgrade your membership");
-    expect(html).not.toContain("Payment confirmed.");
+    expect(html).toContain("无法核实订阅");
+    expect(html).toContain("无法核实购买记录");
+    expect(html).not.toContain(">有效<");
+    expect(html).not.toContain("访问权限有效");
+    expect(html).not.toContain("可以下载");
+    expect(html).not.toContain("下载文件");
+    expect(html).not.toContain(">管理账单<");
+    expect(html).not.toContain("账单管理不可用");
+    expect(html).not.toContain("升级会员");
+    expect(html).not.toContain("付款已确认");
     expect(pageMocks.getBillingDeliveryReadiness).not.toHaveBeenCalled();
   });
 
@@ -215,9 +215,9 @@ describe("account billing management readiness", () => {
       await AccountPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain(">Upgrade membership<");
+    expect(html).toContain(">升级会员<");
     expect(html).toContain("/account?view=subscriptions#membership-options");
-    expect(html).not.toContain("Upgrade your membership");
+    expect(html).not.toContain("选择会员升级方案");
   });
 
   it("provides account wayfinding and useful next-step links", async () => {
@@ -225,16 +225,16 @@ describe("account billing management readiness", () => {
 
     const html = await renderAccount();
 
-    expect(html).toContain('aria-label="Account sections"');
+    expect(html).toContain('aria-label="账户页面分区"');
     expect(html).toContain('href="#account-overview"');
     expect(html).toContain('href="#account-membership"');
     expect(html).toContain('href="#account-purchases"');
     expect(html).toContain('href="#account-profile"');
     expect(html).toContain('href="/library"');
-    expect(html).toContain(">Browse your library<");
+    expect(html).toContain(">浏览资料库<");
     expect(html).toContain('href="/office-hours"');
-    expect(html).toContain(">Check office hours<");
-    expect(html).toContain(">Browse practical tools<");
+    expect(html).toContain(">查看线上答疑<");
+    expect(html).toContain(">浏览实用工具<");
   });
 
   it("shows plan choices inside Account for the subscriptions view", async () => {
@@ -246,8 +246,8 @@ describe("account billing management readiness", () => {
       })
     );
 
-    expect(html).toContain("Upgrade your membership");
-    expect(html).toContain("Compare access and support without leaving your account.");
+    expect(html).toContain("选择会员升级方案");
+    expect(html).toContain("无需离开账户页即可比较访问权限和支持服务。");
     expect(html).toContain("Full Access");
     expect(html).toContain("$99");
   });
@@ -283,26 +283,26 @@ describe("account billing management readiness", () => {
 
     const html = await renderAccount();
 
-    expect(html).toContain("Purchase history");
-    expect(html).toContain("One-time membership");
+    expect(html).toContain("购买记录");
+    expect(html).toContain("一次性会员购买");
     expect(html).toContain("Full Access");
-    expect(html).toContain("Payment confirmed");
-    expect(html).toContain("Full Access active");
+    expect(html).toContain("付款已确认");
+    expect(html).toContain("Full Access 权限有效");
     expect(html).toContain("Stripe");
-    expect(html).toContain("Aug 24, 2026");
+    expect(html).toContain("2026年8月24日");
     expect(html).not.toContain("No standalone purchases yet");
   });
 
   it.each([
     {
       disputeStatus: null,
-      expected: ["Refunded", "Access ended"],
+      expected: ["已退款", "访问权限已结束"],
       name: "full refund",
       status: "refunded"
     },
     {
       disputeStatus: "needs_response",
-      expected: ["Payment disputed", "Access paused"],
+      expected: ["付款存在争议", "访问权限已暂停"],
       name: "open dispute",
       status: "paid"
     }
@@ -329,7 +329,7 @@ describe("account billing management readiness", () => {
     const html = await renderAccount();
 
     for (const copy of expected) expect(html).toContain(copy);
-    expect(html).not.toContain("Full Access active");
+    expect(html).not.toContain("Full Access 权限有效");
   });
 
   it("locks Portal controls when secure billing updates cannot be received", async () => {
@@ -342,15 +342,15 @@ describe("account billing management readiness", () => {
       await AccountPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Billing management is temporarily unavailable");
+    expect(html).toContain("账单管理暂不可用");
     expect(html).toContain(
-      "Subscription changes are paused until secure billing updates can be recorded. Your current subscription has not been changed. Refresh Account and try again later. If billing remains unavailable, use the published Support link."
+      "在安全记录账单更新之前，订阅修改已暂停。你当前的订阅没有改变。"
     );
-    expect(html).toContain("Billing unavailable");
+    expect(html).toContain("账单管理不可用");
     expect(html).toContain(
-      "Changes are paused until secure billing updates can be recorded. Refresh Account and try again later."
+      "在安全记录账单更新之前，相关修改已暂停。请稍后刷新账户页重试。"
     );
-    expect(html).not.toContain("Manage billing");
+    expect(html).not.toContain(">管理账单<");
   });
 
   it("keeps Portal controls available when secure billing delivery is ready", async () => {
@@ -363,17 +363,17 @@ describe("account billing management readiness", () => {
       await AccountPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Manage billing");
+    expect(html).toContain("管理账单");
     expect(html).toContain(
-      "Opens Stripe to update payment methods or cancel this subscription."
+      "将打开 Stripe，用于更新付款方式或取消此订阅。"
     );
-    expect(html).not.toContain("Billing management is temporarily unavailable");
+    expect(html).not.toContain("账单管理暂不可用");
   });
 
   it.each([
     {
       adjustments: [],
-      expected: ["Active", "Access active", "Renews", "Aug 1, 2026"],
+      expected: ["有效", "访问权限有效", "续费日期", "2026年8月1日"],
       name: "active",
       status: "active"
     },
@@ -388,9 +388,9 @@ describe("account billing management readiness", () => {
         }
       ],
       expected: [
-        "Payment disputed",
-        "Access paused",
-        "Access is paused while the payment dispute is under review."
+        "付款存在争议",
+        "访问权限已暂停",
+        "付款争议审核期间，访问权限会暂停。"
       ],
       name: "open dispute",
       status: "active"
@@ -406,9 +406,9 @@ describe("account billing management readiness", () => {
         }
       ],
       expected: [
-        "Dispute lost",
-        "Access ended",
-        "This payment no longer provides membership access."
+        "付款争议败诉",
+        "访问权限已结束",
+        "这笔付款已不再提供会员访问权限。"
       ],
       name: "lost dispute",
       status: "active"
@@ -424,9 +424,9 @@ describe("account billing management readiness", () => {
         }
       ],
       expected: [
-        "Payment refunded",
-        "Access ended",
-        "A full refund ended access for this subscription."
+        "付款已退款",
+        "访问权限已结束",
+        "全额退款后，此订阅的访问权限已结束。"
       ],
       name: "full refund",
       status: "active"
@@ -442,9 +442,9 @@ describe("account billing management readiness", () => {
         }
       ],
       expected: [
-        "Payment issue",
-        "Access paused",
-        "A partial refund was recorded; it does not restore access."
+        "付款异常",
+        "访问权限已暂停",
+        "已记录部分退款，但不会因此恢复访问权限。"
       ],
       name: "partial refund on an ineligible subscription",
       status: "past_due"
@@ -460,9 +460,9 @@ describe("account billing management readiness", () => {
         }
       ],
       expected: [
-        "Payment issue",
-        "Access paused",
-        "The payment dispute is resolved, but this subscription is not currently eligible."
+        "付款异常",
+        "访问权限已暂停",
+        "付款争议已解决，但此订阅当前仍不符合访问条件。"
       ],
       name: "resolved dispute on an ineligible subscription",
       status: "past_due"
@@ -470,9 +470,9 @@ describe("account billing management readiness", () => {
     {
       adjustments: [],
       expected: [
-        "Status unavailable",
-        "Access unavailable",
-        "We could not verify this subscription state. Try again before relying on access."
+        "状态不可用",
+        "暂不可访问",
+        "暂时无法核实此订阅状态。请重试并确认状态后再使用会员内容。"
       ],
       name: "unknown provider state",
       status: "future_provider_state"
@@ -524,9 +524,9 @@ describe("account billing management readiness", () => {
 
     const html = await renderAccount();
 
-    expect(html).toContain("Access through");
-    expect(html).toContain("Trial ends");
-    expect(html).toContain("Ended");
+    expect(html).toContain("访问权限有效至");
+    expect(html).toContain("试用结束于");
+    expect(html).toContain("结束于");
     expect(html).toContain('dateTime="2026-08-01T12:00:00Z"');
     expect(html).toContain('dateTime="2026-07-20T12:00:00Z"');
   });
@@ -543,11 +543,11 @@ describe("account billing management readiness", () => {
       session_id: "cs_test_return"
     });
 
-    expect(html).toContain("Payment confirmed.");
+    expect(html).toContain("付款已确认");
     expect(html).toContain(
-      "Membership access will appear after the secure webhook finishes syncing."
+      "安全 webhook 完成同步后，会员权限会显示在下方。"
     );
-    expect(html).not.toContain("Access active");
+    expect(html).not.toContain("访问权限有效");
     expect(html).not.toContain("Access granted");
   });
 
@@ -563,8 +563,8 @@ describe("account billing management readiness", () => {
 
     const html = await renderAccount();
 
-    expect(html).toContain("Subscriptions could not be refreshed");
-    expect(html).toContain("Purchases could not be refreshed");
+    expect(html).toContain("无法刷新订阅");
+    expect(html).toContain("无法刷新购买记录");
     expect(html).not.toContain(
       "No membership subscriptions have been recorded for this account."
     );
@@ -589,8 +589,8 @@ describe("account billing management readiness", () => {
       await AccountPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Refunded");
-    expect(html).toContain("Access ended");
+    expect(html).toContain("已退款");
+    expect(html).toContain("访问权限已结束");
     expect(html).not.toContain("Delivery pending");
     expect(html).not.toContain(`/api/account/purchases/purchase-id/download`);
   });
@@ -607,12 +607,12 @@ describe("account billing management readiness", () => {
       await AccountPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Partially refunded");
+    expect(html).toContain("已部分退款");
     expect(html).toContain(`/api/account/purchases/purchase-id/download`);
-    expect(html).toContain(">Download file<");
-    expect(html).toContain('aria-label="Download Wealth workbook"');
-    expect(html).toContain("Download available");
-    expect(html).not.toContain("Access ended");
+    expect(html).toContain(">下载文件<");
+    expect(html).toContain('aria-label="下载 Wealth workbook"');
+    expect(html).toContain("可以下载");
+    expect(html).not.toContain("访问权限已结束");
   });
 
   it("shows an open dispute as paused access without a download command", async () => {
@@ -627,8 +627,8 @@ describe("account billing management readiness", () => {
       await AccountPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Payment disputed");
-    expect(html).toContain("Access paused");
+    expect(html).toContain("付款存在争议");
+    expect(html).toContain("访问权限已暂停");
     expect(html).not.toContain(`/api/account/purchases/purchase-id/download`);
   });
 
@@ -644,66 +644,66 @@ describe("account billing management readiness", () => {
       await AccountPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Payment confirmed · Dispute won");
-    expect(html).toContain("Download available");
+    expect(html).toContain("付款已确认 · 付款争议胜诉");
+    expect(html).toContain("可以下载");
     expect(html).toContain(`/api/account/purchases/purchase-id/download`);
-    expect(html).not.toContain("Access paused");
+    expect(html).not.toContain("访问权限已暂停");
   });
 
   it.each([
     {
       disputeStatus: null,
       downloadReady: true,
-      expectedAccess: "Download available",
-      expectedPrimary: "Payment confirmed",
+      expectedAccess: "可以下载",
+      expectedPrimary: "付款已确认",
       shouldDownload: true,
       status: "paid"
     },
     {
       disputeStatus: null,
       downloadReady: true,
-      expectedAccess: "Download available",
-      expectedPrimary: "Payment confirmed",
+      expectedAccess: "可以下载",
+      expectedPrimary: "付款已确认",
       shouldDownload: true,
       status: "no_payment_required"
     },
     {
       disputeStatus: null,
       downloadReady: false,
-      expectedAccess: "Download available after Stripe confirms payment.",
-      expectedPrimary: "Payment pending",
+      expectedAccess: "Stripe 确认付款后即可下载。",
+      expectedPrimary: "付款待确认",
       shouldDownload: false,
       status: "pending"
     },
     {
       disputeStatus: null,
       downloadReady: false,
-      expectedAccess: "Delivery unavailable",
-      expectedPrimary: "Payment confirmed",
+      expectedAccess: "暂不可交付",
+      expectedPrimary: "付款已确认",
       shouldDownload: false,
       status: "paid"
     },
     {
       disputeStatus: "lost",
       downloadReady: true,
-      expectedAccess: "Access ended",
-      expectedPrimary: "Dispute lost",
+      expectedAccess: "访问权限已结束",
+      expectedPrimary: "付款争议败诉",
       shouldDownload: false,
       status: "paid"
     },
     {
       disputeStatus: "warning_closed",
       downloadReady: true,
-      expectedAccess: "Download available",
-      expectedPrimary: "Payment confirmed · Inquiry closed",
+      expectedAccess: "可以下载",
+      expectedPrimary: "付款已确认 · 调查已结束",
       shouldDownload: true,
       status: "paid"
     },
     {
       disputeStatus: null,
       downloadReady: true,
-      expectedAccess: "Delivery unavailable",
-      expectedPrimary: "Status unavailable",
+      expectedAccess: "暂不可交付",
+      expectedPrimary: "状态不可用",
       shouldDownload: false,
       status: "future_payment_state"
     }
@@ -726,7 +726,7 @@ describe("account billing management readiness", () => {
 
       expect(html).toContain(expectedPrimary);
       expect(html).toContain(expectedAccess);
-      expect(html.includes(">Download file<")).toBe(shouldDownload);
+      expect(html.includes(">下载文件<")).toBe(shouldDownload);
       expect(html).not.toContain("future_payment_state");
     }
   );

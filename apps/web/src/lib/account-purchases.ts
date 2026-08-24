@@ -107,7 +107,7 @@ export async function getAccountPurchases(
         id: row.id,
         productId: row.product_id,
         productSlug: product?.slug ?? null,
-        productTitle: product?.title ?? "Standalone product",
+        productTitle: product?.title ?? "单独购买的产品",
         status: row.status
       };
     })

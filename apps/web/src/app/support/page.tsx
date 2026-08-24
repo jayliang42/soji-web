@@ -7,9 +7,9 @@ import {
 import { SupportRequestComposer } from "@/components/support-request-composer";
 
 export const metadata: Metadata = {
-  title: "Support",
+  title: "帮助中心",
   description:
-    "Get help with a GS学院 account, membership, purchase, download, or accessibility issue.",
+    "获取有关 GS学院账号、会员、购买、下载或无障碍访问问题的帮助。",
   alternates: { canonical: "/support" }
 };
 
@@ -20,47 +20,47 @@ const supportPaths: ReadonlyArray<{
   label: string;
 }> = [
   {
-    action: "Open sign in & recovery",
+    action: "打开登录与找回页面",
     description:
-      "Sign in, create an account, or request a new password link from one place.",
+      "在同一页面登录、创建账号或申请新的密码重置链接。",
     href: "/login?next=/account",
-    label: "I cannot access my account"
+    label: "我无法登录账号"
   },
   {
-    action: "Open subscriptions",
+    action: "打开会员页面",
     description:
-      "Check the membership state recorded on your account and open billing management when available.",
+      "查看账号中记录的会员状态，并在可用时打开账单管理。",
     href: "/account?view=subscriptions",
-    label: "I need membership or billing help"
+    label: "我需要会员或账单帮助"
   },
   {
-    action: "Open purchases",
+    action: "打开购买记录",
     description:
-      "Find purchase history, delivery status, and available product downloads.",
+      "查看购买记录、交付状态和可下载的产品。",
     href: "/account?view=purchases",
-    label: "I need a purchase or download"
+    label: "我需要购买或下载帮助"
   },
   {
-    action: "View access help",
+    action: "查看访问帮助",
     description:
-      "Review the digital-product policy and access steps before contacting Support.",
+      "联系客服前，请先查看电子产品政策和访问步骤。",
     href: "/refund-policy#access",
-    label: "I have a post-purchase access issue"
+    label: "购买后无法访问内容"
   }
 ] as const;
 
 const policyLinks: ReadonlyArray<readonly [string, Route]> = [
-  ["Support", customerPolicyRoutes.support],
-  ["Privacy", customerPolicyRoutes.privacy],
-  ["Terms", customerPolicyRoutes.terms],
-  ["Refund policy", customerPolicyRoutes.refund],
-  ["Financial disclaimer", customerPolicyRoutes.disclaimer]
+  ["帮助中心", customerPolicyRoutes.support],
+  ["隐私政策", customerPolicyRoutes.privacy],
+  ["使用条款", customerPolicyRoutes.terms],
+  ["退款政策", customerPolicyRoutes.refund],
+  ["财务免责声明", customerPolicyRoutes.disclaimer]
 ] as const;
 
 const contactChecklist = [
-  "What you were trying to do and what happened instead.",
-  "The page name and approximate time of the issue.",
-  "The email on your account and the membership or product name, when relevant."
+  "你原本想做什么，以及实际发生了什么。",
+  "出现问题的页面名称和大致时间。",
+  "与你账号关联的邮箱，以及相关会员或产品名称。"
 ] as const;
 
 export default function SupportPage() {
@@ -72,19 +72,18 @@ export default function SupportPage() {
         <header className="grid gap-6 border-b border-dune pb-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/62">
-              Customer care
+              客户服务
             </p>
             <h1 className="mt-4 font-display text-4xl font-bold leading-[1.02] text-cocoa md:text-6xl">
-              Support
+              帮助中心
             </h1>
           </div>
           <div>
             <p className="max-w-2xl text-lg font-medium leading-8 text-cocoa/76">
-              Start with the task closest to yours. If the account path does
-              not resolve it, send Support the details needed to investigate.
+              请先选择与你情况最接近的问题。如果自助页面无法解决，再向客服发送调查所需的详情。
             </p>
             <p className="mt-4 text-sm font-semibold text-cocoa/62">
-              Updated <time dateTime="2026-07-30">July 30, 2026</time>
+              更新于 <time dateTime="2026-07-30">2026年7月30日</time>
             </p>
           </div>
         </header>
@@ -95,17 +94,16 @@ export default function SupportPage() {
         >
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/62">
-              Start here
+              从这里开始
             </p>
             <h2
               className="mt-3 font-display text-3xl font-bold leading-tight text-cocoa md:text-5xl"
               id="support-paths-heading"
             >
-              Choose the closest help path.
+              选择最接近的问题类型
             </h2>
             <p className="mt-4 text-base font-medium leading-7 text-cocoa/72">
-              These links take you to the current source of truth for account,
-              billing, delivery, or refund status.
+              以下链接会带你查看当前准确的账号、账单、交付或退款状态。
             </p>
           </div>
 
@@ -139,37 +137,34 @@ export default function SupportPage() {
         >
           <div className="bg-cocoa px-6 py-8 text-white sm:px-8 sm:py-10">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/58">
-              Still need help?
+              仍然需要帮助？
             </p>
             <h2
               className="mt-3 font-display text-3xl font-semibold leading-tight md:text-4xl"
               id="contact-support-heading"
             >
-              Send one clear support request.
+              发送一条清楚的帮助请求
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-6 text-white/72">
-              Use the published channel when the self-service path does not
-              explain or resolve your issue.
+              如果自助页面不能解释或解决问题，请使用网站公布的帮助渠道联系我们。
             </p>
             {destination.ok ? (
               <p className="mt-7 inline-flex min-h-11 items-center rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-bold text-white/88">
-                Support channel ready
+                帮助渠道已可用
               </p>
             ) : (
               <div
                 className="mt-7 border-l-4 border-clay bg-white/10 px-5 py-4 text-sm leading-6 text-white/82"
                 role="status"
               >
-                The durable support channel is being configured. Please return
-                before purchasing; Checkout remains unavailable until it is
-                real.
+                固定帮助渠道仍在配置中。请在购买前回来确认；渠道正式可用之前，结账功能会保持关闭。
               </div>
             )}
           </div>
 
           <div className="px-6 py-8 sm:px-8 sm:py-10">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/62">
-              Include these details
+              请提供以下信息
             </p>
             <ol className="mt-5 grid gap-4">
               {contactChecklist.map((item, index) => (
@@ -184,8 +179,7 @@ export default function SupportPage() {
               ))}
             </ol>
             <p className="mt-6 border-t border-dune pt-5 text-sm leading-6 text-cocoa/68">
-              Never include full card numbers, passwords, authentication codes,
-              or sensitive financial documents.
+              请勿填写完整银行卡号、密码、验证码或敏感财务文件。
             </p>
           </div>
 
@@ -202,17 +196,16 @@ export default function SupportPage() {
         >
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/62">
-              Other questions
+              其他问题
             </p>
             <h2
               className="mt-3 font-display text-3xl font-bold leading-tight text-cocoa"
               id="more-help-heading"
             >
-              Reading and Office Hours
+              阅读与线上答疑
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-6 text-cocoa/72">
-              Browse public guides if you are looking for content, or review
-              Office Hours to understand session and replay access.
+              如果你在找内容，可以浏览公开指南；也可以查看线上答疑，了解参加和回放权限。
             </p>
           </div>
           <div className="flex flex-col items-start gap-2 md:items-end md:justify-center">
@@ -220,23 +213,23 @@ export default function SupportPage() {
               className="inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
               href="/library"
             >
-              Browse public guides
+              浏览公开指南
             </Link>
             <Link
               className="inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
               href="/office-hours"
             >
-              Review Office Hours
+              查看线上答疑
             </Link>
           </div>
         </section>
 
         <nav
-          aria-label="Support and policy pages"
+          aria-label="帮助与政策页面"
           className="pt-8"
         >
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
-            Support &amp; policies
+            帮助与政策
           </p>
           <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold text-cocoa/76">
             {policyLinks.map(([label, href]) => (

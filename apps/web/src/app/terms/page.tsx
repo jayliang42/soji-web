@@ -3,101 +3,77 @@ import type { Metadata } from "next";
 import { PolicyLayout } from "@/components/policy-layout";
 
 export const metadata: Metadata = {
-  title: "Terms",
+  title: "使用条款",
   description:
-    "Terms for using GS学院 educational content, memberships, Office Hours, and digital products.",
+    "使用 GS学院教育内容、会员、线上答疑和电子产品的条款。",
   alternates: { canonical: "/terms" }
 };
 
 export default function TermsPage() {
   return (
     <PolicyLayout
-      eyebrow="Customer policy"
-      title="Terms"
-      summary="These review-draft terms describe the current GS学院 educational publishing service and the responsibilities that come with an account."
-      updatedAt="July 27, 2026"
+      eyebrow="客户政策"
+      title="使用条款"
+      summary="本审核草案说明 GS学院当前提供的教育内容服务，以及使用账号时需要承担的责任。"
+      updatedAt="2026-07-27"
       sections={[
         {
           id: "service",
-          title: "The service",
+          title: "服务内容",
           content: (
             <p>
-              GS学院 publishes general educational material about money
-              decisions. An account may provide public reading, personal
-              non-transferable membership access, Office Hours eligibility, or
-              delivery of a purchased digital product. Features and publishing
-              schedules may evolve.
+              GS学院发布关于理财决策的一般教育内容。账号可能包含公开阅读权限、仅限本人且不可转让的会员权限、参加线上答疑的资格，或已购电子产品的交付权限。功能和发布安排可能会调整。
             </p>
           )
         },
         {
           id: "account",
-          title: "Your account",
+          title: "你的账号",
           content: (
             <p>
-              Keep account credentials secure and provide accurate information.
-              Access belongs to the account holder and may not be shared,
-              resold, scraped, or used to bypass an access boundary. You are
-              responsible for activity performed through your account unless
-              you promptly report unauthorized access.
+              请妥善保管账号凭据并提供准确信息。访问权限仅属于账号持有人，不得共享、转售、批量抓取，也不得用于绕过权限限制。除非你及时报告未经授权的访问，否则你需要对通过该账号进行的活动负责。
             </p>
           )
         },
         {
           id: "billing",
-          title: "Membership billing and cancellation",
+          title: "Full Access 付款与访问",
           content: (
             <>
               <p>
-                Full Access is a one-time $99 purchase. It does not renew
-                automatically, and access remains attached to the account that
-                completed the purchase, subject to the published refund policy.
+                Full Access 为一次性支付 99 美元，不会自动续费。访问权限会绑定到完成购买的账号，并受已公布退款政策的约束。
               </p>
               <p>
-                A failed payment, full refund, or unresolved payment dispute may
-                pause or end access. See the{" "}
-                <Link href="/refund-policy">Refund policy</Link> for the current
-                review rules.
+                付款失败、全额退款或尚未解决的付款争议，可能导致访问权限暂停或结束。当前规则请参阅
+                <Link href="/refund-policy">退款政策</Link>。
               </p>
             </>
           )
         },
         {
           id: "acceptable-use",
-          title: "Acceptable use and intellectual property",
+          title: "合理使用与知识产权",
           content: (
             <p>
-              GS学院 content, design, downloads, and original materials remain
-              protected by applicable intellectual-property rights. You may use
-              purchased or member material personally, but may not republish,
-              sell, distribute, automate extraction from, interfere with, or
-              misuse the service.
+              GS学院的内容、设计、下载文件和原创资料受适用的知识产权法律保护。你可以个人使用已购内容或会员资料，但不得重新发布、出售、分发、自动化提取、干扰或滥用本服务。
             </p>
           )
         },
         {
           id: "education",
-          title: "Education, not individualized advice",
+          title: "一般教育，不构成个性化建议",
           content: (
             <p>
-              GS学院 provides general education and is not individualized
-              investment, legal, tax, or accounting advice. Content and Office
-              Hours do not account for every person&apos;s circumstances and do
-              not promise a financial outcome. Consider qualified professionals
-              when a decision requires advice specific to you.
+              GS学院提供一般教育内容，不构成针对个人的投资、法律、税务或会计建议。网站内容和线上答疑无法涵盖每个人的具体情况，也不承诺任何财务结果。当决策需要结合你的个人情况时，请考虑咨询具备相应资质的专业人士。
             </p>
           )
         },
         {
           id: "availability",
-          title: "Availability and changes",
+          title: "服务可用性与变更",
           content: (
             <p>
-              The service may be updated, corrected, suspended for security or
-              maintenance, or changed as the publication develops. Material
-              changes to these terms should be posted with a new updated date.
-              Use of the service remains subject to rights that cannot lawfully
-              be excluded.
+              随着内容服务的发展，网站可能进行更新或更正，也可能因安全或维护需要暂停，或调整现有功能。本条款如有重大变化，应以新的更新日期重新发布。你使用本服务时依法享有且不能被排除的权利不受影响。
             </p>
           )
         }

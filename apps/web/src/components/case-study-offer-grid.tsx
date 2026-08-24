@@ -36,7 +36,7 @@ export function CaseStudyOfferGrid({
     <div
       className="grid gap-5 lg:grid-cols-2"
       id="case-study-offers"
-      aria-label="Case study purchase options"
+      aria-label="案例购买方案"
     >
       {entries.map((entry, index) => (
         <article

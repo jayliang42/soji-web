@@ -9,12 +9,25 @@ export type PolicySection = {
 };
 
 const policyLinks = [
-  ["Support", customerPolicyRoutes.support],
-  ["Privacy", customerPolicyRoutes.privacy],
-  ["Terms", customerPolicyRoutes.terms],
-  ["Refund policy", customerPolicyRoutes.refund],
-  ["Financial disclaimer", customerPolicyRoutes.disclaimer]
+  ["帮助中心", customerPolicyRoutes.support],
+  ["隐私政策", customerPolicyRoutes.privacy],
+  ["使用条款", customerPolicyRoutes.terms],
+  ["退款政策", customerPolicyRoutes.refund],
+  ["财务免责声明", customerPolicyRoutes.disclaimer]
 ] as const;
+
+function formatPolicyDate(value: string) {
+  const parsed = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+  return new Intl.DateTimeFormat("zh-CN", {
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+    year: "numeric"
+  }).format(parsed);
+}
 
 export function PolicyLayout({
   eyebrow,
@@ -43,17 +56,17 @@ export function PolicyLayout({
             {summary}
           </p>
           <p className="mt-5 text-sm font-semibold text-cocoa/62">
-            Updated <time dateTime={updatedAt}>{updatedAt}</time>
+            更新于 <time dateTime={updatedAt}>{formatPolicyDate(updatedAt)}</time>
           </p>
         </header>
 
         {sections.length > 2 ? (
           <nav
-            aria-label={`${title} contents`}
+            aria-label={`${title}目录`}
             className="my-8 rounded-md border border-dune bg-shell p-5"
           >
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
-              On this page
+              本页内容
             </p>
             <ol className="mt-3 grid gap-1.5 text-sm font-semibold text-cocoa/76">
               {sections.map((section, index) => (
@@ -86,11 +99,11 @@ export function PolicyLayout({
         </div>
 
         <nav
-          aria-label="Support and policy pages"
+          aria-label="帮助与政策页面"
           className="mt-8 border-t border-dune pt-8"
         >
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
-            Support &amp; policies
+            帮助与政策
           </p>
           <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold text-cocoa/76">
             {policyLinks.map(([label, href]) => (

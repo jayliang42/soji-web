@@ -1,11 +1,11 @@
 export const supportIssueOptions = [
-  { id: "account", label: "Account access" },
-  { id: "membership", label: "Membership or billing" },
-  { id: "purchase", label: "Purchase or download" },
-  { id: "refund", label: "Refund review" },
-  { id: "reading", label: "Reading or accessibility" },
-  { id: "office-hours", label: "Office Hours" },
-  { id: "other", label: "Something else" }
+  { id: "account", label: "账号登录" },
+  { id: "membership", label: "会员或账单" },
+  { id: "purchase", label: "购买或下载" },
+  { id: "refund", label: "退款审核" },
+  { id: "reading", label: "阅读或无障碍访问" },
+  { id: "office-hours", label: "线上答疑" },
+  { id: "other", label: "其他问题" }
 ] as const;
 
 export type SupportIssueId = (typeof supportIssueOptions)[number]["id"];
@@ -23,7 +23,7 @@ function normalizeMultiline(value: string) {
 export function getSupportIssueLabel(issue: SupportIssueId) {
   return (
     supportIssueOptions.find((option) => option.id === issue)?.label ??
-    "Something else"
+    "其他问题"
   );
 }
 
@@ -31,18 +31,18 @@ export function buildSupportRequest(draft: SupportRequestDraft) {
   const details = normalizeMultiline(draft.details);
   const context = normalizeMultiline(draft.context);
   const lines = [
-    "GS学院 support request",
+    "GS学院帮助请求",
     "",
-    `Issue type: ${getSupportIssueLabel(draft.issue)}`,
+    `问题类型：${getSupportIssueLabel(draft.issue)}`,
     "",
-    "What I was trying to do and what happened:",
+    "我原本想做什么，以及实际发生了什么：",
     details
   ];
 
   if (context) {
     lines.push(
       "",
-      "Account, product, page, or timing context:",
+      "相关账号、产品、页面或时间信息：",
       context
     );
   }
@@ -50,7 +50,7 @@ export function buildSupportRequest(draft: SupportRequestDraft) {
   lines.push(
     "",
     "—",
-    "Prepared on GS学院 Support. This message was not saved by GS学院."
+    "此内容由 GS学院帮助中心整理，GS学院不会在此页面保存这条消息。"
   );
 
   return lines.join("\n");
@@ -73,7 +73,7 @@ export function buildSupportMailto(
 
   mailto.searchParams.set(
     "subject",
-    `GS学院 support — ${getSupportIssueLabel(draft.issue)}`
+    `GS学院帮助请求 — ${getSupportIssueLabel(draft.issue)}`
   );
   mailto.searchParams.set("body", buildSupportRequest(draft));
   return mailto.toString();

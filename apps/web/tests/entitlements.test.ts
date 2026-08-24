@@ -6,15 +6,15 @@ import {
 
 describe("customer-facing entitlement labels", () => {
   it("maps internal keys to benefit language", () => {
-    expect(getEntitlementLabel("office_hours.join")).toBe("Live office hours");
+    expect(getEntitlementLabel("office_hours.join")).toBe("线上答疑");
     expect(getEntitlementLabel("content.basic")).toBe(
-      "Foundational monthly essays"
+      "基础月度文章"
     );
   });
 
   it("formats multiple benefits as a readable list", () => {
     expect(
       formatEntitlementList(["library.templates", "monthly.updates"])
-    ).toBe("Downloadable templates and Monthly update drops");
+    ).toBe("可下载模板和每月内容更新");
   });
 });

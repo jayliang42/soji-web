@@ -15,7 +15,7 @@ export default function RefundPolicyPage() {
       eyebrow="购买政策"
       title="退款政策"
       summary="GS学院提供的案例、资料和其他下载内容均为电子产品。付款完成后，订单即视为最终完成且不予退款；付款即表示你已阅读并同意本政策。"
-      updatedAt="August 16, 2026"
+      updatedAt="2026-08-16"
       sections={[
         {
           id: "digital-products",
@@ -47,8 +47,8 @@ export default function RefundPolicyPage() {
           title: "交付与账号访问",
           content: (
             <p>
-              付款后，内容会绑定到付款时使用的GS学院账号。如果遇到账号登录、内容交付或文件访问问题，请联系{" "}
-              <Link href="/support">Support</Link>，我们会协助核查和解决访问问题；这不改变电子产品不予退款的政策。
+              付款后，内容会绑定到付款时使用的 GS学院账号。如果遇到账号登录、内容交付或文件访问问题，请联系
+              <Link href="/support">帮助中心</Link>，我们会协助核查和解决访问问题；这不改变电子产品不予退款的政策。
             </p>
           )
         },

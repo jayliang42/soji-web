@@ -15,7 +15,7 @@ export const membershipPlans: MembershipPlan[] = [
     billingType: "one_time",
     stripePriceLookupKey: "full_access_once",
     description:
-      "One payment for the complete library, every digital product, live support, and all member benefits.",
+      "一次性付款即可访问完整内容库、全部电子产品、线上支持和所有会员权益。",
     featured: true,
     entitlements: [
       "content.basic",

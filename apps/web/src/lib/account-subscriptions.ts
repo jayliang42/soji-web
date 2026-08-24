@@ -105,9 +105,9 @@ function getUnderlyingSubscriptionPresentation(
     eligibleSubscriptionStatuses.has(subscription.status)
   ) {
     return {
-      accessLabel: "Access active",
+      accessLabel: "访问权限有效",
       detail: null,
-      primaryLabel: "Cancels at period end",
+      primaryLabel: "将在当前周期结束时取消",
       tone: "success"
     };
   }
@@ -115,70 +115,70 @@ function getUnderlyingSubscriptionPresentation(
   switch (subscription.status) {
     case "active":
       return {
-        accessLabel: "Access active",
+        accessLabel: "访问权限有效",
         detail: null,
-        primaryLabel: "Active",
+        primaryLabel: "有效",
         tone: "success"
       };
     case "trialing":
       return {
-        accessLabel: "Access active",
+        accessLabel: "访问权限有效",
         detail: null,
-        primaryLabel: "Trial",
+        primaryLabel: "试用中",
         tone: "success"
       };
     case "incomplete":
       return {
-        accessLabel: "Access unavailable",
+        accessLabel: "暂不可访问",
         detail:
-          "Complete or update payment in billing. Access returns only after Stripe confirms an eligible subscription.",
-        primaryLabel: "Payment incomplete",
+          "请在账单管理中完成或更新付款。Stripe 确认订阅有效后，访问权限才会恢复。",
+        primaryLabel: "付款未完成",
         tone: "warning"
       };
     case "past_due":
       return {
-        accessLabel: "Access paused",
+        accessLabel: "访问权限已暂停",
         detail:
-          "Update payment in billing. Access returns only after Stripe confirms an eligible subscription.",
-        primaryLabel: "Payment issue",
+          "请在账单管理中更新付款。Stripe 确认订阅有效后，访问权限才会恢复。",
+        primaryLabel: "付款异常",
         tone: "warning"
       };
     case "unpaid":
       return {
-        accessLabel: "Access paused",
+        accessLabel: "访问权限已暂停",
         detail:
-          "Review payment in billing. Access returns only after Stripe confirms an eligible subscription.",
-        primaryLabel: "Unpaid",
+          "请在账单管理中检查付款。Stripe 确认订阅有效后，访问权限才会恢复。",
+        primaryLabel: "尚未付款",
         tone: "warning"
       };
     case "paused":
       return {
-        accessLabel: "Access paused",
+        accessLabel: "访问权限已暂停",
         detail:
-          "Review the subscription in billing. Opening billing does not itself restore access.",
-        primaryLabel: "Paused",
+          "请在账单管理中检查订阅。仅打开账单页面不会自动恢复访问权限。",
+        primaryLabel: "已暂停",
         tone: "warning"
       };
     case "incomplete_expired":
       return {
-        accessLabel: "No access",
-        detail: "Choose a membership plan to start a new checkout.",
-        primaryLabel: "Checkout expired",
+        accessLabel: "无访问权限",
+        detail: "请选择会员方案并重新发起结账。",
+        primaryLabel: "结账已过期",
         tone: "neutral"
       };
     case "canceled":
       return {
-        accessLabel: "Access ended",
+        accessLabel: "访问权限已结束",
         detail: null,
-        primaryLabel: "Canceled",
+        primaryLabel: "已取消",
         tone: "neutral"
       };
     default:
       return {
-        accessLabel: "Access unavailable",
+        accessLabel: "暂不可访问",
         detail:
-          "We could not verify this subscription state. Try again before relying on access.",
-        primaryLabel: "Status unavailable",
+          "暂时无法核实此订阅状态。请重试并确认状态后再使用会员内容。",
+        primaryLabel: "状态不可用",
         tone: "neutral"
       };
   }
@@ -198,9 +198,9 @@ export function getSubscriptionBillingPresentation(
   );
   if (lostDispute) {
     return {
-      accessLabel: "Access ended",
-      detail: "This payment no longer provides membership access.",
-      primaryLabel: "Dispute lost",
+      accessLabel: "访问权限已结束",
+      detail: "这笔付款已不再提供会员访问权限。",
+      primaryLabel: "付款争议败诉",
       tone: "error"
     };
   }
@@ -211,9 +211,9 @@ export function getSubscriptionBillingPresentation(
   );
   if (openDispute) {
     return {
-      accessLabel: "Access paused",
-      detail: "Access is paused while the payment dispute is under review.",
-      primaryLabel: "Payment disputed",
+      accessLabel: "访问权限已暂停",
+      detail: "付款争议审核期间，访问权限会暂停。",
+      primaryLabel: "付款存在争议",
       tone: "warning"
     };
   }
@@ -226,9 +226,9 @@ export function getSubscriptionBillingPresentation(
   );
   if (fullRefund) {
     return {
-      accessLabel: "Access ended",
-      detail: "A full refund ended access for this subscription.",
-      primaryLabel: "Payment refunded",
+      accessLabel: "访问权限已结束",
+      detail: "全额退款后，此订阅的访问权限已结束。",
+      primaryLabel: "付款已退款",
       tone: "error"
     };
   }
@@ -242,14 +242,14 @@ export function getSubscriptionBillingPresentation(
   if (partialRefund) {
     return isEligible
       ? {
-          accessLabel: "Access active",
-          detail: "Access continues through the current paid period.",
-          primaryLabel: "Partially refunded",
+          accessLabel: "访问权限有效",
+          detail: "访问权限会持续到当前已付款周期结束。",
+          primaryLabel: "已部分退款",
           tone: "success"
         }
       : {
           ...underlying,
-          detail: "A partial refund was recorded; it does not restore access."
+          detail: "已记录部分退款，但不会因此恢复访问权限。"
         };
   }
 
@@ -261,8 +261,8 @@ export function getSubscriptionBillingPresentation(
     return {
       ...underlying,
       detail: isEligible
-        ? "The payment dispute is resolved and this subscription is eligible."
-        : "The payment dispute is resolved, but this subscription is not currently eligible."
+        ? "付款争议已解决，此订阅当前有效。"
+        : "付款争议已解决，但此订阅当前仍不符合访问条件。"
     };
   }
 

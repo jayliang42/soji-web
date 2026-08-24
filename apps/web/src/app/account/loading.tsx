@@ -14,13 +14,13 @@ export default function AccountLoading() {
     <main aria-busy="true">
       <SectionShell
         compact
-        eyebrow="Account"
+        eyebrow="账户"
         headingLevel={1}
-        title="Account"
-        description="Your membership, benefits, and purchase record are loading."
+        title="账户"
+        description="正在加载你的会员、权益和购买记录。"
       >
         <p className="sr-only" role="status">
-          Loading account billing…
+          正在加载账户和账单信息…
         </p>
 
         <div
@@ -56,13 +56,13 @@ export default function AccountLoading() {
           data-loading-section="subscriptions"
         >
           <p className="text-sm font-semibold uppercase text-cocoa/70">
-            Membership billing
+            会员账单
           </p>
           <h2
             className="mt-2 font-display text-2xl font-semibold text-cocoa"
             id="loading-subscriptions-heading"
           >
-            Subscriptions
+            订阅
           </h2>
           <div
             aria-hidden="true"
@@ -85,13 +85,13 @@ export default function AccountLoading() {
           data-loading-section="purchases"
         >
           <p className="text-sm font-semibold uppercase text-cocoa/70">
-            Billing record
+            账单记录
           </p>
           <h2
             className="mt-2 font-display text-2xl font-semibold text-cocoa"
             id="loading-purchases-heading"
           >
-            Purchase history
+            购买记录
           </h2>
           <div
             aria-hidden="true"

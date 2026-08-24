@@ -211,9 +211,9 @@ describe("account subscription history", () => {
       "active",
       false,
       {
-        accessLabel: "Access active",
+        accessLabel: "访问权限有效",
         detail: null,
-        primaryLabel: "Active",
+        primaryLabel: "有效",
         tone: "success"
       }
     ],
@@ -221,9 +221,9 @@ describe("account subscription history", () => {
       "trialing",
       false,
       {
-        accessLabel: "Access active",
+        accessLabel: "访问权限有效",
         detail: null,
-        primaryLabel: "Trial",
+        primaryLabel: "试用中",
         tone: "success"
       }
     ],
@@ -231,9 +231,9 @@ describe("account subscription history", () => {
       "active",
       true,
       {
-        accessLabel: "Access active",
+        accessLabel: "访问权限有效",
         detail: null,
-        primaryLabel: "Cancels at period end",
+        primaryLabel: "将在当前周期结束时取消",
         tone: "success"
       }
     ],
@@ -241,10 +241,10 @@ describe("account subscription history", () => {
       "incomplete",
       false,
       {
-        accessLabel: "Access unavailable",
+        accessLabel: "暂不可访问",
         detail:
-          "Complete or update payment in billing. Access returns only after Stripe confirms an eligible subscription.",
-        primaryLabel: "Payment incomplete",
+          "请在账单管理中完成或更新付款。Stripe 确认订阅有效后，访问权限才会恢复。",
+        primaryLabel: "付款未完成",
         tone: "warning"
       }
     ],
@@ -252,10 +252,10 @@ describe("account subscription history", () => {
       "past_due",
       false,
       {
-        accessLabel: "Access paused",
+        accessLabel: "访问权限已暂停",
         detail:
-          "Update payment in billing. Access returns only after Stripe confirms an eligible subscription.",
-        primaryLabel: "Payment issue",
+          "请在账单管理中更新付款。Stripe 确认订阅有效后，访问权限才会恢复。",
+        primaryLabel: "付款异常",
         tone: "warning"
       }
     ],
@@ -263,10 +263,10 @@ describe("account subscription history", () => {
       "unpaid",
       false,
       {
-        accessLabel: "Access paused",
+        accessLabel: "访问权限已暂停",
         detail:
-          "Review payment in billing. Access returns only after Stripe confirms an eligible subscription.",
-        primaryLabel: "Unpaid",
+          "请在账单管理中检查付款。Stripe 确认订阅有效后，访问权限才会恢复。",
+        primaryLabel: "尚未付款",
         tone: "warning"
       }
     ],
@@ -274,10 +274,10 @@ describe("account subscription history", () => {
       "paused",
       false,
       {
-        accessLabel: "Access paused",
+        accessLabel: "访问权限已暂停",
         detail:
-          "Review the subscription in billing. Opening billing does not itself restore access.",
-        primaryLabel: "Paused",
+          "请在账单管理中检查订阅。仅打开账单页面不会自动恢复访问权限。",
+        primaryLabel: "已暂停",
         tone: "warning"
       }
     ],
@@ -285,9 +285,9 @@ describe("account subscription history", () => {
       "incomplete_expired",
       false,
       {
-        accessLabel: "No access",
-        detail: "Choose a membership plan to start a new checkout.",
-        primaryLabel: "Checkout expired",
+        accessLabel: "无访问权限",
+        detail: "请选择会员方案并重新发起结账。",
+        primaryLabel: "结账已过期",
         tone: "neutral"
       }
     ],
@@ -295,9 +295,9 @@ describe("account subscription history", () => {
       "canceled",
       false,
       {
-        accessLabel: "Access ended",
+        accessLabel: "访问权限已结束",
         detail: null,
-        primaryLabel: "Canceled",
+        primaryLabel: "已取消",
         tone: "neutral"
       }
     ],
@@ -305,10 +305,10 @@ describe("account subscription history", () => {
       "future_provider_state",
       false,
       {
-        accessLabel: "Access unavailable",
+        accessLabel: "暂不可访问",
         detail:
-          "We could not verify this subscription state. Try again before relying on access.",
-        primaryLabel: "Status unavailable",
+          "暂时无法核实此订阅状态。请重试并确认状态后再使用会员内容。",
+        primaryLabel: "状态不可用",
         tone: "neutral"
       }
     ]
@@ -338,9 +338,9 @@ describe("account subscription history", () => {
         billingAdjustments: [adjustment("dispute", status, true)]
       })
     ).toEqual({
-      accessLabel: "Access paused",
-      detail: "Access is paused while the payment dispute is under review.",
-      primaryLabel: "Payment disputed",
+      accessLabel: "访问权限已暂停",
+      detail: "付款争议审核期间，访问权限会暂停。",
+      primaryLabel: "付款存在争议",
       tone: "warning"
     });
   });
@@ -357,9 +357,9 @@ describe("account subscription history", () => {
         billingAdjustments: [resolved, fullyRefunded, open, lost]
       })
     ).toEqual({
-      accessLabel: "Access ended",
-      detail: "This payment no longer provides membership access.",
-      primaryLabel: "Dispute lost",
+      accessLabel: "访问权限已结束",
+      detail: "这笔付款已不再提供会员访问权限。",
+      primaryLabel: "付款争议败诉",
       tone: "error"
     });
     expect(
@@ -367,16 +367,16 @@ describe("account subscription history", () => {
         ...baseSubscription,
         billingAdjustments: [resolved, fullyRefunded, open]
       }).primaryLabel
-    ).toBe("Payment disputed");
+    ).toBe("付款存在争议");
     expect(
       getSubscriptionBillingPresentation({
         ...baseSubscription,
         billingAdjustments: [resolved, fullyRefunded]
       })
     ).toEqual({
-      accessLabel: "Access ended",
-      detail: "A full refund ended access for this subscription.",
-      primaryLabel: "Payment refunded",
+      accessLabel: "访问权限已结束",
+      detail: "全额退款后，此订阅的访问权限已结束。",
+      primaryLabel: "付款已退款",
       tone: "error"
     });
   });
@@ -390,10 +390,10 @@ describe("account subscription history", () => {
           billingAdjustments: [adjustment("dispute", status)]
         })
       ).toEqual({
-        accessLabel: "Access active",
+        accessLabel: "访问权限有效",
         detail:
-          "The payment dispute is resolved and this subscription is eligible.",
-        primaryLabel: "Active",
+          "付款争议已解决，此订阅当前有效。",
+        primaryLabel: "有效",
         tone: "success"
       });
       expect(
@@ -403,10 +403,10 @@ describe("account subscription history", () => {
           status: "past_due"
         })
       ).toEqual({
-        accessLabel: "Access paused",
+        accessLabel: "访问权限已暂停",
         detail:
-          "The payment dispute is resolved, but this subscription is not currently eligible.",
-        primaryLabel: "Payment issue",
+          "付款争议已解决，但此订阅当前仍不符合访问条件。",
+        primaryLabel: "付款异常",
         tone: "warning"
       });
     }
@@ -419,9 +419,9 @@ describe("account subscription history", () => {
         billingAdjustments: [adjustment("refund", "partially_refunded")]
       })
     ).toEqual({
-      accessLabel: "Access active",
-      detail: "Access continues through the current paid period.",
-      primaryLabel: "Partially refunded",
+      accessLabel: "访问权限有效",
+      detail: "访问权限会持续到当前已付款周期结束。",
+      primaryLabel: "已部分退款",
       tone: "success"
     });
     expect(
@@ -431,9 +431,9 @@ describe("account subscription history", () => {
         status: "paused"
       })
     ).toEqual({
-      accessLabel: "Access paused",
-      detail: "A partial refund was recorded; it does not restore access.",
-      primaryLabel: "Paused",
+      accessLabel: "访问权限已暂停",
+      detail: "已记录部分退款，但不会因此恢复访问权限。",
+      primaryLabel: "已暂停",
       tone: "warning"
     });
   });
@@ -450,9 +450,9 @@ describe("account subscription history", () => {
     });
 
     expect(presentation).toEqual({
-      accessLabel: "Access active",
+      accessLabel: "访问权限有效",
       detail: null,
-      primaryLabel: "Active",
+      primaryLabel: "有效",
       tone: "success"
     });
     expect(JSON.stringify(presentation)).not.toMatch(/dp_|pi_|sub_|cus_/);

@@ -12,12 +12,12 @@ const planGuidance: Partial<Record<
   }
 >> = {
   free: {
-    bestFor: "Browsing public previews before committing.",
-    outcome: "A clear read on the editorial voice and money philosophy."
+    bestFor: "想在购买前先浏览公开预览的读者。",
+    outcome: "了解内容风格和理财理念。"
   },
   tier_1: {
-    bestFor: "Readers who want every Soji resource in one membership.",
-    outcome: "The complete library, all digital products, live support, and future member drops."
+    bestFor: "希望一次解锁 GS学院全部资源的读者。",
+    outcome: "获得完整资料库、全部电子产品、线上支持和后续会员内容。"
   }
 };
 
@@ -54,13 +54,13 @@ export function PlanCard({
           <p className="mt-4 font-display text-5xl font-bold leading-none text-cocoa">
             ${plan.price}
             <span className="ml-3 text-base font-medium text-cocoa/58">
-              one time
+              一次性付款
             </span>
           </p>
         </div>
         {plan.featured ? (
           <span className="rounded-full bg-cocoa px-4 py-2 text-xs font-bold uppercase text-white">
-            Most popular
+            最受欢迎
           </span>
         ) : null}
       </div>
@@ -69,11 +69,11 @@ export function PlanCard({
       </p>
       <div className="mt-7 grid gap-3 border-l-4 border-dune pl-5 text-sm leading-6 text-cocoa/76">
         <p>
-          <span className="font-bold text-cocoa">Best for: </span>
+          <span className="font-bold text-cocoa">适合： </span>
           {guidance.bestFor}
         </p>
         <p>
-          <span className="font-bold text-cocoa">Outcome: </span>
+          <span className="font-bold text-cocoa">你将获得： </span>
           {guidance.outcome}
         </p>
       </div>
@@ -101,13 +101,13 @@ export function PlanCard({
             href="/account"
             className="block w-full rounded-md bg-cocoa px-6 py-4 text-center text-sm font-bold text-white transition-colors hover:bg-charcoal"
           >
-            Manage existing membership
+            管理现有会员
           </Link>
         ) : checkoutEnabled || customerEmail ? (
           <PlanCheckoutButton
             checkoutEnabled={checkoutEnabled}
             customerEmail={customerEmail}
-            label="Unlock everything"
+            label="解锁全部内容"
             lookupKey={plan.stripePriceLookupKey ?? null}
             planId={plan.id}
           />
@@ -116,17 +116,17 @@ export function PlanCard({
             href="/login?next=/pricing"
             className="block w-full rounded-md bg-cocoa px-6 py-4 text-center text-sm font-bold text-white transition-colors hover:bg-charcoal"
           >
-            Create account to unlock {plan.name}
+            创建账号并解锁 {plan.name}
           </Link>
         )}
         <p
-          aria-label={`${plan.name} billing summary`}
+          aria-label={`${plan.name} 付款说明`}
           className="mt-4 text-center text-xs font-medium leading-5 text-cocoa/70"
         >
           <strong className="font-bold text-cocoa">
-            ${plan.price} paid once.
+            一次性付款 ${plan.price} 美元。
           </strong>{" "}
-          Full Access does not renew.
+          Full Access 不会自动续费。
         </p>
       </div>
     </article>

@@ -27,8 +27,8 @@ export function BillingPortalButton({
         if (!response.ok || !result?.ok || !result.url) {
           throw new Error(
             result?.reason === "billing_customer_not_found"
-              ? "Billing management is not available for this subscription yet. Refresh Account after billing finishes syncing."
-              : "Billing management is temporarily unavailable. Refresh Account and try again."
+              ? "此订阅的账单管理暂不可用。请等待账单同步完成后刷新账户页。"
+              : "账单管理暂不可用。请刷新账户页后重试。"
           );
         }
         window.location.assign(result.url);
@@ -36,7 +36,7 @@ export function BillingPortalButton({
         setMessage(
           error instanceof Error
             ? error.message
-            : "Billing management is temporarily unavailable. Refresh Account and try again."
+            : "账单管理暂不可用。请刷新账户页后重试。"
         );
       }
     });
@@ -51,19 +51,18 @@ export function BillingPortalButton({
         type="button"
       >
         {!enabled
-          ? "Billing unavailable"
+          ? "账单管理不可用"
           : isPending
-            ? "Opening billing…"
-            : "Manage billing"}
+            ? "正在打开账单管理…"
+            : "管理账单"}
       </button>
       {!enabled ? (
         <p className="mt-2 max-w-xs text-sm text-cocoa/65">
-          Changes are paused until secure billing updates can be recorded.
-          Refresh Account and try again later.
+          在安全记录账单更新之前，相关修改已暂停。请稍后刷新账户页重试。
         </p>
       ) : (
         <p className="mt-2 max-w-xs text-sm text-cocoa/65">
-          Opens Stripe to update payment methods or cancel this subscription.
+          将打开 Stripe，用于更新付款方式或取消此订阅。
         </p>
       )}
       {message ? (

@@ -133,12 +133,12 @@ describe("customer policy configuration", () => {
 
 describe("public customer policy pages", () => {
   const pages = [
-    ["Support", SupportPage, supportMetadata],
-    ["Privacy", PrivacyPage, privacyMetadata],
-    ["Terms", TermsPage, termsMetadata],
-    ["Refund policy", RefundPolicyPage, refundPolicyMetadata],
+    ["帮助中心", SupportPage, supportMetadata],
+    ["隐私政策", PrivacyPage, privacyMetadata],
+    ["使用条款", TermsPage, termsMetadata],
+    ["退款政策", RefundPolicyPage, refundPolicyMetadata],
     [
-      "Financial disclaimer",
+      "财务免责声明",
       FinancialDisclaimerPage,
       financialDisclaimerMetadata
     ]
@@ -155,7 +155,7 @@ describe("public customer policy pages", () => {
       const html = renderToStaticMarkup(<Page />);
       expect(html.match(/<h1(?:\s|>)/gu)).toHaveLength(1);
       expect(html).toContain(title);
-      expect(html).toContain("Updated");
+      expect(html).toContain("更新于");
       expect(html).toMatch(/<h2(?:\s|>)/u);
     }
   });
@@ -172,14 +172,14 @@ describe("public customer policy pages", () => {
   it("routes common support tasks before asking a customer to contact support", () => {
     const html = renderToStaticMarkup(<SupportPage />);
 
-    expect(html).toContain("Choose the closest help path");
+    expect(html).toContain("选择最接近的问题类型");
     expect(html).toContain('href="/login?next=/account"');
     expect(html).toContain('href="/account?view=subscriptions"');
     expect(html).toContain('href="/account?view=purchases"');
-    expect(html).toContain('href="/refund-policy#request"');
-    expect(html).toContain("Send one clear support request");
-    expect(html).toContain("Request builder");
-    expect(html).toContain("Prepare my request");
+    expect(html).toContain('href="/refund-policy#access"');
+    expect(html).toContain("发送一条清楚的帮助请求");
+    expect(html).toContain("请求整理工具");
+    expect(html).toContain("整理我的请求");
     expect(html).toContain('href="/library"');
     expect(html).toContain('href="/office-hours"');
   });
@@ -190,10 +190,10 @@ describe("public customer policy pages", () => {
     try {
       const html = renderToStaticMarkup(<SupportPage />);
 
-      expect(html).toContain("Support channel ready");
-      expect(html).toContain("Request builder");
-      expect(html.indexOf("Choose the closest help path")).toBeLessThan(
-        html.indexOf("Request builder")
+      expect(html).toContain("帮助渠道已可用");
+      expect(html).toContain("请求整理工具");
+      expect(html.indexOf("选择最接近的问题类型")).toBeLessThan(
+        html.indexOf("请求整理工具")
       );
     } finally {
       vi.unstubAllEnvs();
@@ -207,11 +207,10 @@ describe("public customer policy pages", () => {
 
     expect(html).toContain("Stripe");
     expect(html).toContain("Supabase");
-    expect(html).toContain("cancel");
-    expect(html).toContain("full refund");
-    expect(html).toContain("partial refund");
-    expect(html).toContain("not individualized investment");
-    expect(html).toContain("do not sell personal information");
+    expect(html).toContain("取消");
+    expect(html).toContain("全额退款");
+    expect(html).toContain("不构成针对个人的投资");
+    expect(html).toContain("不会出售个人信息");
     expect(html).not.toMatch(
       /guaranteed returns|licensed financial advice|response within \d+|Soji LLC|binding arbitration/iu
     );
@@ -224,8 +223,8 @@ describe("customer trust links", () => {
       await RootLayout({ children: <main>Page</main> })
     );
 
-    expect(html).toContain("Explore");
-    expect(html).toContain("Support &amp; policies");
+    expect(html).toContain("网站内容");
+    expect(html).toContain("支持与政策");
     for (const href of [
       "/library",
       "/pricing",

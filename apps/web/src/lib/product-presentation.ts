@@ -57,12 +57,12 @@ export function getProductFocusLabel(product: ProductOffer) {
   const focus = getProductFocus(product);
 
   if (focus === "track") {
-    return "Planning & tracking";
+    return "规划与追踪";
   }
 
   if (focus === "talk") {
-    return "Conversation support";
+    return "沟通支持";
   }
 
-  return "Practical digital tool";
+  return "实用电子工具";
 }

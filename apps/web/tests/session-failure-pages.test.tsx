@@ -111,10 +111,10 @@ describe("session failure pages", () => {
       await AccountPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Account services are temporarily unavailable");
-    expect(html).toContain("Authentication or membership data could not be verified");
-    expect(html.indexOf("Account services are temporarily unavailable")).toBeLessThan(
-      html.indexOf("Current tier")
+    expect(html).toContain("账户服务暂不可用");
+    expect(html).toContain("暂时无法核实登录或会员数据");
+    expect(html.indexOf("账户服务暂不可用")).toBeLessThan(
+      html.indexOf("当前方案")
     );
   });
 
@@ -131,9 +131,9 @@ describe("session failure pages", () => {
   it("marks restricted Library cards unavailable without claiming a tier lock", async () => {
     const html = renderToStaticMarkup(await LibraryPage());
 
-    expect(html).toContain("Membership access is temporarily unavailable");
-    expect(html).toContain("Your membership has not been changed");
-    expect(html).toContain("Access temporarily unavailable");
+    expect(html).toContain("暂时无法确认会员访问权限");
+    expect(html).toContain("你的会员状态没有改变");
+    expect(html).toContain("暂时无法确认访问权限");
     expect(html).not.toContain("Locked by tier");
   });
 
@@ -144,23 +144,23 @@ describe("session failure pages", () => {
       })
     );
 
-    expect(html).toContain("Access temporarily unavailable");
+    expect(html).toContain("访问权限暂时不可用");
     expect(html).toContain(
-      "No member-only content or private links have been shown"
+      "没有显示会员专属内容或私密链接"
     );
     expect(html).toContain("A safe public preview.");
     expect(html).not.toContain("PRIVATE BODY THAT MUST NOT LEAK");
     expect(html).not.toContain("Locked by tier");
-    expect(html).not.toContain("View membership");
+    expect(html).not.toContain("查看会员方案");
   });
 
   it("hides Office Hours links without telling the member to upgrade", async () => {
     const html = renderToStaticMarkup(await OfficeHoursPage());
 
-    expect(html).toContain("Membership access is temporarily unavailable");
-    expect(html).toContain("Access unavailable");
-    expect(html).toContain("No member-only content or private links have been shown");
-    expect(html).not.toContain("Upgrade to join");
+    expect(html).toContain("暂时无法确认会员访问权限");
+    expect(html).toContain("访问权限暂时不可用");
+    expect(html).toContain("没有显示会员专属内容或私密链接");
+    expect(html).not.toContain("升级后参加");
     expect(html).not.toContain("https://example.com/private-signup");
     expect(html).not.toContain("https://example.com/private-replay");
   });

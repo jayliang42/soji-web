@@ -1,16 +1,16 @@
 import type { EntitlementKey } from "@soji/types";
 
 const entitlementLabels: Record<EntitlementKey, string> = {
-  "community.vip_access": "Private member group",
-  "contact.unlock": "Direct contact access",
-  "content.all": "Complete editorial archive",
-  "content.basic": "Foundational monthly essays",
-  "library.case_studies": "Case study library",
-  "library.templates": "Downloadable templates",
-  "monthly.updates": "Monthly update drops",
-  "office_hours.join": "Live office hours",
-  "product.case_study_single": "Single case study access",
-  "product.digital": "Digital product access"
+  "community.vip_access": "私享会员社群",
+  "contact.unlock": "直接联系权限",
+  "content.all": "完整内容库",
+  "content.basic": "基础月度文章",
+  "library.case_studies": "案例资料库",
+  "library.templates": "可下载模板",
+  "monthly.updates": "每月内容更新",
+  "office_hours.join": "线上答疑",
+  "product.case_study_single": "单篇案例访问权限",
+  "product.digital": "电子产品访问权限"
 };
 
 export function getEntitlementLabel(entitlement: EntitlementKey) {
@@ -18,7 +18,7 @@ export function getEntitlementLabel(entitlement: EntitlementKey) {
 }
 
 export function formatEntitlementList(entitlements: EntitlementKey[]) {
-  return new Intl.ListFormat("en", {
+  return new Intl.ListFormat("zh-CN", {
     style: "long",
     type: "conjunction"
   }).format(entitlements.map(getEntitlementLabel));

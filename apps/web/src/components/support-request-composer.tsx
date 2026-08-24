@@ -65,7 +65,7 @@ export function SupportRequestComposer({
     if (details.trim().length < minimumDetailsLength) {
       setPrepared(false);
       setError(
-        `Describe what happened using at least ${minimumDetailsLength} characters.`
+        `请至少用 ${minimumDetailsLength} 个字符描述发生了什么。`
       );
       document.getElementById(detailsId)?.focus();
       return;
@@ -88,26 +88,25 @@ export function SupportRequestComposer({
 
   const actionStatus =
     copyStatus === "copied"
-      ? "Request copied. Paste it into your support message."
+      ? "请求内容已复制，请粘贴到你的帮助消息中。"
       : copyStatus === "manual"
-        ? "Automatic copying is unavailable. The full request is selected below."
+        ? "无法自动复制，完整请求内容已在下方选中。"
         : prepared
-          ? "Request ready. Review it before opening or copying it."
-          : "Your prepared request will appear here.";
+          ? "请求已整理完成，打开邮件或复制前请先检查内容。"
+          : "整理后的帮助请求会显示在这里。";
 
   return (
     <div className="border-t border-dune bg-white px-6 py-8 sm:px-8 sm:py-10">
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(20rem,0.98fr)] lg:gap-10">
         <form className="min-w-0" noValidate onSubmit={handlePrepare}>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-            Request builder
+            请求整理工具
           </p>
           <h3 className="mt-3 font-display text-2xl font-semibold leading-tight text-cocoa md:text-3xl">
-            Prepare the details.
+            整理问题详情
           </h3>
           <p className="mt-3 max-w-xl text-sm leading-6 text-cocoa/68">
-            Nothing is sent or saved here. You choose how to share the finished
-            request.
+            此页面不会发送或保存任何内容。整理完成后，由你选择如何发送。
           </p>
 
           <div className="mt-7">
@@ -115,7 +114,7 @@ export function SupportRequestComposer({
               className="block text-sm font-bold text-cocoa"
               htmlFor={issueId}
             >
-              What do you need help with?
+              你需要哪方面的帮助？
             </label>
             <select
               className="mt-2 min-h-12 w-full rounded-md border border-cocoa/30 bg-white px-3 py-2 text-base text-cocoa outline-none transition-colors focus:border-clay focus:ring-2 focus:ring-clay/25"
@@ -139,14 +138,13 @@ export function SupportRequestComposer({
               className="block text-sm font-bold text-cocoa"
               htmlFor={detailsId}
             >
-              What were you trying to do, and what happened instead?
+              你原本想做什么，实际发生了什么？
             </label>
             <p
               className="mt-1 text-sm leading-6 text-cocoa/62"
               id={`${detailsId}-hint`}
             >
-              Include the result you expected. Do not include passwords, card
-              numbers, or authentication codes.
+              请说明你预期的结果。不要填写密码、银行卡号或验证码。
             </p>
             {error ? (
               <p
@@ -177,7 +175,7 @@ export function SupportRequestComposer({
             />
             <p className="mt-1 text-right text-xs text-cocoa/68">
               {details.length.toLocaleString()} /{" "}
-              {maximumDetailsLength.toLocaleString()} characters
+              {maximumDetailsLength.toLocaleString()} 个字符
             </p>
           </div>
 
@@ -186,14 +184,14 @@ export function SupportRequestComposer({
               className="block text-sm font-bold text-cocoa"
               htmlFor={contextId}
             >
-              Account, product, page, or timing context{" "}
-              <span className="font-medium text-cocoa/58">(optional)</span>
+              相关账号、产品、页面或时间信息{" "}
+              <span className="font-medium text-cocoa/58">（选填）</span>
             </label>
             <p
               className="mt-1 text-sm leading-6 text-cocoa/62"
               id={`${contextId}-hint`}
             >
-              Add only what will help Support identify the issue.
+              只填写有助于客服定位问题的信息。
             </p>
             <textarea
               aria-describedby={`${contextId}-hint`}
@@ -212,7 +210,7 @@ export function SupportRequestComposer({
             className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-cocoa px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-cocoa/90 sm:w-auto"
             type="submit"
           >
-            Prepare my request
+            整理我的请求
           </button>
         </form>
 
@@ -223,13 +221,13 @@ export function SupportRequestComposer({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/68">
-                Preview
+                预览
               </p>
               <h3
                 className="mt-2 font-display text-2xl font-semibold text-cocoa"
                 id="support-request-preview-heading"
               >
-                Your support request
+                你的帮助请求
               </h3>
             </div>
             <span
@@ -239,7 +237,7 @@ export function SupportRequestComposer({
                   : "bg-dune/70 text-cocoa/62"
               }`}
             >
-              {prepared ? "Ready" : "Draft"}
+              {prepared ? "已就绪" : "草稿"}
             </span>
           </div>
 
@@ -253,7 +251,7 @@ export function SupportRequestComposer({
           {prepared ? (
             <>
               <pre
-                aria-label="Prepared support request"
+                aria-label="整理后的帮助请求"
                 className="mt-5 max-h-[26rem] overflow-auto whitespace-pre-wrap break-words rounded-md border border-dune bg-white p-4 font-sans text-sm leading-6 text-cocoa/76 outline-none focus:border-clay focus:ring-2 focus:ring-clay/25"
                 tabIndex={0}
               >
@@ -266,7 +264,7 @@ export function SupportRequestComposer({
                     className="inline-flex min-h-12 items-center justify-center rounded-md bg-clay px-5 py-3 text-center text-sm font-bold text-white transition-colors hover:bg-clay/90"
                     href={emailHref}
                   >
-                    Open email draft
+                    打开邮件草稿
                   </a>
                 ) : null}
                 <button
@@ -278,7 +276,7 @@ export function SupportRequestComposer({
                   onClick={handleCopy}
                   type="button"
                 >
-                  {copyStatus === "copied" ? "Request copied" : "Copy request"}
+                  {copyStatus === "copied" ? "已复制请求" : "复制请求"}
                 </button>
               </div>
 
@@ -289,15 +287,14 @@ export function SupportRequestComposer({
                   rel="noreferrer"
                   target="_blank"
                 >
-                  Open the GS学院 support channel
-                  <span className="sr-only"> in a new tab</span>
+                  打开 GS学院帮助渠道
+                  <span className="sr-only">（在新标签页中打开）</span>
                 </a>
               ) : null}
 
               {!destination ? (
                 <p className="mt-4 border-l-4 border-clay bg-accent-muted px-4 py-3 text-sm leading-6 text-cocoa/72">
-                  The support channel is still being configured. Copy your
-                  request now and return here before purchasing.
+                  帮助渠道仍在配置中。你可以先复制请求，并在购买前回来确认渠道已可用。
                 </p>
               ) : null}
 
@@ -310,7 +307,7 @@ export function SupportRequestComposer({
                     className="block text-xs font-bold text-cocoa"
                     htmlFor={manualCopyId}
                   >
-                    Copy this request manually
+                    手动复制此请求
                   </label>
                   <textarea
                     className="mt-2 min-h-40 w-full resize-y rounded-md border border-cocoa/30 bg-white px-3 py-3 text-sm leading-6 text-cocoa outline-none focus:border-clay focus:ring-2 focus:ring-clay/25"
@@ -321,8 +318,7 @@ export function SupportRequestComposer({
                     value={request}
                   />
                   <p className="mt-2 text-xs leading-5 text-cocoa/65">
-                    Your browser blocked automatic copying. The full request is
-                    selected and ready to copy.
+                    浏览器阻止了自动复制。完整请求内容已选中，可以直接复制。
                   </p>
                 </div>
               ) : null}
@@ -349,8 +345,7 @@ export function SupportRequestComposer({
                 />
               </svg>
               <p className="mt-3 text-sm font-semibold leading-6 text-cocoa/62">
-                Add a short description, then prepare your request to review
-                the exact message.
+                添加简短说明并整理请求后，即可在这里检查最终消息。
               </p>
             </div>
           )}

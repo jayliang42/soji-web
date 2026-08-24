@@ -15,12 +15,19 @@ const supportPolicyLinks: ReadonlyArray<readonly [string, Route]> = [
   ["退款政策", "/refund-policy" as Route],
   ["财务信息免责声明", "/financial-disclaimer" as Route]
 ] as const;
+const exploreLinks: ReadonlyArray<readonly [string, Route]> = [
+  ["内容库", "/library" as Route],
+  ["价格", "/pricing" as Route],
+  ["实用工具", "/products" as Route],
+  ["线上答疑", "/office-hours" as Route],
+  ["账户", "/account" as Route]
+] as const;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: "GS学院",
   title: {
-    default: "BayArea珊瑚海 by GS学院",
+    default: "GS学院 · BayArea珊瑚海",
     template: "%s | GS学院"
   },
   description:
@@ -28,7 +35,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "GS学院",
-    title: "BayArea珊瑚海 by GS学院",
+    title: "GS学院 · BayArea珊瑚海",
     description:
       "通过真实案例、申请定位和文书思路，帮助你把复杂经历讲清楚。",
     images: [
@@ -42,7 +49,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "BayArea珊瑚海 by GS学院",
+    title: "GS学院 · BayArea珊瑚海",
     description:
       "通过真实案例、申请定位和文书思路，帮助你把复杂经历讲清楚。",
     images: ["/bayarea-coral-sea-hero.jpg"]
@@ -91,17 +98,23 @@ export default async function RootLayout({
           {children}
         </div>
         <footer className="border-t border-dune bg-shell px-6 py-12 md:py-16">
-          <div className="mx-auto grid max-w-6xl gap-10 text-sm text-cocoa/70 md:grid-cols-[0.75fr_1.25fr] md:gap-16">
-            <nav aria-label="咨询时间">
+          <div className="mx-auto grid max-w-6xl gap-10 text-sm text-cocoa/70 md:grid-cols-2 md:gap-16">
+            <nav aria-label="网站内容">
               <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
-                咨询时间
+                网站内容
               </h2>
-              <Link
-                href="/office-hours"
-                className="mt-2 inline-flex min-h-11 items-center font-semibold transition-colors hover:text-clay"
-              >
-                查看咨询时间
-              </Link>
+              <ul className="mt-2 grid font-semibold">
+                {exploreLinks.map(([label, href]) => (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      className="inline-flex min-h-11 items-center transition-colors hover:text-clay"
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </nav>
             <nav aria-label="支持与政策">
               <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">

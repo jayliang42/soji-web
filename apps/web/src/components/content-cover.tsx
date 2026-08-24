@@ -4,7 +4,7 @@ export function ContentCover({
   alt,
   className,
   eager = false,
-  label = "GS学院 library",
+  label = "GS学院内容库",
   src,
   title = "A clearer next decision"
 }: {

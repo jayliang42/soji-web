@@ -19,18 +19,18 @@ describe("support request composer", () => {
   it("builds one predictable request and omits empty optional context", () => {
     expect(buildSupportRequest(draft)).toBe(
       [
-        "Soji support request",
+        "GS学院帮助请求",
         "",
-        "Issue type: Purchase or download",
+        "问题类型：购买或下载",
         "",
-        "What I was trying to do and what happened:",
+        "我原本想做什么，以及实际发生了什么：",
         "I selected the workbook, but the download did not appear in Purchases.",
         "",
-        "Account, product, page, or timing context:",
+        "相关账号、产品、页面或时间信息：",
         "Products page, around 2 PM CT",
         "",
         "—",
-        "Prepared on Soji Support. This message was not saved by Soji."
+        "此内容由 GS学院帮助中心整理，GS学院不会在此页面保存这条消息。"
       ].join("\n")
     );
 
@@ -40,10 +40,10 @@ describe("support request composer", () => {
       details: "\r\n  The reset link returned me to the sign-in page.  \r\n"
     });
     expect(withoutContext).toContain(
-      "What I was trying to do and what happened:\nThe reset link returned me to the sign-in page."
+      "我原本想做什么，以及实际发生了什么：\nThe reset link returned me to the sign-in page."
     );
     expect(withoutContext).not.toContain(
-      "Account, product, page, or timing context:"
+      "相关账号、产品、页面或时间信息："
     );
   });
 
@@ -55,7 +55,7 @@ describe("support request composer", () => {
     expect(mailto.protocol).toBe("mailto:");
     expect(mailto.pathname).toBe("help@soji.test");
     expect(mailto.searchParams.get("subject")).toBe(
-      "Soji support — Purchase or download"
+      "GS学院帮助请求 — 购买或下载"
     );
     expect(mailto.searchParams.get("body")).toBe(buildSupportRequest(draft));
   });
@@ -90,15 +90,15 @@ describe("support request composer", () => {
       <SupportRequestComposer destination="mailto:help@soji.test" />
     );
 
-    expect(html).toContain("Request builder");
-    expect(html).toContain("What do you need help with?");
+    expect(html).toContain("请求整理工具");
+    expect(html).toContain("你需要哪方面的帮助？");
     expect(html).toContain(
-      "What were you trying to do, and what happened instead?"
+      "你原本想做什么，实际发生了什么？"
     );
-    expect(html).toContain("(optional)");
-    expect(html).toContain("Prepare my request");
-    expect(html).toContain("Your prepared request will appear here.");
-    expect(html).not.toContain("Open email draft");
-    expect(html).not.toContain("Soji support request");
+    expect(html).toContain("（选填）");
+    expect(html).toContain("整理我的请求");
+    expect(html).toContain("整理后的帮助请求会显示在这里。");
+    expect(html).not.toContain("打开邮件草稿");
+    expect(html).not.toContain("GS学院帮助请求");
   });
 });
