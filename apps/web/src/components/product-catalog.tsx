@@ -14,15 +14,15 @@ import {
 } from "@/lib/product-presentation";
 
 const focusOptions = [
-  { id: "all", label: "All tools" },
-  { id: "track", label: "Track & review" },
-  { id: "talk", label: "Talk & decide" }
+  { id: "all", label: "全部工具" },
+  { id: "track", label: "记录与复盘" },
+  { id: "talk", label: "沟通与决策" }
 ] as const;
 
 const sortOptions = [
-  { id: "featured", label: "Featured" },
-  { id: "price-asc", label: "Price: low to high" },
-  { id: "price-desc", label: "Price: high to low" }
+  { id: "featured", label: "推荐排序" },
+  { id: "price-asc", label: "价格：从低到高" },
+  { id: "price-desc", label: "价格：从高到低" }
 ] as const;
 
 export type ProductSort = (typeof sortOptions)[number]["id"];
@@ -193,23 +193,22 @@ export function ProductCatalog({
         <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-              Shop by need
+              按需求选工具
             </p>
             <h2
               className="mt-3 font-display text-3xl font-bold leading-tight text-cocoa"
               id="shop-catalog-heading"
             >
-              Find your one-time tool.
+              找到适合你的单次购买工具
             </h2>
             <p className="mt-3 max-w-lg text-sm font-medium leading-6 text-cocoa/70">
-              Search what you want to work through, or browse by how you plan
-              to use the tool.
+              搜索你想解决的问题，或按使用方式浏览工具。
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_13rem]">
             <label className="grid gap-2 text-sm font-bold text-cocoa">
-              Search the shop
+              搜索产品
               <input
                 className="min-h-12 w-full rounded-md border border-dune bg-shell px-4 font-medium text-cocoa outline-none placeholder:text-cocoa/45 focus:border-clay focus:ring-2 focus:ring-clay/20"
                 onChange={(event) => {
@@ -220,13 +219,13 @@ export function ProductCatalog({
                     "replace"
                   );
                 }}
-                placeholder="Try “family” or “cash flow”"
+                placeholder="试试“家庭”或“现金流”"
                 type="search"
                 value={query}
               />
             </label>
             <label className="grid gap-2 text-sm font-bold text-cocoa">
-              Sort
+              排序
               <select
                 className="min-h-12 w-full rounded-md border border-dune bg-shell px-4 font-medium text-cocoa outline-none focus:border-clay focus:ring-2 focus:ring-clay/20"
                 onChange={(event) => {
@@ -250,9 +249,9 @@ export function ProductCatalog({
         </div>
 
         <div className="mt-6 border-t border-dune pt-5">
-          <p className="text-sm font-bold text-cocoa">Browse by use</p>
+          <p className="text-sm font-bold text-cocoa">按用途浏览</p>
           <div
-            aria-label="Filter products by use"
+            aria-label="按用途筛选产品"
             className="mt-3 flex flex-wrap gap-2"
             role="group"
           >
@@ -283,10 +282,8 @@ export function ProductCatalog({
 
       <div className="my-5 flex min-h-11 flex-wrap items-center justify-between gap-3">
         <p aria-live="polite" className="text-sm font-bold text-cocoa/70">
-          {visibleEntries.length === 1
-            ? "1 tool matches"
-            : `${visibleEntries.length} tools match`}
-          {controlsActive ? " your choices" : " the shop"}
+          共 {visibleEntries.length} 个工具
+          {controlsActive ? "符合当前筛选条件" : "可供选择"}
         </p>
         {controlsActive ? (
           <button
@@ -294,14 +291,14 @@ export function ProductCatalog({
             onClick={resetControls}
             type="button"
           >
-            Clear search and filters
+            清除搜索和筛选
           </button>
         ) : null}
       </div>
 
       {visibleEntries.length > 0 ? (
         <ul
-          aria-label="One-time digital tools"
+          aria-label="单次购买数字工具"
           className="grid list-none gap-6 p-0 lg:grid-cols-2"
         >
           {visibleEntries.map(
@@ -315,7 +312,7 @@ export function ProductCatalog({
                     </p>
                     <div className="mt-6 border-t border-dune pt-6">
                       <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/70">
-                        What it helps you do
+                        它能帮你完成什么
                       </p>
                       <ul className="mt-4 space-y-3 text-sm font-medium leading-6 text-cocoa/78">
                         {product.bullets.map((bullet) => (
@@ -330,16 +327,16 @@ export function ProductCatalog({
                       </ul>
                     </div>
                     <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t border-dune pt-5 text-xs font-bold uppercase tracking-[0.12em] text-cocoa/58">
-                      <span>Digital download</span>
-                      <span>Keep in your account</span>
-                      <span>No subscription</span>
+                      <span>数字下载</span>
+                      <span>保存在账号中</span>
+                      <span>无需订阅</span>
                     </div>
                     <div className="mt-auto pt-7">
                       <Link
                         className="mb-3 inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
                         href={`/products/${product.slug}` as Route}
                       >
-                        View tool details
+                        查看工具详情
                         <span aria-hidden="true" className="ml-2">
                           →
                         </span>
@@ -365,17 +362,17 @@ export function ProductCatalog({
       ) : (
         <div className="rounded-xl border border-dashed border-dune bg-shell px-6 py-12 text-center">
           <h3 className="font-display text-3xl font-bold text-cocoa">
-            No tools match those choices.
+            没有符合当前条件的工具
           </h3>
           <p className="mx-auto mt-3 max-w-lg text-cocoa/70">
-            Try a broader search, or show every one-time tool in the shop.
+            可以扩大搜索范围，或查看全部单次购买工具。
           </p>
           <button
             className="mt-6 min-h-11 rounded-md bg-cocoa px-5 text-sm font-bold text-white transition-colors hover:bg-charcoal"
             onClick={resetControls}
             type="button"
           >
-            Show all tools
+            查看全部工具
           </button>
         </div>
       )}

@@ -65,21 +65,21 @@ describe("product detail experience", () => {
       })
     );
 
-    expect(html).toContain("Back to Shop");
+    expect(html).toContain("返回产品列表");
     expect(html).toContain("Wealth Dashboard");
     expect(html).toContain(product.summary);
-    expect(html).toContain("$79 once");
-    expect(html).toContain("Digital download");
-    expect(html).toContain("No subscription");
+    expect(html).toContain("一次支付 $79");
+    expect(html).toContain("数字下载");
+    expect(html).toContain("无需订阅");
     expect(html).toContain("Track net worth and cash runway");
-    expect(html).toContain("From decision to download in three steps.");
-    expect(html).toContain("Create account to buy");
+    expect(html).toContain("三步完成购买并下载");
+    expect(html).toContain("登录后解锁");
     expect(html).toContain(
       "next=%2Fproducts%2Fwealth-dashboard"
     );
-    expect(html).toContain("One-time purchase");
-    expect(html).toContain("Share tool");
-    expect(html).toContain("Compare membership");
+    expect(html).toContain("单次购买");
+    expect(html).toContain("分享工具");
+    expect(html).toContain("查看 Full Access");
   });
 
   it("routes an existing owner to Account without checking checkout readiness", async () => {
@@ -117,9 +117,9 @@ describe("product detail experience", () => {
       })
     );
 
-    expect(html).toContain("Access purchase");
+    expect(html).toContain("进入已解锁内容");
     expect(html).toContain('/account#purchases-heading');
-    expect(html).not.toContain("Buy once");
+    expect(html).not.toContain("立即解锁");
     expect(detailMocks.getBillingDeliveryReadiness).not.toHaveBeenCalled();
   });
 
@@ -144,9 +144,9 @@ describe("product detail experience", () => {
       })
     );
 
-    expect(html).toContain("Included with Full Access");
-    expect(html).toContain("Download included product");
-    expect(html).not.toContain("Buy once");
+    expect(html).toContain("Full Access 已包含");
+    expect(html).toContain("下载已包含内容");
+    expect(html).not.toContain("立即解锁");
     expect(detailMocks.getBillingDeliveryReadiness).not.toHaveBeenCalled();
   });
 
@@ -163,9 +163,9 @@ describe("product detail experience", () => {
       })
     );
 
-    expect(html).toContain("This product could not be loaded");
-    expect(html).toContain("Try loading again");
-    expect(html).not.toContain("Buy once");
+    expect(html).toContain("暂时无法加载此产品");
+    expect(html).toContain("重新加载");
+    expect(html).not.toContain("立即解锁");
     expect(detailMocks.getAccountPurchases).not.toHaveBeenCalled();
   });
 

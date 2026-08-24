@@ -30,7 +30,7 @@ export async function generateMetadata({
   const { item } = await getProductBySlug(slug);
 
   if (!item) {
-    return { title: "Product" };
+    return { title: "产品" };
   }
 
   return {
@@ -63,13 +63,13 @@ export default async function ProductDetailPage({
             className="inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
             href="/products"
           >
-            Back to Shop
+            返回产品列表
           </Link>
           <div className="mt-8 max-w-2xl">
             <DataUnavailable
-              description="No product details or purchase action are available until the catalog connection recovers."
+              description="产品目录恢复连接前，暂不显示产品详情或购买操作。"
               retryHref={`/products/${slug}`}
-              title="This product could not be loaded"
+              title="暂时无法加载此产品"
             />
           </div>
         </section>
@@ -122,13 +122,13 @@ export default async function ProductDetailPage({
           className="inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
           href="/products"
         >
-          Back to Shop
+          返回产品列表
         </Link>
 
         <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(22rem,0.98fr)] lg:items-stretch">
           <header className="flex flex-col justify-center py-2 lg:py-8">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-              One-time digital tool
+              单次购买数字工具
             </p>
             <h1 className="mt-5 max-w-4xl font-display text-5xl font-bold leading-[0.98] text-cocoa md:text-7xl">
               {product.title}
@@ -138,13 +138,13 @@ export default async function ProductDetailPage({
             </p>
             <div className="mt-7 flex flex-wrap gap-2 text-sm font-bold text-cocoa/70">
               <span className="rounded-full bg-accent-muted px-4 py-2 text-clay">
-                {product.priceLabel} once
+                一次支付 {product.priceLabel}
               </span>
               <span className="rounded-full bg-cream px-4 py-2">
-                Digital download
+                数字下载
               </span>
               <span className="rounded-full bg-cream px-4 py-2">
-                No subscription
+                无需订阅
               </span>
             </div>
             {productResult.source === "demo" ? (
@@ -168,13 +168,13 @@ export default async function ProductDetailPage({
               className="rounded-xl border border-dune bg-shell p-6 sm:p-8"
             >
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-                Inside the tool
+                工具内容
               </p>
               <h2
                 className="mt-3 font-display text-3xl font-semibold leading-tight text-cocoa md:text-4xl"
                 id="product-includes-heading"
               >
-                What this helps you put into practice.
+                帮你把这些方法真正用起来
               </h2>
               <ul className="mt-7 grid gap-4 sm:grid-cols-2">
                 {product.bullets.map((bullet, index) => (
@@ -195,30 +195,30 @@ export default async function ProductDetailPage({
 
             <section aria-labelledby="product-delivery-heading">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-                Delivery
+                交付流程
               </p>
               <h2
                 className="mt-3 font-display text-3xl font-semibold leading-tight text-cocoa"
                 id="product-delivery-heading"
               >
-                From decision to download in three steps.
+                三步完成购买并下载
               </h2>
               <ol className="mt-6 grid gap-px overflow-hidden rounded-xl border border-dune bg-dune md:grid-cols-3">
                 {[
                   {
                     description:
-                      "Use a GS学院 account so the purchase has a durable home.",
-                    label: "Sign in"
+                      "使用 GS学院账号，让购买记录和下载权限长期保留。",
+                    label: "登录账号"
                   },
                   {
                     description:
-                      "Complete the one-time payment through secure Stripe Checkout.",
-                    label: "Pay once"
+                      "通过安全的 Stripe Checkout 完成一次性付款。",
+                    label: "一次付款"
                   },
                   {
                     description:
-                      "Return to Account whenever you need the available download.",
-                    label: "Keep access"
+                      "以后需要时可随时回到账号中心下载。",
+                    label: "持续访问"
                   }
                 ].map((step, index) => (
                   <li className="bg-cream p-5 sm:p-6" key={step.label}>
@@ -242,13 +242,13 @@ export default async function ProductDetailPage({
             className="rounded-xl border border-dune bg-white p-6 shadow-[0_18px_50px_rgba(32,31,28,0.07)] sm:p-8 lg:sticky lg:top-28"
           >
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/70">
-              {membershipEntitled ? "Included with Full Access" : "One-time purchase"}
+              {membershipEntitled ? "Full Access 已包含" : "单次购买"}
             </p>
             <h2
               className="mt-3 font-display text-4xl font-semibold text-cocoa"
               id="product-purchase-heading"
             >
-              {membershipEntitled ? "Included" : product.priceLabel}
+              {membershipEntitled ? "已包含" : product.priceLabel}
             </h2>
             <p className="mt-3 text-sm font-medium leading-6 text-cocoa/70">
               {membershipEntitled
@@ -270,7 +270,7 @@ export default async function ProductDetailPage({
             </div>
             {!membershipEntitled ? <PurchaseDisclosure variant="product" /> : null}
             <div className="mt-5 border-t border-dune pt-5">
-              <ShareButton label="Share tool" title={product.title} />
+              <ShareButton label="分享工具" title={product.title} />
             </div>
           </aside>
         </div>
@@ -278,18 +278,17 @@ export default async function ProductDetailPage({
         <aside className="mt-12 flex flex-col gap-5 border-y border-dune py-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-display text-2xl font-semibold text-cocoa">
-              Looking for ongoing guidance?
+              想获得持续更新和支持？
             </p>
             <p className="mt-2 text-sm leading-6 text-cocoa/70">
-              Compare membership when a library and recurring support fit
-              better than one focused tool.
+              如果完整内容库和持续支持更适合你，可以查看 Full Access 方案。
             </p>
           </div>
           <Link
             className="inline-flex min-h-11 flex-none items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
             href="/pricing"
           >
-            Compare membership
+            查看 Full Access
           </Link>
         </aside>
       </section>

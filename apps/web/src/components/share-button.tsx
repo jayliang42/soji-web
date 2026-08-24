@@ -100,11 +100,11 @@ export function ShareButton({
   }
 
   const buttonLabel = {
-    copied: "Link copied",
+    copied: "链接已复制",
     idle: label,
-    manual: "Copy link manually",
-    shared: "Shared",
-    working: "Opening share options…"
+    manual: "手动复制链接",
+    shared: "已分享",
+    working: "正在打开分享选项…"
   }[status];
 
   return (
@@ -141,7 +141,7 @@ export function ShareButton({
             className="block text-xs font-bold text-cocoa"
             htmlFor={inputId}
           >
-            Copy this link manually
+            手动复制此链接
           </label>
           <input
             aria-describedby={`${inputId}-hint`}
@@ -154,8 +154,7 @@ export function ShareButton({
             value={manualUrl}
           />
           <p className="mt-2 text-xs leading-5 text-cocoa/70" id={`${inputId}-hint`}>
-            Your browser blocked automatic sharing and copying. The full link
-            is selected and ready to copy.
+            浏览器阻止了自动分享和复制。完整链接已选中，可以直接复制。
           </p>
         </div>
       ) : null}

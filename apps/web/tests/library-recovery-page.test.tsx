@@ -34,14 +34,14 @@ describe("library collection recovery", () => {
   it("shows one rich catalog recovery path when both catalog and access checks fail", async () => {
     const html = renderToStaticMarkup(await LibraryPage({}));
 
-    expect(html).toContain("Connection paused");
-    expect(html).toContain("The library could not be loaded");
-    expect(html).toContain("Try loading again");
-    expect(html).toContain(">Browse practical tools</a>");
+    expect(html).toContain("连接暂时中断");
+    expect(html).toContain("暂时无法加载内容库");
+    expect(html).toContain("重新加载");
+    expect(html).toContain(">浏览实用工具</a>");
     expect(html).toContain(
-      "Your membership and saved access stay unchanged while the library reconnects."
+      "重新连接期间，你的访问权限和收藏不会改变。"
     );
     expect(html.match(/role="alert"/gu)).toHaveLength(1);
-    expect(html).not.toContain("Membership access is temporarily unavailable");
+    expect(html).not.toContain("暂时无法确认会员访问权限");
   });
 });

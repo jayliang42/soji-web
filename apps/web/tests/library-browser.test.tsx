@@ -52,13 +52,13 @@ describe("library browser", () => {
       <LibraryBrowser entries={entries} isAuthenticated={false} />
     );
 
-    expect(html).toContain("What would feel useful right now?");
+    expect(html).toContain("你现在最想解决什么问题？");
     expect(html).toContain('type="search"');
-    expect(html).toContain("All formats");
-    expect(html).toContain('aria-label="Filter guides by focus"');
-    expect(html).toContain(">Saved</button>");
-    expect(html).toContain("Saved guides stay on this device.");
-    expect(html).toContain("3 guides in the library");
+    expect(html).toContain("全部形式");
+    expect(html).toContain('aria-label="按主题筛选指南"');
+    expect(html).toContain(">我的收藏</button>");
+    expect(html).toContain("收藏指南");
+    expect(html).toContain("3 篇指南可供阅读");
   });
 
   it("honors a goal-focused entry path before hydration", () => {
@@ -73,7 +73,7 @@ describe("library browser", () => {
     expect(html).toContain("Salary Negotiation Playbook");
     expect(html).not.toContain("The First Money Audit");
     expect(html).not.toContain("Family Money Scripts");
-    expect(html).toContain("1 guide match your filters");
+    expect(html).toContain("1 篇指南符合当前筛选条件");
   });
 
   it("honors shareable query and format filters before hydration", () => {
@@ -88,12 +88,12 @@ describe("library browser", () => {
 
     expect(html).toContain('value="salary"');
     expect(html).toContain(
-      '<option value="case_study" selected="">Case study</option>'
+      '<option value="case_study" selected="">案例</option>'
     );
     expect(html).toContain("Salary Negotiation Playbook");
     expect(html).not.toContain("The First Money Audit");
     expect(html).not.toContain("Family Money Scripts");
-    expect(html).toContain("1 guide match your filters");
+    expect(html).toContain("1 篇指南符合当前筛选条件");
   });
 
   it("falls back to the full library for an unknown focus", () => {
@@ -105,7 +105,7 @@ describe("library browser", () => {
       />
     );
 
-    expect(html).toContain("3 guides in the library");
+    expect(html).toContain("3 篇指南可供阅读");
   });
 
   it("builds a compact shareable URL and omits inactive filters", () => {

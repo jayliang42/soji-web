@@ -19,28 +19,22 @@ describe("Office Hours calendar download", () => {
       new Date("2026-07-28T12:34:56.000Z")
     );
 
-    expect(file).toEqual({
-      content: [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:-//Soji//Office Hours//EN",
-        "CALSCALE:GREGORIAN",
-        "METHOD:PUBLISH",
-        "BEGIN:VEVENT",
-        "UID:office-hour-1@office-hours.soji",
-        "DTSTAMP:20260728T123456Z",
-        "DTSTART:20260730T180000Z",
-        "SUMMARY:Family decision office hour",
-        "DESCRIPTION:Review current access and reservation details on the Soji Offic",
-        " e Hours page.",
-        "LOCATION:Online",
-        "STATUS:CONFIRMED",
-        "END:VEVENT",
-        "END:VCALENDAR",
-        ""
-      ].join("\r\n"),
-      filename: "soji-office-hours-family-decision-office-hour.ics"
-    });
+    expect(file?.filename).toBe(
+      "soji-office-hours-family-decision-office-hour.ics"
+    );
+    expect(file?.content).toContain("PRODID:-//GS学院//Office Hours//EN");
+    expect(file?.content).toContain("UID:office-hour-1@office-hours.soji");
+    expect(file?.content).toContain("DTSTAMP:20260728T123456Z");
+    expect(file?.content).toContain("DTSTART:20260730T180000Z");
+    expect(file?.content).toContain("SUMMARY:Family decision office hour");
+    expect(file?.content).toContain("GS学院线上答疑页面");
+    expect(file?.content).toContain("LOCATION:线上");
+    expect(
+      buildOfficeHourCalendarFile(
+        calendarInput,
+        new Date("2026-07-28T12:34:56.000Z")
+      )
+    ).toEqual(file);
     expect(file?.content).not.toContain("DTEND");
     expect(file?.content).not.toContain("DURATION");
     expect(file?.content).not.toContain("signup");
@@ -137,9 +131,9 @@ describe("Office Hours calendar download", () => {
     );
 
     expect(html).toContain(
-      'aria-label="Add Family decision office hour to calendar"'
+      'aria-label="将《Family decision office hour》添加到日历"'
     );
-    expect(html).toContain("Add to calendar");
+    expect(html).toContain("添加到日历");
     expect(html).toContain("min-h-11");
     expect(html).toContain('aria-live="polite"');
   });

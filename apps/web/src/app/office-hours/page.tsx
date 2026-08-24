@@ -12,9 +12,9 @@ import {
 import { getSessionSnapshot } from "@/lib/session";
 
 export const metadata: Metadata = {
-  title: "Office Hours",
+  title: "线上答疑",
   description:
-    "Review upcoming Well Endowed member office hours, live support sessions, and available replays.",
+    "查看即将开始的会员线上答疑、直播支持场次和往期回放。",
   alternates: { canonical: "/office-hours" }
 };
 
@@ -25,11 +25,11 @@ function getOfficeHourDateParts(startsAt: string) {
   }
 
   return {
-    day: new Intl.DateTimeFormat("en-US", {
+    day: new Intl.DateTimeFormat("zh-CN", {
       day: "2-digit",
       timeZone: "America/Chicago"
     }).format(date),
-    month: new Intl.DateTimeFormat("en-US", {
+    month: new Intl.DateTimeFormat("zh-CN", {
       month: "short",
       timeZone: "America/Chicago"
     })
@@ -53,7 +53,7 @@ function OfficeHourCard({
     ? presentation.primaryAction
     : null;
   const membershipAction =
-    presentation.primaryAction?.label === "Compare membership";
+    presentation.primaryAction?.label === "查看解锁方案";
   const isUpcoming = presentation.lifecycle === "upcoming";
   const isUnavailable = presentation.lifecycle === "unavailable";
   const dateParts = getOfficeHourDateParts(presentation.startsAt);
@@ -98,7 +98,7 @@ function OfficeHourCard({
               isUpcoming ? "text-white/60" : "text-clay"
             }`}
           >
-            {dateParts?.month ?? "DATE"}
+            {dateParts?.month ?? "日期"}
           </span>
           <span
             className={`mt-1 font-display text-3xl font-semibold ${
@@ -141,8 +141,7 @@ function OfficeHourCard({
               isUpcoming ? "text-white/72" : "text-cocoa/72"
             }`}
           >
-            Bring one decision, the facts you already know, and the tradeoff
-            that still feels difficult.
+            带来一个具体问题、你已经掌握的事实，以及仍然难以权衡的取舍。
           </p>
           <p
             className={`mt-5 text-sm font-semibold ${
@@ -160,14 +159,14 @@ function OfficeHourCard({
                 className={`inline-flex min-h-11 items-center rounded-md px-5 py-3 text-sm font-bold transition-colors ${primaryActionClass}`}
               >
                 {externalAction.label}
-                <span className="sr-only"> (Opens in a new tab)</span>
+                <span className="sr-only">（在新标签页中打开）</span>
               </a>
             ) : membershipAction ? (
               <Link
                 href="/pricing"
                 className={`inline-flex min-h-11 items-center rounded-md px-5 py-3 text-sm font-bold transition-colors ${primaryActionClass}`}
               >
-                Compare membership
+                查看解锁方案
               </Link>
             ) : presentation.primaryAction ? (
               <span
@@ -181,7 +180,7 @@ function OfficeHourCard({
               </span>
             ) : (
               <span className="inline-flex min-h-11 items-center rounded-md border border-dune bg-shell px-5 py-3 text-sm font-semibold text-cocoa/70">
-                Access unavailable
+                暂时无法访问
               </span>
             )}
             {isUpcoming ? (
@@ -192,7 +191,7 @@ function OfficeHourCard({
                   title={presentation.title}
                 />
                 <CopySessionDetailsButton
-                  details={`${presentation.title}\n${presentation.startsAtLabel}\nGS学院 Office Hours`}
+                  details={`${presentation.title}\n${presentation.startsAtLabel}\nGS学院线上答疑`}
                   tone="dark"
                 />
               </>
@@ -239,16 +238,16 @@ export default async function OfficeHoursPage() {
     <main>
       <SectionShell
         compact
-        eyebrow="Office hours"
+        eyebrow="线上答疑"
         headingLevel={1}
-        title="Closer support for higher-stakes decisions."
-        description="Bring a specific money or life decision, compare tradeoffs with a clearer framework, and learn alongside other members. Sessions provide financial education, not individualized financial advice."
+        title="重要决定，需要更深入的支持"
+        description="带来一个具体的金钱或人生决定，用更清晰的框架比较取舍，并与其他成员一起学习。所有场次仅提供财务教育，不构成个性化财务建议。"
       >
         {snapshot.error && !officeHourSnapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
-              title="Membership access is temporarily unavailable"
-              description="We could not verify access right now. No member-only content or private links have been shown. Your membership has not changed; please try again shortly."
+              title="暂时无法确认会员访问权限"
+              description="我们目前无法确认访问权限，因此没有显示会员专属内容或私密链接。你的会员状态没有改变，请稍后再试。"
             />
           </div>
         ) : null}
@@ -256,10 +255,10 @@ export default async function OfficeHoursPage() {
           <div className="mb-6">
             <DataUnavailable
               alternativeHref="/library"
-              alternativeLabel="Read while you wait"
-              title="Office hours could not be loaded"
-              description="No signup or replay links are available until the schedule connection recovers."
-              note="No private session or replay links are shown while the schedule is unavailable."
+              alternativeLabel="等待时先阅读指南"
+              title="暂时无法加载线上答疑"
+              description="日程连接恢复前，预约和回放链接暂不可用。"
+              note="日程不可用期间，不会显示任何私密场次或回放链接。"
               retryHref="/office-hours"
               variant="panel"
             />
@@ -269,9 +268,9 @@ export default async function OfficeHoursPage() {
           <div className="mb-6">
             <DataEmpty
               actionHref="/library"
-              actionLabel="Browse the library"
-              title="No live session is scheduled"
-              description="Browse the library now; upcoming sessions and new replays will appear here."
+              actionLabel="浏览内容库"
+              title="目前没有已安排的直播场次"
+              description="你可以先浏览内容库；新的直播场次和回放会显示在这里。"
               variant="panel"
             />
           </div>
@@ -283,31 +282,31 @@ export default async function OfficeHoursPage() {
         >
           <div className="bg-shell px-5 py-5 sm:px-7">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-              The format
+              参与方式
             </p>
             <h2
               className="mt-2 font-display text-2xl font-semibold text-cocoa sm:text-3xl"
               id="office-hours-format"
             >
-              One decision. Three useful moves.
+              一个决定，三个实用步骤
             </h2>
           </div>
           <ol className="grid gap-px md:grid-cols-3">
             {[
               {
                 description:
-                  "Choose the money or life decision that is creating the most drag.",
-                label: "Name the decision"
+                  "选择当前最让你犹豫的金钱或人生决定。",
+                label: "明确问题"
               },
               {
                 description:
-                  "Bring the facts you know, the people affected, and the real deadline.",
-                label: "Bring the context"
+                  "准备好已知事实、受影响的人，以及真正的截止时间。",
+                label: "带来背景"
               },
               {
                 description:
-                  "Use the discussion to identify a clearer next move—not a perfect answer.",
-                label: "Leave with direction"
+                  "通过讨论找到更清晰的下一步，而不是追求完美答案。",
+                label: "带走方向"
               }
             ].map((step, index) => (
               <li className="bg-cream p-5 sm:p-6" key={step.label}>
@@ -329,17 +328,16 @@ export default async function OfficeHoursPage() {
           <section aria-labelledby="office-hours-upcoming">
             <div className="mb-6 max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-                Live sessions · {upcoming.length}
+                直播场次 · {upcoming.length}
               </p>
               <h2
                 id="office-hours-upcoming"
                 className="mt-2 font-display text-4xl font-bold text-cocoa"
               >
-                Upcoming
+                即将开始
               </h2>
               <p className="mt-3 leading-relaxed text-cocoa/72">
-                Reserve a place, then arrive with one decision you want to make
-                more deliberately.
+                先预约席位，再带着一个你想认真做出的决定参加。
               </p>
             </div>
             <div className={sessionGridClass(upcoming.length)}>
@@ -360,17 +358,16 @@ export default async function OfficeHoursPage() {
           >
             <div className="mb-6 max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-                Previous sessions · {replays.length}
+                往期场次 · {replays.length}
               </p>
               <h2
                 id="office-hours-replays"
                 className="mt-2 font-display text-4xl font-bold text-cocoa"
               >
-                Replay library
+                回放内容库
               </h2>
               <p className="mt-3 leading-relaxed text-cocoa/72">
-                Revisit completed sessions when a similar decision appears in
-                your own life.
+                当你遇到类似决定时，可以回来查看往期场次。
               </p>
             </div>
             <div className={sessionGridClass(replays.length)}>
@@ -393,17 +390,16 @@ export default async function OfficeHoursPage() {
           >
             <div className="mb-6 max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-                Schedule check
+                日程检查
               </p>
               <h2
                 className="mt-2 font-display text-4xl font-bold text-cocoa"
                 id="office-hours-unavailable"
               >
-                Session status
+                场次状态
               </h2>
               <p className="mt-3 leading-relaxed text-cocoa/72">
-                These session details are visible, but access or destination
-                verification still needs to recover.
+                场次信息仍可查看，但访问权限或目标链接尚未恢复验证。
               </p>
             </div>
             <div className={sessionGridClass(unavailable.length)}>
@@ -421,14 +417,13 @@ export default async function OfficeHoursPage() {
           <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
             <div className="max-w-2xl">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">
-                Prepare before the room opens
+                开始前先做好准备
               </p>
               <h2 className="mt-3 font-display text-3xl font-semibold leading-tight sm:text-4xl">
-                Start with a guide, then bring one decision.
+                先读一篇指南，再带来一个决定
               </h2>
               <p className="mt-3 max-w-[60ch] text-sm leading-6 text-white/70">
-                Public previews help you name the tradeoff. Guided membership
-                adds live Office Hours access when closer support is useful.
+                公开预览可以帮你看清取舍；需要更深入支持时，可通过相应方案参加直播答疑。
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -436,13 +431,13 @@ export default async function OfficeHoursPage() {
                 href="/library"
                 className="inline-flex min-h-11 items-center rounded-md bg-white px-5 py-3 text-sm font-bold text-cocoa transition-colors hover:bg-cream"
               >
-                Browse the library
+                浏览内容库
               </Link>
               <Link
                 href="/pricing"
                 className="inline-flex min-h-11 items-center rounded-md border border-white/35 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10"
               >
-                Compare membership
+                查看解锁方案
               </Link>
             </div>
           </div>

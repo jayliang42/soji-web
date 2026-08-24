@@ -84,12 +84,12 @@ describe("editorial library pages", () => {
   it("features the owned flagship cover and guest preview action in the collection", async () => {
     const html = renderToStaticMarkup(await LibraryPage());
 
-    expect(html).toContain("Guides for making clearer money decisions");
+    expect(html).toContain("帮助你做出更清晰决定的指南");
     expect(html).toContain('src="/covers/wealth-without-drift.webp"');
     expect(html).toContain(flagship.coverImageAlt);
     expect(html).toContain("lg:col-span-2");
-    expect(html).toContain("Public preview");
-    expect(html).toContain(">Read preview</a>");
+    expect(html).toContain("公开预览");
+    expect(html).toContain(">阅读预览</a>");
     expect(html).not.toContain("content.basic");
     expect(html).not.toContain("members_only");
     expect(html).not.toContain("Supabase");
@@ -102,10 +102,10 @@ describe("editorial library pages", () => {
       })
     );
 
-    expect(html).toContain("Public preview");
+    expect(html).toContain("公开预览");
     expect(html).toContain("Most money drift starts when small decisions remain open.");
-    expect(html).toContain(">Compare membership</a>");
-    expect(html).toContain(">Sign in to check access</a>");
+    expect(html).toContain(">比较解锁方式</a>");
+    expect(html).toContain(">登录并检查权益</a>");
     expect(html).toContain("next=%2Flibrary%2Fwealth-without-drift");
     expect(html).not.toContain("PRIVATE PHASE3 BODY");
     expect(html).not.toContain("content.basic");
@@ -120,10 +120,10 @@ describe("editorial library pages", () => {
       })
     );
 
-    expect(html).toContain("Included with Full Access membership");
+    expect(html).toContain("Full Access 会员权益可读");
     expect(html).toContain("Most money drift starts when small decisions remain open.");
-    expect(html).toContain(">See the membership that includes this</a>");
-    expect(html).not.toContain("Sign in to check access");
+    expect(html).toContain(">查看所需会员权益</a>");
+    expect(html).not.toContain("登录并检查权益");
     expect(html).not.toContain("PRIVATE PHASE3 BODY");
   });
 
@@ -136,11 +136,11 @@ describe("editorial library pages", () => {
       })
     );
 
-    expect(html).toContain("Included in your membership");
+    expect(html).toContain("已包含在你的会员权益中");
     expect(html).toContain("PRIVATE PHASE3 BODY");
-    expect(html).not.toContain("Compare membership");
-    expect(html).not.toContain("Sign in to check access");
-    expect(html).not.toContain("See the membership that includes this");
+    expect(html).not.toContain("比较解锁方式");
+    expect(html).not.toContain("登录并检查权益");
+    expect(html).not.toContain("查看所需会员权益");
   });
 
   it("fails closed with calm recovery copy and no upgrade prompt", async () => {
@@ -155,14 +155,14 @@ describe("editorial library pages", () => {
       })
     );
 
-    expect(html).toContain("Access temporarily unavailable");
+    expect(html).toContain("访问权限暂时不可用");
     expect(html).toContain(
-      "We could not verify access right now. No member-only content or private links have been shown."
+      "我们目前无法确认访问权限，因此没有显示会员专属内容或私密链接。"
     );
     expect(html).toContain("Most money drift starts when small decisions remain open.");
     expect(html).toContain('href="/support"');
     expect(html).not.toContain("PRIVATE PHASE3 BODY");
-    expect(html).not.toContain("Compare membership");
+    expect(html).not.toContain("比较解锁方式");
     expect(html).not.toContain("upgrade");
   });
 });

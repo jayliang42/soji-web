@@ -38,10 +38,10 @@ export function CopySessionDetailsButton({
 
   const label =
     status === "copied"
-      ? "Details copied"
+      ? "详情已复制"
       : status === "error"
-        ? "Copy unavailable"
-        : "Copy date and title";
+        ? "暂时无法复制"
+        : "复制日期和标题";
 
   return (
     <button

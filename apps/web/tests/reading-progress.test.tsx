@@ -148,12 +148,12 @@ describe("guide reading progress", () => {
       />
     );
 
-    expect(html).toContain("0% read");
+    expect(html).toContain("已阅读 0%");
     expect(html).toContain(
-      'aria-label="Reading progress for A Calmer Decision"'
+      'aria-label="《A Calmer Decision》的阅读进度"'
     );
     expect(html).toContain('max="100"');
     expect(html).toContain('value="0"');
-    expect(html).not.toContain("Resume at");
+    expect(html).not.toContain("处继续");
   });
 });

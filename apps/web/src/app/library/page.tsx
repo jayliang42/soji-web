@@ -12,9 +12,9 @@ import { getContentSnapshot } from "@/lib/content";
 import { getSessionSnapshot } from "@/lib/session";
 
 export const metadata: Metadata = {
-  title: "Library",
+  title: "内容库",
   description:
-    "Read public previews and explore member essays, templates, and practical money decision tools.",
+    "阅读公开预览，探索会员文章、模板和实用的决策工具。",
   alternates: { canonical: "/library" }
 };
 
@@ -61,10 +61,10 @@ export default async function LibraryPage(props?: LibraryPageProps) {
     <main>
       <SectionShell
         compact
-        eyebrow="Library"
+        eyebrow="内容库"
         headingLevel={1}
-        title="Guides for making clearer money decisions"
-        description="Read useful public guides alongside deeper member editions, templates, and practical tools."
+        title="帮助你做出更清晰决定的指南"
+        description="阅读实用的公开指南，以及更深入的会员文章、模板和工具。"
       >
         {snapshot.source === "demo" ? (
           <div className="mb-6">
@@ -74,9 +74,11 @@ export default async function LibraryPage(props?: LibraryPageProps) {
         {snapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
-              title="The library could not be loaded"
-              description="No restricted content has been shown. Please try again shortly."
-              note="Your membership and saved access stay unchanged while the library reconnects."
+              alternativeHref="/products"
+              alternativeLabel="浏览实用工具"
+              title="暂时无法加载内容库"
+              description="我们没有显示任何受限内容，请稍后再试。"
+              note="重新连接期间，你的访问权限和收藏不会改变。"
               variant="panel"
             />
           </div>
@@ -84,8 +86,8 @@ export default async function LibraryPage(props?: LibraryPageProps) {
         {session.error && !snapshot.error ? (
           <div className="mb-6">
             <DataUnavailable
-              title="Membership access is temporarily unavailable"
-              description="Public pieces remain available, but we could not verify access to restricted content. Your membership has not been changed. Please try again shortly."
+              title="暂时无法确认会员访问权限"
+              description="公开内容仍可阅读，但我们目前无法确认受限内容的访问权限。你的会员状态没有改变，请稍后再试。"
             />
           </div>
         ) : null}
@@ -102,9 +104,9 @@ export default async function LibraryPage(props?: LibraryPageProps) {
           <div className="mt-6">
             <DataEmpty
               actionHref="/pricing"
-              actionLabel="Compare membership"
-              title="The first guide is being prepared"
-              description="Browse membership details now, then return when the first guide is published."
+              actionLabel="查看解锁方案"
+              title="首篇指南正在准备中"
+              description="你可以先查看解锁方案，首篇指南发布后再回来阅读。"
               variant="panel"
             />
           </div>

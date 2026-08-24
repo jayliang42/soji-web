@@ -82,17 +82,17 @@ export function OfficeHourCalendarButton({
 
   const visibleLabel =
     status === "downloaded"
-      ? "Calendar downloaded"
+      ? "日历已下载"
       : status === "error"
-        ? "Calendar unavailable"
-        : "Add to calendar";
+        ? "暂时无法添加日历"
+        : "添加到日历";
 
   return (
     <button
       aria-label={
         status === "error"
-          ? `Calendar download unavailable for ${title}`
-          : `Add ${title} to calendar`
+          ? `暂时无法下载《${title}》的日历文件`
+          : `将《${title}》添加到日历`
       }
       className={`inline-flex min-h-11 items-center gap-2 rounded-md border px-5 py-3 text-sm font-bold transition-colors ${
         tone === "dark"

@@ -163,11 +163,11 @@ export function GuideOutline({
               className="text-xs font-bold uppercase tracking-[0.12em]"
               id={headingId}
             >
-              In this guide
+              本文目录
             </span>
             <span className="flex min-w-0 items-center gap-2 text-right text-xs font-semibold text-cocoa/62">
               <span className="truncate">
-                {activeLabel ?? `${outline.length} sections`}
+                {activeLabel ?? `${outline.length} 个章节`}
               </span>
               <svg
                 aria-hidden="true"
@@ -197,7 +197,7 @@ export function GuideOutline({
         className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62"
         id={headingId}
       >
-        In this guide
+        本文目录
       </h3>
       {links}
     </nav>

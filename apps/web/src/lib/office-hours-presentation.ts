@@ -10,18 +10,18 @@ export type OfficeHourLifecycle =
 
 export interface OfficeHourPresentation {
   accessLabel:
-    | "Access temporarily unavailable"
-    | "Included in your membership"
-    | "Included with Guided membership";
+    | "访问权限暂时不可用"
+    | "当前账号已包含"
+    | "线上答疑方案包含";
   id: string;
   lifecycle: OfficeHourLifecycle;
   primaryAction?: {
     href?: string;
-    label: "Compare membership" | "Replay coming soon" | "Reserve a seat" | "Watch replay";
+    label: "查看解锁方案" | "回放即将上线" | "预约席位" | "观看回放";
   };
   startsAt: string;
   startsAtLabel: string;
-  statusLabel: "Replay" | "Replay coming soon" | "Session unavailable" | "Upcoming";
+  statusLabel: "回放" | "回放即将上线" | "场次暂不可用" | "即将开始";
   title: string;
 }
 
@@ -37,7 +37,7 @@ function formatOfficeHourDate(startsAt: string) {
     return null;
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("zh-CN", {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
@@ -53,12 +53,12 @@ function unavailablePresentation(
   startsAtLabel: string
 ): OfficeHourPresentation {
   return {
-    accessLabel: "Access temporarily unavailable",
+    accessLabel: "访问权限暂时不可用",
     id: session.id,
     lifecycle: "unavailable",
     startsAt: session.startsAt,
     startsAtLabel,
-    statusLabel: "Session unavailable",
+    statusLabel: "场次暂不可用",
     title: session.title
   };
 }
@@ -75,7 +75,7 @@ export function buildOfficeHourPresentation(
     Number.isNaN(startsAt.getTime()) ||
     access.verificationUnavailable
   ) {
-    return unavailablePresentation(session, startsAtLabel ?? "Date unavailable");
+    return unavailablePresentation(session, startsAtLabel ?? "日期暂不可用");
   }
 
   const upcoming = startsAt.getTime() > now.getTime();
@@ -93,8 +93,8 @@ export function buildOfficeHourPresentation(
     access.isAuthenticated &&
     hasEntitlement(access.entitlements, session.requiredEntitlements);
   const accessLabel = entitled
-    ? "Included in your membership"
-    : "Included with Guided membership";
+    ? "当前账号已包含"
+    : "线上答疑方案包含";
 
   if (upcoming) {
     return {
@@ -102,11 +102,11 @@ export function buildOfficeHourPresentation(
       id: session.id,
       lifecycle: "upcoming",
       primaryAction: entitled
-        ? { href: safeTarget, label: "Reserve a seat" }
-        : { href: undefined, label: "Compare membership" },
+        ? { href: safeTarget, label: "预约席位" }
+        : { href: undefined, label: "查看解锁方案" },
       startsAt: session.startsAt,
       startsAtLabel,
-      statusLabel: "Upcoming",
+      statusLabel: "即将开始",
       title: session.title
     };
   }
@@ -116,10 +116,10 @@ export function buildOfficeHourPresentation(
       accessLabel,
       id: session.id,
       lifecycle: "replay_pending",
-      primaryAction: { href: undefined, label: "Replay coming soon" },
+      primaryAction: { href: undefined, label: "回放即将上线" },
       startsAt: session.startsAt,
       startsAtLabel,
-      statusLabel: "Replay coming soon",
+      statusLabel: "回放即将上线",
       title: session.title
     };
   }
@@ -129,11 +129,11 @@ export function buildOfficeHourPresentation(
     id: session.id,
     lifecycle: "replay_ready",
     primaryAction: entitled
-      ? { href: safeTarget, label: "Watch replay" }
-      : { href: undefined, label: "Compare membership" },
+      ? { href: safeTarget, label: "观看回放" }
+      : { href: undefined, label: "查看解锁方案" },
     startsAt: session.startsAt,
     startsAtLabel,
-    statusLabel: "Replay",
+    statusLabel: "回放",
     title: session.title
   };
 }

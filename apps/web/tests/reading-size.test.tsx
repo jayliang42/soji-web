@@ -63,10 +63,10 @@ describe("article reading size", () => {
       <ReadingSizeControl targetId="guide-reading-body" />
     );
 
-    expect(html).toContain('aria-label="Reading text size"');
-    expect(html).toContain("Text size");
-    expect(html).toMatch(/aria-pressed="true"[^>]*>Default<\/button>/u);
-    expect(html).toMatch(/aria-pressed="false"[^>]*>Larger<\/button>/u);
+    expect(html).toContain('aria-label="阅读字号"');
+    expect(html).toContain("字号");
+    expect(html).toMatch(/aria-pressed="true"[^>]*>默认<\/button>/u);
+    expect(html).toMatch(/aria-pressed="false"[^>]*>放大<\/button>/u);
     expect(html).toContain('aria-live="polite"');
   });
 });

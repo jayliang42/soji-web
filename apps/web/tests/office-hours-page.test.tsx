@@ -57,24 +57,24 @@ describe("Office Hours page", () => {
   it("groups upcoming sessions and replays with safe external actions", async () => {
     const html = renderToStaticMarkup(await OfficeHoursPage());
 
-    expect(html).toContain("Upcoming");
-    expect(html).toContain("Replay library");
-    expect(html).toContain("Reserve a seat");
-    expect(html).toContain("Watch replay");
-    expect(html).toContain("Replay coming soon");
+    expect(html).toContain("即将开始");
+    expect(html).toContain("回放内容库");
+    expect(html).toContain("预约席位");
+    expect(html).toContain("观看回放");
+    expect(html).toContain("回放即将上线");
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noreferrer noopener"');
-    expect(html).toContain("Opens in a new tab");
-    expect(html).toContain("One decision. Three useful moves.");
-    expect(html).toContain("Name the decision");
-    expect(html).toContain("Bring the context");
-    expect(html).toContain("Leave with direction");
-    expect(html).toContain("Copy date and title");
+    expect(html).toContain("在新标签页中打开");
+    expect(html).toContain("一个决定，三个实用步骤");
+    expect(html).toContain("明确问题");
+    expect(html).toContain("带来背景");
+    expect(html).toContain("带走方向");
+    expect(html).toContain("复制日期和标题");
     expect(html).toContain(
-      'aria-label="Add Upcoming family decisions to calendar"'
+      'aria-label="将《Upcoming family decisions》添加到日历"'
     );
-    expect(html.match(/>Add to calendar</gu)).toHaveLength(1);
-    expect(html).toContain("Prepare before the room opens");
+    expect(html.match(/>添加到日历</gu)).toHaveLength(1);
+    expect(html).toContain("开始前先做好准备");
   });
 
   it("renders no private targets when the signed-in user lacks access", async () => {
@@ -86,8 +86,8 @@ describe("Office Hours page", () => {
 
     const html = renderToStaticMarkup(await OfficeHoursPage());
 
-    expect(html).toContain("Included with Guided membership");
-    expect(html).toContain("Compare membership");
+    expect(html).toContain("线上答疑方案包含");
+    expect(html).toContain("查看解锁方案");
     expect(html).not.toContain(signupTarget);
     expect(html).not.toContain(replayTarget);
   });
@@ -107,15 +107,15 @@ describe("Office Hours page", () => {
 
     const html = renderToStaticMarkup(await OfficeHoursPage());
 
-    expect(html).toContain("Connection paused");
-    expect(html).toContain("Office hours could not be loaded");
-    expect(html).toContain(">Try loading again</a>");
-    expect(html).toContain(">Read while you wait</a>");
+    expect(html).toContain("连接暂时中断");
+    expect(html).toContain("暂时无法加载线上答疑");
+    expect(html).toContain(">重新加载</a>");
+    expect(html).toContain(">等待时先阅读指南</a>");
     expect(html).toContain(
-      "No private session or replay links are shown while the schedule is unavailable."
+      "日程不可用期间，不会显示任何私密场次或回放链接。"
     );
     expect(html.match(/role="alert"/gu)).toHaveLength(1);
-    expect(html).not.toContain("Membership access is temporarily unavailable");
+    expect(html).not.toContain("暂时无法确认会员访问权限");
     expect(html).not.toContain(signupTarget);
     expect(html).not.toContain(replayTarget);
   });

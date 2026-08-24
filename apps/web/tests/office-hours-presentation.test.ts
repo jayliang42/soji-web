@@ -36,7 +36,7 @@ describe("Office Hours presentation projection", () => {
     expect(guest.lifecycle).toBe("upcoming");
     expect(guest.primaryAction).toEqual({
       href: undefined,
-      label: "Compare membership"
+      label: "查看解锁方案"
     });
     expect(wrongTier.primaryAction?.href).toBeUndefined();
     expect(JSON.stringify([guest, wrongTier])).not.toContain(signupTarget);
@@ -62,13 +62,13 @@ describe("Office Hours presentation projection", () => {
 
     expect(upcoming.primaryAction).toEqual({
       href: signupTarget,
-      label: "Reserve a seat"
+      label: "预约席位"
     });
     expect(JSON.stringify(upcoming)).not.toContain(replayTarget);
     expect(replay.lifecycle).toBe("replay_ready");
     expect(replay.primaryAction).toEqual({
       href: replayTarget,
-      label: "Watch replay"
+      label: "观看回放"
     });
     expect(JSON.stringify(replay)).not.toContain(signupTarget);
   });
@@ -117,8 +117,8 @@ describe("Office Hours presentation projection", () => {
     expect(presentation.lifecycle).toBe("replay_pending");
     expect(presentation.primaryAction).toEqual({
       href: undefined,
-      label: "Replay coming soon"
+      label: "回放即将上线"
     });
-    expect(presentation.startsAtLabel).toMatch(/CT$/u);
+    expect(presentation.startsAtLabel).toContain("芝加哥时间");
   });
 });

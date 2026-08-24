@@ -96,8 +96,8 @@ export function buildOfficeHourCalendarFile(
     `DTSTAMP:${formatUtcDate(generatedAt)}`,
     `DTSTART:${formatUtcDate(startsAt)}`,
     `SUMMARY:${escapeIcsText(title)}`,
-    "DESCRIPTION:Review current access and reservation details on the GS学院 Office Hours page.",
-    "LOCATION:Online",
+    "DESCRIPTION:请在 GS学院线上答疑页面查看当前访问权限和预约详情。",
+    "LOCATION:线上",
     "STATUS:CONFIRMED",
     "END:VEVENT",
     "END:VCALENDAR"

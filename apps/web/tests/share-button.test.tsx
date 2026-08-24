@@ -62,13 +62,13 @@ describe("detail-page sharing", () => {
 
   it("renders an accessible initial action without leaking a server-side URL", () => {
     const html = renderToStaticMarkup(
-      <ShareButton label="Share guide" title="A useful guide" />
+      <ShareButton label="分享指南" title="A useful guide" />
     );
 
-    expect(html).toContain("Share guide");
+    expect(html).toContain("分享指南");
     expect(html).toContain('type="button"');
     expect(html).toContain('aria-live="polite"');
-    expect(html).not.toContain("Copy this link manually");
+    expect(html).not.toContain("手动复制此链接");
     expect(html).not.toContain('type="url"');
   });
 });

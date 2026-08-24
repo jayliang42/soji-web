@@ -81,9 +81,9 @@ describe("products page purchase safety", () => {
       await ProductsPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Access purchase");
+    expect(html).toContain("进入已解锁内容");
     expect(html).toContain('/account#purchases-heading');
-    expect(html).not.toContain("Buy once");
+    expect(html).not.toContain("立即解锁");
     }
   );
 
@@ -97,9 +97,9 @@ describe("products page purchase safety", () => {
       await ProductsPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Purchase status could not be verified");
-    expect(html).toContain("Purchase status unavailable");
-    expect(html).not.toContain("Buy once");
+    expect(html).toContain("暂时无法确认购买状态");
+    expect(html).toContain("购买状态暂不可用");
+    expect(html).not.toContain("立即解锁");
   });
 
   it("routes a disputed owner to account review instead of another checkout", async () => {
@@ -122,9 +122,9 @@ describe("products page purchase safety", () => {
       await ProductsPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Review purchase");
+    expect(html).toContain("查看购买记录");
     expect(html).toContain('/account#purchases-heading');
-    expect(html).not.toContain("Buy once");
+    expect(html).not.toContain("立即解锁");
   });
 
   it("shows every product as included for a Full Access member", async () => {
@@ -147,9 +147,9 @@ describe("products page purchase safety", () => {
       await ProductsPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Download included product");
-    expect(html).toContain("Included with your Full Access membership");
-    expect(html).not.toContain("Buy once");
+    expect(html).toContain("下载已包含内容");
+    expect(html).toContain("Full Access 已包含此内容");
+    expect(html).not.toContain("立即解锁");
   });
 
   it("places one-time delivery and refund terms beside every product action", async () => {
@@ -159,9 +159,9 @@ describe("products page purchase safety", () => {
       await ProductsPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("One-time purchase");
-    expect(html).toContain("Delivered to your GS学院 account");
-    expect(html).toContain("digital-product refund policy");
+    expect(html).toContain("电子产品付款后不予退款");
+    expect(html).toContain("交付到你的 GS学院账号");
+    expect(html).toContain("退款政策");
     for (const href of ["/terms", "/refund-policy", "/privacy", "/support"]) {
       expect(html).toContain(`href="${href}"`);
     }
@@ -183,15 +183,15 @@ describe("products page purchase safety", () => {
       await ProductsPage({ searchParams: Promise.resolve({}) })
     );
 
-    expect(html).toContain("Connection paused");
-    expect(html).toContain("Products could not be loaded");
-    expect(html).toContain(">Try loading again</a>");
-    expect(html).toContain(">Read a public guide</a>");
+    expect(html).toContain("连接暂时中断");
+    expect(html).toContain("暂时无法加载产品");
+    expect(html).toContain(">重新加载</a>");
+    expect(html).toContain(">阅读公开指南</a>");
     expect(html).toContain(
-      "Checkout stays paused until the catalog returns; no purchase is started."
+      "目录恢复前不会开始任何付款。"
     );
     expect(html.match(/role="alert"/gu)).toHaveLength(1);
-    expect(html).not.toContain("Purchase status could not be verified");
-    expect(html).not.toContain("Buy once");
+    expect(html).not.toContain("暂时无法确认购买状态");
+    expect(html).not.toContain("立即解锁");
   });
 });

@@ -64,7 +64,7 @@ describe("guide outline", () => {
 
     expect(html).toContain("<details");
     expect(html).toContain("<summary");
-    expect(html).toContain("3 sections");
+    expect(html).toContain("3 个章节");
     expect(html).toContain('id="mobile-outline"');
     expect(html).toContain('href="#compare"');
   });

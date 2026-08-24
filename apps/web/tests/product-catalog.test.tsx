@@ -81,13 +81,13 @@ describe("product catalog", () => {
       />
     );
 
-    expect(html).toContain('aria-label="Filter products by use"');
-    expect(html).toContain('aria-label="One-time digital tools"');
+    expect(html).toContain('aria-label="按用途筛选产品"');
+    expect(html).toContain('aria-label="单次购买数字工具"');
     expect(html).toContain('aria-pressed="true"');
     expect(html.match(/aria-pressed="false"/gu)).toHaveLength(2);
-    expect(html).toContain("2 tools match the shop");
-    expect(html).toContain("Digital download");
-    expect(html).toContain("No subscription");
+    expect(html).toContain("共 2 个工具可供选择");
+    expect(html).toContain("数字下载");
+    expect(html).toContain("无需订阅");
     expect(html).toContain('href="/products/wealth-dashboard"');
     expect(html).toContain('href="/products/family-money-scripts"');
   });
@@ -107,11 +107,11 @@ describe("product catalog", () => {
 
     expect(html).toContain('value="allowance"');
     expect(html).toContain(
-      '<option value="price-desc" selected="">Price: high to low</option>'
+      '<option value="price-desc" selected="">价格：从高到低</option>'
     );
     expect(html).toContain("Family Money Scripts");
     expect(html).not.toContain("Wealth Dashboard");
-    expect(html).toContain("1 tool matches your choices");
+    expect(html).toContain("共 1 个工具符合当前筛选条件");
   });
 
   it("builds a compact filter URL while preserving checkout state", () => {

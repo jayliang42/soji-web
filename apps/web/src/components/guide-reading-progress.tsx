@@ -185,7 +185,7 @@ export function GuideReadingProgress({
           scrollToStoredProgress(readingTarget, restored);
           setProgress(restored.progress);
           setResumeStatus(
-            `Resumed ${title} at ${restored.progress}% read.`
+            `已从《${title}》的 ${restored.progress}% 处继续阅读。`
           );
           removeResumeRequest();
         });
@@ -220,8 +220,8 @@ export function GuideReadingProgress({
     savedProgress.progress <= RESUME_MAXIMUM_PROGRESS &&
     progress + 2 < savedProgress.progress;
   const progressLabel = storageUnavailable
-    ? `${progress}% read · progress not saved`
-    : `${progress}% read`;
+    ? `已阅读 ${progress}% · 进度未保存`
+    : `已阅读 ${progress}%`;
 
   function resumeReading() {
     const target = document.getElementById(targetId);
@@ -231,7 +231,7 @@ export function GuideReadingProgress({
 
     scrollToStoredProgress(target, savedProgress);
     setProgress(savedProgress.progress);
-    setResumeStatus(`Resumed ${title} at ${savedProgress.progress}% read.`);
+    setResumeStatus(`已从《${title}》的 ${savedProgress.progress}% 处继续阅读。`);
   }
 
   return (
@@ -243,11 +243,11 @@ export function GuideReadingProgress({
           onClick={resumeReading}
           type="button"
         >
-          Resume at {savedProgress.progress}%
+          从 {savedProgress.progress}% 处继续
         </button>
       ) : null}
       <progress
-        aria-label={`Reading progress for ${title}`}
+        aria-label={`《${title}》的阅读进度`}
         className={`reading-progress pointer-events-none fixed left-0 top-[72px] z-30 h-1 w-full transition-opacity md:top-[76px] ${
           progress > 0 && progress < 100 ? "opacity-100" : "opacity-0"
         }`}

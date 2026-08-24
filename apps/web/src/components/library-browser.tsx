@@ -16,12 +16,12 @@ import {
 } from "@/lib/saved-guides";
 
 const focusOptions = [
-  { id: "all", label: "All guides" },
-  { id: "start", label: "Start here" },
-  { id: "spending", label: "Spending & cash flow" },
-  { id: "career", label: "Career & earning" },
-  { id: "family", label: "Family & legacy" },
-  { id: "saved", label: "Saved" }
+  { id: "all", label: "全部指南" },
+  { id: "start", label: "从这里开始" },
+  { id: "spending", label: "支出与现金流" },
+  { id: "career", label: "职业与收入" },
+  { id: "family", label: "家庭与传承" },
+  { id: "saved", label: "我的收藏" }
 ] as const;
 
 type FocusId = (typeof focusOptions)[number]["id"];
@@ -228,22 +228,21 @@ export function LibraryBrowser({
         <div className="grid gap-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-              Find your path
+              找到适合你的方向
             </p>
             <h2
               id="library-discovery-heading"
               className="mt-3 font-display text-3xl font-bold leading-tight text-cocoa"
             >
-              What would feel useful right now?
+              你现在最想解决什么问题？
             </h2>
             <p className="mt-3 max-w-lg text-sm font-medium leading-6 text-cocoa/70">
-              Choose a focus, then narrow the library by format or a word you
-              have in mind. Saved guides stay on this device.
+              先选择关注方向，再按内容形式或关键词筛选。收藏的指南会保存在当前设备上。
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_13rem]">
             <label className="grid gap-2 text-sm font-bold text-cocoa">
-              Search the library
+              搜索内容库
               <input
                 type="search"
                 value={query}
@@ -255,12 +254,12 @@ export function LibraryBrowser({
                     "replace"
                   );
                 }}
-                placeholder="Try “family” or “cash flow”"
+                placeholder="试试“家庭”或“现金流”"
                 className="min-h-12 w-full rounded-md border border-dune bg-white px-4 font-medium text-cocoa outline-none placeholder:text-cocoa/45 focus:border-clay focus:ring-2 focus:ring-clay/20"
               />
             </label>
             <label className="grid gap-2 text-sm font-bold text-cocoa">
-              Format
+              内容形式
               <select
                 value={format}
                 onChange={(event) => {
@@ -273,7 +272,7 @@ export function LibraryBrowser({
                 }}
                 className="min-h-12 w-full rounded-md border border-dune bg-white px-4 font-medium text-cocoa outline-none focus:border-clay focus:ring-2 focus:ring-clay/20"
               >
-                <option value="all">All formats</option>
+                <option value="all">全部形式</option>
                 {formats.map((contentType) => (
                   <option key={contentType} value={contentType}>
                     {formatContentType(contentType)}
@@ -285,11 +284,11 @@ export function LibraryBrowser({
         </div>
 
         <div className="mt-6 border-t border-dune/80 pt-5">
-          <p className="text-sm font-bold text-cocoa">Explore by focus</p>
+          <p className="text-sm font-bold text-cocoa">按主题浏览</p>
           <div
             className="mt-3 flex flex-wrap gap-2"
             role="group"
-            aria-label="Filter guides by focus"
+            aria-label="按主题筛选指南"
           >
             {focusOptions.map((option) => (
               <button
@@ -319,9 +318,9 @@ export function LibraryBrowser({
       <div className="mb-5 flex min-h-11 flex-wrap items-center justify-between gap-3">
         <p aria-live="polite" className="text-sm font-bold text-cocoa/70">
           {loadingSavedGuides
-            ? "Loading saved guides…"
-            : `${visibleEntries.length === 1 ? "1 guide" : `${visibleEntries.length} guides`}${
-                filtersActive ? " match your filters" : " in the library"
+            ? "正在加载收藏…"
+            : `${visibleEntries.length} 篇指南${
+                filtersActive ? "符合当前筛选条件" : "可供阅读"
               }`}
         </p>
         {filtersActive ? (
@@ -330,7 +329,7 @@ export function LibraryBrowser({
             onClick={clearFilters}
             className="inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
           >
-            Clear filters
+            清除筛选
           </button>
         ) : null}
       </div>
@@ -341,13 +340,13 @@ export function LibraryBrowser({
           className="rounded-xl border border-dune bg-shell px-6 py-12 text-center"
         >
           <p className="font-display text-2xl font-bold text-cocoa">
-            Loading saved guides…
+            正在加载收藏…
           </p>
         </div>
       ) : visibleEntries.length > 0 ? (
         <ul
           className="grid list-none gap-6 p-0 md:grid-cols-2 xl:grid-cols-3"
-          aria-label="Published guides"
+          aria-label="已发布指南"
         >
           {visibleEntries.map(({ accessMode, item }) => {
             const featured = item.slug === "wealth-without-drift";
@@ -371,20 +370,20 @@ export function LibraryBrowser({
         <div className="rounded-xl border border-dashed border-dune bg-shell px-6 py-12 text-center">
           <h3 className="font-display text-3xl font-bold text-cocoa">
             {focus === "saved"
-              ? "No saved guides yet."
-              : "No guides match those filters."}
+              ? "还没有收藏指南"
+              : "没有符合筛选条件的指南"}
           </h3>
           <p className="mx-auto mt-3 max-w-lg text-cocoa/70">
             {focus === "saved"
-              ? "Use Save guide on any card or article. Your reading list stays on this device."
-              : "Try a broader focus or clear the filters to see the complete library."}
+              ? "在任意指南卡片或文章中点击收藏，即可把阅读清单保存在当前设备上。"
+              : "可以扩大主题范围，或清除筛选条件查看完整内容库。"}
           </p>
           <button
             type="button"
             onClick={clearFilters}
             className="mt-6 min-h-11 rounded-md bg-cocoa px-5 text-sm font-bold text-white transition-colors hover:bg-charcoal"
           >
-            Show all guides
+            查看全部指南
           </button>
         </div>
       )}

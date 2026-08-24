@@ -10,8 +10,8 @@ import {
 } from "@/lib/reading-size";
 
 const choices: ReadonlyArray<{ label: string; value: ReadingSize }> = [
-  { label: "Default", value: "default" },
-  { label: "Larger", value: "large" }
+  { label: "默认", value: "default" },
+  { label: "放大", value: "large" }
 ];
 
 function applyReadingSize(targetId: string, size: ReadingSize) {
@@ -58,22 +58,22 @@ export function ReadingSizeControl({ targetId }: { targetId: string }) {
       nextSize,
       getBrowserReadingSizeStorage()
     );
-    const visibleName = nextSize === "large" ? "Larger" : "Default";
+    const visibleName = nextSize === "large" ? "放大" : "默认";
     setAnnouncement(
       saved
-        ? `${visibleName} reading text selected and saved on this device.`
-        : `${visibleName} reading text selected for this visit; the preference could not be saved.`
+        ? `已选择${visibleName}字号，并保存在当前设备上。`
+        : `本次访问已选择${visibleName}字号，但无法保存该偏好。`
     );
   }
 
   return (
     <>
       <div
-        aria-label="Reading text size"
+        aria-label="阅读字号"
         className="flex flex-wrap items-center gap-1 rounded-md border border-dune bg-white p-1"
         role="group"
       >
-        <span className="px-2 text-xs font-bold text-cocoa/62">Text size</span>
+        <span className="px-2 text-xs font-bold text-cocoa/62">字号</span>
         {choices.map((choice) => {
           const selected = choice.value === size;
 

@@ -62,14 +62,14 @@ export function SavedGuideButton({
   }
 
   const visibleLabel =
-    status === "error" ? "Save unavailable" : saved ? "Saved" : "Save guide";
+    status === "error" ? "暂时无法收藏" : saved ? "已收藏" : "收藏指南";
   const accessibleLabel = saved
-    ? `Remove ${title} from saved guides`
-    : `Save ${title} for later`;
+    ? `从收藏中移除《${title}》`
+    : `收藏《${title}》稍后阅读`;
 
   return (
     <button
-      aria-label={status === "error" ? `${accessibleLabel}; storage unavailable` : accessibleLabel}
+      aria-label={status === "error" ? `${accessibleLabel}；存储不可用` : accessibleLabel}
       aria-pressed={saved}
       className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-bold transition-colors ${
         saved

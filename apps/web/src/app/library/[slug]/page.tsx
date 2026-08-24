@@ -60,12 +60,12 @@ function getReadingLabel(
   mode: "full" | "preview" | "locked" | "unavailable"
 ) {
   if (!minutes) {
-    return "Access details only";
+    return "仅显示访问说明";
   }
 
   return mode === "full"
-    ? `${minutes} min read`
-    : `${minutes} min public opening`;
+    ? `约 ${minutes} 分钟读完`
+    : `约 ${minutes} 分钟公开预览`;
 }
 
 export async function generateMetadata({
@@ -78,7 +78,7 @@ export async function generateMetadata({
 
   if (!result.item) {
     return {
-      title: result.error ? "Content unavailable" : "Content not found",
+      title: result.error ? "内容暂不可用" : "未找到内容",
       robots: { follow: false, index: false }
     };
   }
@@ -122,14 +122,14 @@ export default async function ContentDetailPage({
     return (
       <main>
         <SectionShell
-          eyebrow="Library"
+          eyebrow="内容库"
           headingLevel={1}
-          title="This piece could not be loaded."
-          description="The library connection is temporarily unavailable."
+          title="暂时无法加载这篇内容"
+          description="内容库连接暂时不可用。"
         >
           <DataUnavailable
-            title="Content unavailable"
-            description="No restricted body content has been shown. Please try again shortly."
+            title="内容暂不可用"
+            description="我们没有显示任何受限正文，请稍后再试。"
           />
         </SectionShell>
       </main>
@@ -183,13 +183,13 @@ export default async function ContentDetailPage({
           className="inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
           href="/library"
         >
-          Back to Library
+          返回内容库
         </Link>
 
         <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] lg:items-stretch">
           <header className="flex flex-col justify-center py-2 lg:py-8">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-              GS学院 Library
+              GS学院 内容库
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-cocoa/70">
               <span>{formatContentType(item.type)}</span>
@@ -233,29 +233,28 @@ export default async function ContentDetailPage({
             className="mt-8 max-w-[72ch] rounded-lg border border-clay/30 bg-accent-muted px-5 py-5 text-cocoa"
             role="alert"
           >
-            <p className="font-semibold">Access temporarily unavailable</p>
+            <p className="font-semibold">访问权限暂时不可用</p>
             <p className="mt-2 leading-7 text-cocoa/75">
-              We could not verify access right now. No member-only content or
-              private links have been shown. Try again or contact{" "}
+              我们目前无法确认访问权限，因此没有显示会员专属内容或私密链接。请稍后再试，或联系{" "}
               <Link
                 className="font-semibold text-clay underline decoration-clay/40 underline-offset-4"
                 href="/support"
               >
-                Support
+                帮助与支持
               </Link>
-              .
+              。
             </p>
           </div>
         ) : null}
 
         <div className="mt-12 grid gap-8 lg:grid-cols-[minmax(0,72ch)_minmax(15rem,1fr)] lg:items-start">
           <article
-            aria-label={`${item.title} reading`}
+            aria-label={`阅读《${item.title}》`}
             className="min-w-0 overflow-hidden rounded-xl border border-dune bg-shell"
           >
             <header className="flex flex-wrap items-center justify-between gap-3 border-b border-dune px-5 py-4 sm:px-8">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/62">
-                Reading
+                正文
               </p>
               <div className="flex flex-wrap items-center justify-end gap-3">
                 <p className="text-sm font-semibold text-cocoa/62">
@@ -292,11 +291,10 @@ export default async function ContentDetailPage({
               ) : (
                 <div className="space-y-4">
                   <p className="text-lg text-cocoa/80">
-                    This guide is reserved for readers with the right access.
+                    此指南仅向拥有相应访问权限的读者开放。
                   </p>
                   <p className="text-sm text-cocoa/70">
-                    Review the available membership or purchase options to
-                    continue.
+                    请查看可用的解锁或购买方案后继续阅读。
                   </p>
                 </div>
               )}
@@ -314,23 +312,23 @@ export default async function ContentDetailPage({
               {accessMode === "full" ? (
                 <footer className="mt-12 border-t border-dune pt-8">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/62">
-                    Continue exploring
+                    继续探索
                   </p>
                   <h2 className="mt-3 font-display text-3xl font-semibold leading-tight text-cocoa">
-                    Choose the next useful step.
+                    选择下一步最有帮助的内容
                   </h2>
                   <div className="mt-5 flex flex-wrap gap-x-5 gap-y-1 text-sm font-bold">
                     <Link
                       className="inline-flex min-h-11 items-center text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
                       href="/library"
                     >
-                      Browse more guides
+                      浏览更多指南
                     </Link>
                     <Link
                       className="inline-flex min-h-11 items-center text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
                       href="/office-hours"
                     >
-                      Review Office Hours
+                      查看线上答疑
                     </Link>
                   </div>
                 </footer>
@@ -343,35 +341,35 @@ export default async function ContentDetailPage({
             className="rounded-xl border border-dune bg-cream p-6 lg:sticky lg:top-28"
           >
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-cocoa/62">
-              At a glance
+              内容概览
             </p>
             <h2
               className="mt-3 font-display text-2xl font-semibold text-cocoa"
               id="guide-details-heading"
             >
-              Guide details
+              指南详情
             </h2>
             <dl className="mt-5 divide-y divide-dune border-y border-dune text-sm">
               <div className="grid grid-cols-[5.5rem_1fr] gap-3 py-3">
-                <dt className="font-semibold text-cocoa/62">Format</dt>
+                <dt className="font-semibold text-cocoa/62">形式</dt>
                 <dd className="font-semibold text-cocoa">
                   {formatContentType(item.type)}
                 </dd>
               </div>
               {publishedDate ? (
                 <div className="grid grid-cols-[5.5rem_1fr] gap-3 py-3">
-                  <dt className="font-semibold text-cocoa/62">Published</dt>
+                  <dt className="font-semibold text-cocoa/62">发布时间</dt>
                   <dd className="font-semibold text-cocoa">
                     <time dateTime={item.publishedAt}>{publishedDate}</time>
                   </dd>
                 </div>
               ) : null}
               <div className="grid grid-cols-[5.5rem_1fr] gap-3 py-3">
-                <dt className="font-semibold text-cocoa/62">Reading</dt>
+                <dt className="font-semibold text-cocoa/62">阅读时间</dt>
                 <dd className="font-semibold text-cocoa">{readingLabel}</dd>
               </div>
               <div className="grid grid-cols-[5.5rem_1fr] gap-3 py-3">
-                <dt className="font-semibold text-cocoa/62">Access</dt>
+                <dt className="font-semibold text-cocoa/62">访问权限</dt>
                 <dd className="font-semibold text-cocoa">{access.label}</dd>
               </div>
             </dl>
@@ -389,13 +387,13 @@ export default async function ContentDetailPage({
             {visibleTags.length > 0 ? (
               <div className="mt-6">
                 <p className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
-                  Topics
+                  主题
                 </p>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {visibleTags.map((tag) => (
                     <li key={tag}>
                       <Link
-                        aria-label={`Browse guides about ${tag}`}
+                        aria-label={`浏览关于 ${tag} 的指南`}
                         className="inline-flex min-h-11 items-center rounded-full border border-transparent bg-sand px-3 py-1 text-xs font-semibold text-cocoa/75 transition-colors hover:border-clay/35 hover:bg-accent-muted hover:text-clay"
                         href={`/library?q=${encodeURIComponent(tag)}`}
                       >
@@ -414,19 +412,19 @@ export default async function ContentDetailPage({
                 variant="full"
               />
               <p className="mt-2 text-xs leading-5 text-cocoa/62">
-                Saved guides stay on this device.
+                收藏的指南会保存在当前设备上。
               </p>
             </div>
 
             <div className="mt-4">
-              <ShareButton label="Share guide" title={item.title} />
+              <ShareButton label="分享指南" title={item.title} />
             </div>
 
             <Link
               className="mt-6 inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
               href="/library"
             >
-              Return to Library
+              返回内容库
             </Link>
           </aside>
         </div>
@@ -439,24 +437,23 @@ export default async function ContentDetailPage({
             <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-                  Keep reading
+                  继续阅读
                 </p>
                 <h2
                   className="mt-3 max-w-3xl font-display text-4xl font-bold leading-tight text-cocoa md:text-5xl"
                   id="related-reading-heading"
                 >
-                  Continue with a nearby question.
+                  从相关问题继续探索
                 </h2>
                 <p className="mt-4 max-w-2xl text-lg leading-8 text-cocoa/72">
-                  Explore guides connected by topic, with the access level
-                  shown before you open each one.
+                  浏览主题相关的指南；打开前即可看到每篇内容的访问要求。
                 </p>
               </div>
               <Link
                 className="inline-flex min-h-11 items-center text-sm font-bold text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
                 href="/library"
               >
-                Browse complete library
+                浏览完整内容库
               </Link>
             </div>
 
