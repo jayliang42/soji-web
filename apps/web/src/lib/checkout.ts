@@ -29,6 +29,10 @@ export const checkoutCancellationPayloadSchema = z
   })
   .strict();
 
+export const guestCheckoutCancellationPayloadSchema = z
+  .object({ requestId: z.string().uuid() })
+  .strict();
+
 export function shouldRotateCheckoutRequestId(status: number) {
   return status >= 400 && status < 500;
 }

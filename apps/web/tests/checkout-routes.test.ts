@@ -7,8 +7,10 @@ const checkoutMocks = vi.hoisted(() => ({
   createSupabaseServerClient: vi.fn(),
   getBillingDeliveryReadiness: vi.fn(),
   getCustomerPolicyReadiness: vi.fn(),
+  hasCheckoutTestAccess: vi.fn(),
   getExistingStripeCustomerId: vi.fn(),
   getGuestCheckoutBrowser: vi.fn(),
+  getGuestCheckoutNetwork: vi.fn(),
   getCheckoutReturnSiteUrl: vi.fn(),
   getStripeClient: vi.fn(),
   reportOperationalError: vi.fn(),
@@ -37,6 +39,9 @@ vi.mock("@/lib/customer-policy", () => ({
   getCheckoutCustomerPolicyReadiness:
     checkoutMocks.getCustomerPolicyReadiness
 }));
+vi.mock("@/lib/checkout-test-access", () => ({
+  hasCheckoutTestAccess: checkoutMocks.hasCheckoutTestAccess
+}));
 const requestId = "00000000-0000-4000-8000-000000000501";
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -54,6 +59,7 @@ vi.mock("@/lib/guest-membership-checkout", () => ({
   consumeGuestMembershipCheckoutRateLimit:
     checkoutMocks.consumeGuestMembershipCheckoutRateLimit,
   getGuestCheckoutBrowser: checkoutMocks.getGuestCheckoutBrowser,
+  getGuestCheckoutNetwork: checkoutMocks.getGuestCheckoutNetwork,
   reserveGuestMembershipCheckout: checkoutMocks.reserveGuestMembershipCheckout,
   setGuestCheckoutBrowserCookie: checkoutMocks.setGuestCheckoutBrowserCookie
 }));
@@ -173,6 +179,7 @@ describe("checkout route validation", () => {
       reasons: [],
       supportUrl: "https://support.soji.co/help"
     });
+    checkoutMocks.hasCheckoutTestAccess.mockReturnValue(true);
     checkoutMocks.getCheckoutReturnSiteUrl.mockReturnValue(
       "http://localhost:3000"
     );
@@ -182,6 +189,7 @@ describe("checkout route validation", () => {
         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       browserId: "00000000-0000-4000-8000-000000000701"
     });
+    checkoutMocks.getGuestCheckoutNetwork.mockReturnValue("b".repeat(64));
     checkoutMocks.consumeCheckoutRateLimit.mockResolvedValue({
       allowed: true,
       ok: true
@@ -219,6 +227,31 @@ describe("checkout route validation", () => {
     );
     expect(response.status).toBe(400);
     expect(checkoutMocks.getStripeClient).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["membership", createSubscriptionCheckout, "/api/checkout/subscription", {
+      planId: "tier_1",
+      requestId
+    }],
+    ["product", createProductCheckout, "/api/checkout/product", {
+      productSlug: "wealth-guide",
+      requestId,
+      returnTo: "products"
+    }]
+  ] as const)("blocks %s Checkout for an unapproved production test browser", async (
+    _,
+    handler,
+    path,
+    body
+  ) => {
+    checkoutMocks.hasCheckoutTestAccess.mockReturnValue(false);
+
+    const response = await handler(request(path, JSON.stringify(body)));
+
+    expect(response.status).toBe(403);
+    expect(checkoutMocks.getStripeClient).not.toHaveBeenCalled();
+    expect(checkoutMocks.createSupabaseServerClient).not.toHaveBeenCalled();
   });
 
   it("rejects client-controlled subscription prices before calling Stripe", async () => {
@@ -690,9 +723,8 @@ describe("checkout route validation", () => {
     expect(response.status).toBe(200);
     expect(createSession).toHaveBeenCalledWith(
       {
-        allow_promotion_codes: true,
         cancel_url:
-          "http://localhost:3000/pricing?checkout=cancelled&guest=1",
+          "http://localhost:3000/checkout/guest-cancel?request_id=00000000-0000-4000-8000-000000000501",
         client_reference_id: "00000000-0000-4000-8000-000000000702",
         consent_collection: { terms_of_service: "required" },
         custom_text: {
@@ -739,9 +771,13 @@ describe("checkout route validation", () => {
         stripeExpiresAt: "2026-07-14T12:35:00.000Z"
       }
     );
+    expect(
+      checkoutMocks.consumeGuestMembershipCheckoutRateLimit
+    ).toHaveBeenCalledWith("a".repeat(64), "b".repeat(64));
     expect(checkoutMocks.setGuestCheckoutBrowserCookie).toHaveBeenCalledWith(
       expect.anything(),
-      "00000000-0000-4000-8000-000000000701"
+      "00000000-0000-4000-8000-000000000701",
+      requestId
     );
   });
 

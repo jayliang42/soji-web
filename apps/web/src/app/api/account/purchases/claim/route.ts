@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   claimGuestMembershipCheckout,
-  getGuestCheckoutBrowser
+  getGuestCheckoutBrowser,
+  getGuestCheckoutRequestId
 } from "@/lib/guest-membership-checkout";
 import { reportOperationalError } from "@/lib/observability";
 import { isMissingAuthSession } from "@/lib/supabase/auth-errors";
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
   const claim = await claimGuestMembershipCheckout({
     browserHmac: browser?.browserHmac ?? null,
     email: user.email,
+    requestId: getGuestCheckoutRequestId(request),
     userId: user.id
   });
   if (!claim.ok) {

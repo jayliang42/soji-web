@@ -94,6 +94,7 @@ export const config = {
     "/login",
     "/auth/callback",
     "/api/admin/:path*",
+    "/api/account/purchases/claim",
     "/api/auth/bootstrap",
     "/api/checkout/:path*"
   ]

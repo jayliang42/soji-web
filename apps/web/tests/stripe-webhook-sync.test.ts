@@ -104,6 +104,7 @@ describe("Stripe webhook state synchronization", () => {
   const claimToken = "00000000-0000-4000-8000-000000000777";
 
   beforeEach(() => {
+    vi.unstubAllEnvs();
     for (const mock of Object.values(syncMocks)) mock.mockReset();
     syncMocks.createSupabaseAdminClient.mockReturnValue({
       from: syncMocks.from,
@@ -125,6 +126,31 @@ describe("Stripe webhook state synchronization", () => {
       ok: true,
       outcome: "refunded"
     });
+  });
+
+  it("never grants production entitlement from a non-live Stripe event", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    const event = {
+      created: 1784124000,
+      data: {
+        object: {
+          id: "cs_test_production_guard",
+          metadata: { productId, userId },
+          mode: "payment",
+          payment_intent: "pi_test_production_guard",
+          payment_status: "paid"
+        }
+      },
+      livemode: false,
+      type: "checkout.session.completed"
+    } as unknown as Stripe.Event;
+
+    await expect(processStripeEvent(event, {} as Stripe)).resolves.toEqual({
+      action: "ignored",
+      reason: "non_live_event_in_production"
+    });
+    expect(syncMocks.rpc).not.toHaveBeenCalled();
+    expect(syncMocks.recordGuestMembershipPayment).not.toHaveBeenCalled();
   });
 
   it("claims each billing processing attempt through one service-role RPC", async () => {
@@ -1466,6 +1492,7 @@ describe("Stripe webhook state synchronization", () => {
     });
     expect(invoicePaymentsList).not.toHaveBeenCalled();
     expect(syncMocks.syncGuestMembershipRefund).toHaveBeenCalledWith({
+      guestCheckoutId,
       observedAt: "2026-07-15T15:00:00.000Z",
       paymentId: "pi_guest_refund",
       status: "refunded"
@@ -1507,6 +1534,7 @@ describe("Stripe webhook state synchronization", () => {
     expect(invoicePaymentsList).not.toHaveBeenCalled();
     expect(syncMocks.syncGuestMembershipDispute).toHaveBeenCalledWith({
       disputeId: "du_guest_dispute",
+      guestCheckoutId,
       observedAt: "2026-07-15T15:00:00.000Z",
       paymentId: "pi_guest_dispute",
       status: "needs_response"
@@ -1514,6 +1542,7 @@ describe("Stripe webhook state synchronization", () => {
   });
 
   it("closes an expired guest Checkout without granting access", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
     const event = {
       created: 1784127600,
       data: {
@@ -1522,6 +1551,7 @@ describe("Stripe webhook state synchronization", () => {
           metadata: { kind: "guest_membership" }
         }
       },
+      livemode: false,
       type: "checkout.session.expired"
     } as unknown as Stripe.Event;
 

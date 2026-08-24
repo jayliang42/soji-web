@@ -7,7 +7,7 @@ const guestMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/env", () => ({
-  env: { SUPABASE_SERVICE_ROLE_KEY: "test-service-role-secret" }
+  env: { GUEST_CHECKOUT_HMAC_SECRET: "test-guest-checkout-hmac-secret-value" }
 }));
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: guestMocks.createSupabaseAdminClient
@@ -17,6 +17,7 @@ import {
   claimGuestMembershipCheckout,
   consumeGuestMembershipCheckoutRateLimit,
   getGuestCheckoutBrowser,
+  getGuestCheckoutNetwork,
   recordGuestMembershipPayment,
   reserveGuestMembershipCheckout,
   setGuestCheckoutBrowserCookie
@@ -42,12 +43,19 @@ describe("guest membership checkout service", () => {
     expect(browser?.browserHmac).toMatch(/^[a-f0-9]{64}$/);
 
     const response = NextResponse.json({ ok: true });
-    setGuestCheckoutBrowserCookie(response, browserId);
+    setGuestCheckoutBrowserCookie(
+      response,
+      browserId,
+      "00000000-0000-4000-8000-000000000904"
+    );
     expect(response.headers.get("set-cookie")).toContain(
       `soji_guest_checkout_browser=${browserId}`
     );
     expect(response.headers.get("set-cookie")).toContain("HttpOnly");
     expect(response.headers.get("set-cookie")).toContain("SameSite=lax");
+    expect(response.headers.get("set-cookie")).toContain(
+      "soji_guest_checkout_request=00000000-0000-4000-8000-000000000904"
+    );
   });
 
   it("maps the service-role guest limiter response", async () => {
@@ -63,7 +71,7 @@ describe("guest membership checkout service", () => {
     });
 
     await expect(
-      consumeGuestMembershipCheckoutRateLimit("a".repeat(64))
+      consumeGuestMembershipCheckoutRateLimit("a".repeat(64), "b".repeat(64))
     ).resolves.toEqual({
       allowed: false,
       ok: true,
@@ -72,8 +80,21 @@ describe("guest membership checkout service", () => {
     });
     expect(guestMocks.rpc).toHaveBeenCalledWith(
       "consume_guest_full_access_checkout_rate_limit",
-      { p_browser_hmac: "a".repeat(64) }
+      {
+        p_browser_hmac: "a".repeat(64),
+        p_network_hmac: "b".repeat(64)
+      }
     );
+  });
+
+  it("uses Vercel's trusted client address for the network limiter", () => {
+    vi.stubEnv("VERCEL", "1");
+    const request = new NextRequest("https://soji.example/pricing", {
+      headers: { "x-vercel-forwarded-for": "203.0.113.9" }
+    });
+
+    expect(getGuestCheckoutNetwork(request)).toMatch(/^[a-f0-9]{64}$/);
+    vi.unstubAllEnvs();
   });
 
   it("accepts only the fixed server-side guest reservation contract", async () => {
@@ -113,6 +134,7 @@ describe("guest membership checkout service", () => {
       claimGuestMembershipCheckout({
         browserHmac: "c".repeat(64),
         email: " Buyer@Example.com ",
+        requestId: "00000000-0000-4000-8000-000000000904",
         userId
       })
     ).resolves.toEqual({ ok: true, status: "claimed" });
@@ -122,6 +144,9 @@ describe("guest membership checkout service", () => {
       Record<string, unknown>
     ];
     expect(args.p_verified_email_hmac).toMatch(/^[a-f0-9]{64}$/);
+    expect(args.p_request_id).toBe(
+      "00000000-0000-4000-8000-000000000904"
+    );
     expect(JSON.stringify(args)).not.toContain("buyer@example.com");
   });
 

@@ -651,6 +651,7 @@ async function syncRefund(
   }
   if (classification.kind === "guest_membership") {
     const result = await syncGuestMembershipRefund({
+      guestCheckoutId: classification.guestCheckoutId,
       observedAt,
       paymentId: classification.paymentId,
       status
@@ -744,6 +745,7 @@ async function syncDispute(
   if (classification.kind === "guest_membership") {
     const result = await syncGuestMembershipDispute({
       disputeId: dispute.id,
+      guestCheckoutId: classification.guestCheckoutId,
       observedAt,
       paymentId: classification.paymentId,
       status: dispute.status
@@ -785,6 +787,18 @@ async function syncDispute(
 export async function processStripeEvent(event: Stripe.Event, stripe: Stripe) {
   const observedAt =
     stripeTimestampToIso(event.created) ?? new Date().toISOString();
+  const isProductionNonLiveEvent =
+    process.env.VERCEL_ENV === "production" && event.livemode === false;
+  const isGuestCheckoutExpiry =
+    event.type === "checkout.session.expired" &&
+    event.data.object.metadata?.kind === "guest_membership";
+
+  if (isProductionNonLiveEvent && !isGuestCheckoutExpiry) {
+    return {
+      action: "ignored",
+      reason: "non_live_event_in_production"
+    } as const;
+  }
 
   if (
     event.type === "checkout.session.completed" ||

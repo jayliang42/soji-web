@@ -38,13 +38,14 @@
     "typecheck": "corepack pnpm -r --if-present typecheck"
   },
   "devDependencies": {
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.3",
     "turbo": "2.9.14",
     "typescript": "^5.8.2"
   },
   "pnpm": {
     "overrides": {
-      "next>postcss": "8.5.19",
+      "next>postcss": "8.5.23",
+      "next>sharp": "0.35.3",
       "shell-quote": "1.8.4",
       "stripe>qs": "6.15.2"
     }

@@ -4,6 +4,7 @@ import {
   isBillingDeliveryReady
 } from "@/lib/billing-readiness";
 import { productCheckoutPayloadSchema } from "@/lib/checkout";
+import { hasCheckoutTestAccess } from "@/lib/checkout-test-access";
 import { getCheckoutCustomerPolicyReadiness } from "@/lib/customer-policy";
 import { getCheckoutReturnSiteUrl } from "@/lib/env";
 import { reportOperationalError } from "@/lib/observability";
@@ -24,6 +25,13 @@ export async function POST(request: NextRequest) {
 
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+
+  if (!hasCheckoutTestAccess(request)) {
+    return NextResponse.json(
+      { error: "Checkout test access is restricted." },
+      { status: 403 }
+    );
   }
 
   if (!getCheckoutCustomerPolicyReadiness().ready) {

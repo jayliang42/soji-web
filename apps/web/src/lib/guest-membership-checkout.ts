@@ -4,20 +4,15 @@ import { env } from "@/lib/env";
 import {
   getGuestCheckoutBrowserHmac,
   getGuestCheckoutEmailHmac,
+  getGuestCheckoutNetworkHmac,
   guestCheckoutBrowserCookieName,
+  guestCheckoutRequestCookieName,
   resolveGuestCheckoutBrowserId
 } from "@/lib/guest-checkout-identity";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-type RpcError = { message: string };
-type RpcResult = { data: unknown; error: RpcError | null };
-type UntypedRpcClient = {
-  rpc: (name: string, args: Record<string, unknown>) => PromiseLike<RpcResult>;
-};
-
 function getRpcClient() {
-  const supabase = createSupabaseAdminClient();
-  return supabase ? (supabase as unknown as UntypedRpcClient) : null;
+  return createSupabaseAdminClient();
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -45,15 +40,29 @@ export function getGuestCheckoutBrowser(request: NextRequest) {
   );
   const browserHmac = getGuestCheckoutBrowserHmac(
     browserId,
-    env.SUPABASE_SERVICE_ROLE_KEY
+    env.GUEST_CHECKOUT_HMAC_SECRET
   );
 
   return browserHmac ? { browserHmac, browserId } : null;
 }
 
+export function getGuestCheckoutNetwork(request: NextRequest) {
+  const address =
+    process.env.VERCEL === "1"
+      ? request.headers.get("x-vercel-forwarded-for")
+      : process.env.NODE_ENV === "production"
+        ? null
+        : request.headers.get("x-forwarded-for");
+  return getGuestCheckoutNetworkHmac(
+    address,
+    env.GUEST_CHECKOUT_HMAC_SECRET
+  );
+}
+
 export function setGuestCheckoutBrowserCookie(
   response: NextResponse,
-  browserId: string
+  browserId: string,
+  requestId?: string
 ) {
   response.cookies.set({
     httpOnly: true,
@@ -64,10 +73,32 @@ export function setGuestCheckoutBrowserCookie(
     secure: process.env.NODE_ENV === "production",
     value: browserId
   });
+  if (requestId) {
+    response.cookies.set({
+      httpOnly: true,
+      maxAge: 24 * 60 * 60,
+      name: guestCheckoutRequestCookieName,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      value: requestId
+    });
+  }
+}
+
+export function getGuestCheckoutRequestId(request: NextRequest) {
+  const value = request.cookies.get(guestCheckoutRequestCookieName)?.value;
+  return value &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value
+    )
+    ? value
+    : null;
 }
 
 export async function consumeGuestMembershipCheckoutRateLimit(
-  browserHmac: string
+  browserHmac: string,
+  networkHmac: string
 ) {
   const supabase = getRpcClient();
   if (!supabase) {
@@ -76,7 +107,10 @@ export async function consumeGuestMembershipCheckoutRateLimit(
 
   const { data, error } = await supabase.rpc(
     "consume_guest_full_access_checkout_rate_limit",
-    { p_browser_hmac: browserHmac }
+    {
+      p_browser_hmac: browserHmac,
+      p_network_hmac: networkHmac
+    }
   );
   const row = getSingleRow(data);
   if (
@@ -191,15 +225,17 @@ export async function attachGuestMembershipCheckoutSession({
 export async function claimGuestMembershipCheckout({
   browserHmac,
   email,
+  requestId,
   userId
 }: {
   browserHmac: string | null;
   email: string;
+  requestId: string | null;
   userId: string;
 }) {
   const verifiedEmailHmac = getGuestCheckoutEmailHmac(
     email,
-    env.SUPABASE_SERVICE_ROLE_KEY
+    env.GUEST_CHECKOUT_HMAC_SECRET
   );
   const supabase = getRpcClient();
   if (!supabase || !verifiedEmailHmac) {
@@ -210,6 +246,7 @@ export async function claimGuestMembershipCheckout({
     "claim_guest_full_access_checkout",
     {
       p_browser_hmac: browserHmac ?? undefined,
+      p_request_id: requestId ?? undefined,
       p_user_id: userId,
       p_verified_email_hmac: verifiedEmailHmac
     }
@@ -251,7 +288,7 @@ export async function recordGuestMembershipPayment({
 }) {
   const emailHmac = getGuestCheckoutEmailHmac(
     email,
-    env.SUPABASE_SERVICE_ROLE_KEY
+    env.GUEST_CHECKOUT_HMAC_SECRET
   );
   const supabase = getRpcClient();
   if (!supabase || !emailHmac) {
@@ -287,10 +324,12 @@ export async function recordGuestMembershipPayment({
 }
 
 export async function syncGuestMembershipRefund({
+  guestCheckoutId,
   observedAt,
   paymentId,
   status
 }: {
+  guestCheckoutId: string;
   observedAt: string;
   paymentId: string;
   status: "partially_refunded" | "refunded";
@@ -303,6 +342,7 @@ export async function syncGuestMembershipRefund({
   const { data, error } = await supabase.rpc(
     "sync_stripe_guest_full_access_refund",
     {
+      p_guest_checkout_id: guestCheckoutId,
       p_observed_at: observedAt,
       p_provider_payment_id: paymentId,
       p_status: status
@@ -321,11 +361,13 @@ export async function syncGuestMembershipRefund({
 
 export async function syncGuestMembershipDispute({
   disputeId,
+  guestCheckoutId,
   observedAt,
   paymentId,
   status
 }: {
   disputeId: string;
+  guestCheckoutId: string;
   observedAt: string;
   paymentId: string;
   status: string;
@@ -338,6 +380,7 @@ export async function syncGuestMembershipDispute({
   const { data, error } = await supabase.rpc(
     "sync_stripe_guest_full_access_dispute",
     {
+      p_guest_checkout_id: guestCheckoutId,
       p_observed_at: observedAt,
       p_provider_dispute_id: disputeId,
       p_provider_payment_id: paymentId,
@@ -377,6 +420,84 @@ export async function closeGuestMembershipCheckoutBySession({
       p_reason: reason,
       p_request_id: undefined,
       p_stripe_checkout_session_id: sessionId
+    }
+  );
+  if (error || typeof data !== "string") {
+    return {
+      ok: false,
+      reason: error?.message ?? "guest_checkout_close_invalid"
+    } as const;
+  }
+
+  return { ok: true, status: data } as const;
+}
+
+export async function getGuestMembershipCheckoutForCancel({
+  browserHmac,
+  requestId
+}: {
+  browserHmac: string;
+  requestId: string;
+}) {
+  const supabase = getRpcClient();
+  if (!supabase) {
+    return { ok: false, reason: "supabase_service_role_not_configured" } as const;
+  }
+
+  const { data, error } = await supabase.rpc(
+    "get_guest_full_access_checkout_for_cancel",
+    {
+      p_browser_hmac: browserHmac,
+      p_request_id: requestId
+    }
+  );
+  const row = getSingleRow(data);
+  if (
+    error ||
+    !row ||
+    !isUuid(row.checkout_id) ||
+    typeof row.stripe_checkout_session_id !== "string" ||
+    row.status !== "created" ||
+    typeof row.stripe_expires_at !== "string"
+  ) {
+    return {
+      ok: false,
+      reason: error?.message ?? "guest_checkout_cancel_lookup_invalid"
+    } as const;
+  }
+
+  return {
+    checkoutId: row.checkout_id,
+    expiresAt: row.stripe_expires_at,
+    ok: true,
+    sessionId: row.stripe_checkout_session_id,
+    status: row.status
+  } as const;
+}
+
+export async function closeGuestMembershipCheckout({
+  browserHmac,
+  observedAt,
+  reason,
+  requestId
+}: {
+  browserHmac: string;
+  observedAt: string;
+  reason: "cancelled" | "expired";
+  requestId: string;
+}) {
+  const supabase = getRpcClient();
+  if (!supabase) {
+    return { ok: false, reason: "supabase_service_role_not_configured" } as const;
+  }
+
+  const { data, error } = await supabase.rpc(
+    "close_guest_full_access_checkout",
+    {
+      p_browser_hmac: browserHmac,
+      p_observed_at: observedAt,
+      p_reason: reason,
+      p_request_id: requestId
     }
   );
   if (error || typeof data !== "string") {

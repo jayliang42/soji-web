@@ -25,6 +25,21 @@ describe("middleware mutation security", () => {
 
   it("uses the Node.js runtime required by the Supabase SSR client", () => {
     expect(config.runtime).toBe("nodejs");
+    expect(config.matcher).toContain("/api/account/purchases/claim");
+  });
+
+  it("rejects a cross-site guest purchase claim before route processing", async () => {
+    const response = await middleware(
+      new NextRequest("https://soji.example/api/account/purchases/claim", {
+        headers: {
+          Origin: "https://attacker.example",
+          "Sec-Fetch-Site": "cross-site"
+        },
+        method: "POST"
+      })
+    );
+
+    expect(response.status).toBe(403);
   });
 
   it("rejects a cross-site checkout mutation before route processing", async () => {

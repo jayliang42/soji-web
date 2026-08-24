@@ -5,12 +5,14 @@ const claimMocks = vi.hoisted(() => ({
   claimGuestMembershipCheckout: vi.fn(),
   createSupabaseServerClient: vi.fn(),
   getGuestCheckoutBrowser: vi.fn(),
+  getGuestCheckoutRequestId: vi.fn(),
   reportOperationalError: vi.fn()
 }));
 
 vi.mock("@/lib/guest-membership-checkout", () => ({
   claimGuestMembershipCheckout: claimMocks.claimGuestMembershipCheckout,
-  getGuestCheckoutBrowser: claimMocks.getGuestCheckoutBrowser
+  getGuestCheckoutBrowser: claimMocks.getGuestCheckoutBrowser,
+  getGuestCheckoutRequestId: claimMocks.getGuestCheckoutRequestId
 }));
 vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: claimMocks.createSupabaseServerClient
@@ -60,6 +62,9 @@ describe("guest purchase claim route", () => {
         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       browserId: "00000000-0000-4000-8000-000000000802"
     });
+    claimMocks.getGuestCheckoutRequestId.mockReturnValue(
+      "00000000-0000-4000-8000-000000000803"
+    );
     claimMocks.claimGuestMembershipCheckout.mockResolvedValue({
       ok: true,
       status: "claimed"
@@ -82,6 +87,7 @@ describe("guest purchase claim route", () => {
         browserHmac:
           "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         email: "buyer@example.com",
+        requestId: "00000000-0000-4000-8000-000000000803",
         userId: "00000000-0000-4000-8000-000000000801"
       });
     }

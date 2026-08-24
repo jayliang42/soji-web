@@ -194,6 +194,116 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_full_access_checkout_rate_limits: {
+        Row: {
+          dimension: string
+          identity_hmac: string
+          request_count: number
+          updated_at: string
+          window_started_at: string
+        }
+        Insert: {
+          dimension: string
+          identity_hmac: string
+          request_count: number
+          updated_at?: string
+          window_started_at: string
+        }
+        Update: {
+          dimension?: string
+          identity_hmac?: string
+          request_count?: number
+          updated_at?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
+      guest_full_access_checkouts: {
+        Row: {
+          browser_hmac: string
+          claim_email_hmac: string | null
+          claimed_at: string | null
+          claimed_user_id: string | null
+          created_at: string
+          dispute_id: string | null
+          dispute_observed_at: string | null
+          dispute_status: string | null
+          expected_amount_cents: number
+          expected_currency: string
+          id: string
+          payment_observed_at: string | null
+          plan_id: Database["public"]["Enums"]["membership_tier"]
+          provider_payment_id: string | null
+          provider_payment_status: string | null
+          refund_observed_at: string | null
+          refund_status: string | null
+          request_id: string
+          status: string
+          status_observed_at: string
+          stripe_checkout_session_id: string | null
+          stripe_expires_at: string
+          updated_at: string
+        }
+        Insert: {
+          browser_hmac: string
+          claim_email_hmac?: string | null
+          claimed_at?: string | null
+          claimed_user_id?: string | null
+          created_at?: string
+          dispute_id?: string | null
+          dispute_observed_at?: string | null
+          dispute_status?: string | null
+          expected_amount_cents?: number
+          expected_currency?: string
+          id?: string
+          payment_observed_at?: string | null
+          plan_id?: Database["public"]["Enums"]["membership_tier"]
+          provider_payment_id?: string | null
+          provider_payment_status?: string | null
+          refund_observed_at?: string | null
+          refund_status?: string | null
+          request_id: string
+          status?: string
+          status_observed_at?: string
+          stripe_checkout_session_id?: string | null
+          stripe_expires_at: string
+          updated_at?: string
+        }
+        Update: {
+          browser_hmac?: string
+          claim_email_hmac?: string | null
+          claimed_at?: string | null
+          claimed_user_id?: string | null
+          created_at?: string
+          dispute_id?: string | null
+          dispute_observed_at?: string | null
+          dispute_status?: string | null
+          expected_amount_cents?: number
+          expected_currency?: string
+          id?: string
+          payment_observed_at?: string | null
+          plan_id?: Database["public"]["Enums"]["membership_tier"]
+          provider_payment_id?: string | null
+          provider_payment_status?: string | null
+          refund_observed_at?: string | null
+          refund_status?: string | null
+          request_id?: string
+          status?: string
+          status_observed_at?: string
+          stripe_checkout_session_id?: string | null
+          stripe_expires_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_full_access_checkouts_claimed_user_id_fkey"
+            columns: ["claimed_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membership_plans: {
         Row: {
           billing_type: string
@@ -954,6 +1064,18 @@ export type Database = {
           slug: string
         }[]
       }
+      attach_guest_full_access_checkout: {
+        Args: {
+          p_browser_hmac: string
+          p_request_id: string
+          p_stripe_checkout_session_id: string
+          p_stripe_expires_at: string
+        }
+        Returns: {
+          checkout_id: string
+          outcome: string
+        }[]
+      }
       begin_billing_event_attempt: {
         Args: { p_billing_event_id: string }
         Returns: Json
@@ -976,6 +1098,18 @@ export type Database = {
         }[]
       }
       bootstrap_user_profile: { Args: never; Returns: string }
+      claim_guest_full_access_checkout: {
+        Args: {
+          p_browser_hmac?: string
+          p_request_id?: string
+          p_user_id: string
+          p_verified_email_hmac: string
+        }
+        Returns: {
+          effective_tier: Database["public"]["Enums"]["membership_tier"]
+          outcome: string
+        }[]
+      }
       claim_product_asset_cleanup_jobs: {
         Args: { p_cleanup_job_id?: string; p_limit?: number }
         Returns: {
@@ -999,6 +1133,16 @@ export type Database = {
           outcome: string
         }[]
       }
+      close_guest_full_access_checkout: {
+        Args: {
+          p_browser_hmac?: string
+          p_observed_at?: string
+          p_reason: string
+          p_request_id?: string
+          p_stripe_checkout_session_id?: string
+        }
+        Returns: string
+      }
       close_missing_stripe_customer_subscriptions: {
         Args: {
           p_provider_customer_id: string
@@ -1009,6 +1153,14 @@ export type Database = {
       }
       consume_checkout_rate_limit: {
         Args: { p_action: string }
+        Returns: {
+          allowed: boolean
+          remaining: number
+          reset_at: string
+        }[]
+      }
+      consume_guest_full_access_checkout_rate_limit: {
+        Args: { p_browser_hmac: string; p_network_hmac: string }
         Returns: {
           allowed: boolean
           remaining: number
@@ -1039,6 +1191,15 @@ export type Database = {
           p_succeeded: boolean
         }
         Returns: Json
+      }
+      get_guest_full_access_checkout_for_cancel: {
+        Args: { p_browser_hmac: string; p_request_id: string }
+        Returns: {
+          checkout_id: string
+          status: string
+          stripe_checkout_session_id: string
+          stripe_expires_at: string
+        }[]
       }
       get_phase2_billing_schema_readiness: {
         Args: never
@@ -1097,6 +1258,18 @@ export type Database = {
           status: string
         }[]
       }
+      record_stripe_guest_full_access_payment: {
+        Args: {
+          p_amount_total: number
+          p_currency: string
+          p_email_hmac: string
+          p_observed_at?: string
+          p_payment_status: string
+          p_provider_payment_id: string
+          p_stripe_checkout_session_id: string
+        }
+        Returns: string
+      }
       release_product_checkout: {
         Args: { p_checkout_expires_at: string; p_product_slug: string }
         Returns: boolean
@@ -1124,6 +1297,16 @@ export type Database = {
           size_bytes: number
         }[]
       }
+      reserve_guest_full_access_checkout: {
+        Args: { p_browser_hmac: string; p_request_id: string }
+        Returns: {
+          checkout_id: string
+          expected_amount_cents: number
+          expected_currency: string
+          outcome: string
+          stripe_expires_at: string
+        }[]
+      }
       service_role_readiness: { Args: never; Returns: boolean }
       set_user_access_role: {
         Args: {
@@ -1134,6 +1317,31 @@ export type Database = {
           assigned_role: Database["public"]["Enums"]["user_role"]
           changed_at: string
           previous_role: Database["public"]["Enums"]["user_role"]
+        }[]
+      }
+      sync_stripe_guest_full_access_dispute: {
+        Args: {
+          p_guest_checkout_id: string
+          p_observed_at?: string
+          p_provider_dispute_id: string
+          p_provider_payment_id: string
+          p_status: string
+        }
+        Returns: {
+          effective_tier: Database["public"]["Enums"]["membership_tier"]
+          outcome: string
+        }[]
+      }
+      sync_stripe_guest_full_access_refund: {
+        Args: {
+          p_guest_checkout_id: string
+          p_observed_at?: string
+          p_provider_payment_id: string
+          p_status: string
+        }
+        Returns: {
+          effective_tier: Database["public"]["Enums"]["membership_tier"]
+          outcome: string
         }[]
       }
       sync_stripe_membership_dispute: {

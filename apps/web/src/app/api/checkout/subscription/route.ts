@@ -6,12 +6,14 @@ import {
   isBillingDeliveryReady
 } from "@/lib/billing-readiness";
 import { subscriptionCheckoutPayloadSchema } from "@/lib/checkout";
+import { hasCheckoutTestAccess } from "@/lib/checkout-test-access";
 import { getCheckoutCustomerPolicyReadiness } from "@/lib/customer-policy";
 import { getCheckoutReturnSiteUrl } from "@/lib/env";
 import {
   attachGuestMembershipCheckoutSession,
   consumeGuestMembershipCheckoutRateLimit,
   getGuestCheckoutBrowser,
+  getGuestCheckoutNetwork,
   reserveGuestMembershipCheckout,
   setGuestCheckoutBrowserCookie
 } from "@/lib/guest-membership-checkout";
@@ -58,7 +60,8 @@ async function createGuestMembershipCheckout({
   stripe: NonNullable<ReturnType<typeof getStripeClient>>;
 }) {
   const browser = getGuestCheckoutBrowser(request);
-  if (!browser) {
+  const networkHmac = getGuestCheckoutNetwork(request);
+  if (!browser || !networkHmac) {
     return NextResponse.json(
       { error: "Checkout protection is temporarily unavailable." },
       { status: 503 }
@@ -66,12 +69,13 @@ async function createGuestMembershipCheckout({
   }
   const respond = (body: Record<string, unknown>, init?: ResponseInit) => {
     const response = NextResponse.json(body, init);
-    setGuestCheckoutBrowserCookie(response, browser.browserId);
+    setGuestCheckoutBrowserCookie(response, browser.browserId, requestId);
     return response;
   };
 
   const rateLimit = await consumeGuestMembershipCheckoutRateLimit(
-    browser.browserHmac
+    browser.browserHmac,
+    networkHmac
   );
   if (!rateLimit.ok) {
     await reportOperationalError(
@@ -159,8 +163,9 @@ async function createGuestMembershipCheckout({
   try {
     session = await stripe.checkout.sessions.create(
       {
-        allow_promotion_codes: true,
-        cancel_url: `${siteUrl}/pricing?checkout=cancelled&guest=1`,
+        cancel_url: `${siteUrl}/checkout/guest-cancel?request_id=${encodeURIComponent(
+          requestId
+        )}`,
         client_reference_id: reservation.checkoutId,
         consent_collection: { terms_of_service: "required" },
         custom_text: {
@@ -232,6 +237,13 @@ export async function POST(request: NextRequest) {
 
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+
+  if (!hasCheckoutTestAccess(request)) {
+    return NextResponse.json(
+      { error: "Checkout test access is restricted." },
+      { status: 403 }
+    );
   }
 
   if (!getCheckoutCustomerPolicyReadiness().ready) {
