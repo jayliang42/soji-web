@@ -108,37 +108,37 @@ describe("content detail reading experience", () => {
       })
     );
 
-    expect(html).toContain("Back to Library");
-    expect(html).toContain("Guide details");
-    expect(html).toContain("Share guide");
+    expect(html).toContain("返回内容库");
+    expect(html).toContain("指南详情");
+    expect(html).toContain("分享指南");
     expect(html).toContain(
-      'aria-label="Reading progress for A Calmer Decision"'
+      'aria-label="《A Calmer Decision》的阅读进度"'
     );
     expect(html).toContain('id="guide-reading-body"');
     expect(html).toContain(
-      'aria-label="Save A Calmer Decision for later"'
+      'aria-label="收藏《A Calmer Decision》稍后阅读"'
     );
-    expect(html).toContain("1 min public opening");
-    expect(html).toContain("Public opening complete");
+    expect(html).toContain("约 1 分钟公开预览");
+    expect(html).toContain("免费内容已读完");
     expect(html).toContain('href="/pricing#plan-tier_1"');
     expect(html).toContain('href="/login?next=%2Flibrary%2Freader-guide"');
     expect(html).toContain("decision-making");
     expect(html).toContain("family");
     expect(html).toContain('href="/library?q=decision-making"');
     expect(html).toContain('href="/library?q=family"');
-    expect(html).toContain('aria-label="Browse guides about family"');
+    expect(html).toContain('aria-label="浏览关于 family 的指南"');
     expect(html).not.toContain(">demo<");
     expect(html).not.toContain(">supporting<");
     expect(html).not.toContain("PRIVATE MEMBER BODY");
-    expect(html).not.toContain("In this guide");
+    expect(html).not.toContain("本文目录");
     expect(html).not.toContain("Choose a next move");
-    expect(html).toContain("Keep reading");
-    expect(html).toContain("Continue with a nearby question.");
+    expect(html).toContain("继续阅读");
+    expect(html).toContain("从相关问题继续探索");
     expect(html).toContain("A Shared Family Question");
     expect(html).toContain("The Next Decision");
     expect(html).toContain("A Planning Template");
-    expect(html).toContain("Public · Full article");
-    expect(html).toContain("Public preview");
+    expect(html).toContain("公开内容 · 可阅读全文");
+    expect(html).toContain("公开预览");
     expect(html).toContain('href="/library/related-public"');
     expect(html).toContain('href="/library/related-member"');
     expect(html).toContain('href="/library/related-template"');
@@ -169,22 +169,22 @@ describe("content detail reading experience", () => {
     );
 
     expect(html).toContain("PRIVATE MEMBER BODY");
-    expect(html).toContain("In this guide");
+    expect(html).toContain("本文目录");
     expect(html).toContain('href="#full-guide"');
     expect(html).toContain('href="#choose-a-next-move"');
     expect(html).toContain('id="full-guide"');
     expect(html).toContain('id="choose-a-next-move"');
-    expect(html).toContain("Choose the next useful step");
+    expect(html).toContain("选择下一步最有帮助的内容");
     expect(html).toContain('href="/library"');
     expect(html).toContain('href="/products"');
     expect(html).toContain('href="/office-hours"');
-    expect(html).toContain("Keep reading");
-    expect(html).toContain("Included in your membership");
-    expect(html).toContain("Included with Full Access membership");
+    expect(html).toContain("继续阅读");
+    expect(html).toContain("已包含在你的会员权益中");
+    expect(html).toContain("Full Access 会员权益可读");
     expect(html).not.toContain("RELATED MEMBER BODY");
     expect(html).not.toContain("RELATED TEMPLATE BODY");
-    expect(html).not.toContain("Public opening complete");
-    expect(html).not.toContain("Compare membership");
+    expect(html).not.toContain("免费内容已读完");
+    expect(html).not.toContain("比较解锁方式");
   });
 
   it("does not mount reading progress when no guide body is visible", async () => {

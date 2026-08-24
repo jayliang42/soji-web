@@ -125,7 +125,7 @@ describe("content card", () => {
     expect(html).toContain('href="/library?q=planning"');
     expect(html).toContain('aria-label="浏览与planning相关的内容"');
     expect(html).toContain("min-h-11");
-    expect(html).toContain('aria-label="Save March 2026 Update Pack for later"');
+    expect(html).toContain('aria-label="收藏《March 2026 Update Pack》稍后阅读"');
   });
 
   it("supports an h3 title when nested below a related-reading heading", () => {

@@ -202,7 +202,7 @@ describe("Admin Billing incident ledger", () => {
       "Billing event processed successfully."
     );
     expect(getBillingRetryResultMessage("ignored")).toBe(
-      "Billing event stored; this event type has no Soji handler."
+      "Billing event stored; this event type has no GS学院 handler."
     );
     expect(getBillingRetryResultMessage("active")).toContain(
       "already being processed"
@@ -496,7 +496,7 @@ describe("Admin Billing incident ledger", () => {
     const html = render([baseEvent]);
 
     expect(html).toContain(
-      "Signed Stripe receipts and their independent Soji processing outcomes."
+      "Signed Stripe receipts and their independent GS学院 processing outcomes."
     );
     expect(html).toContain("Reconcile from Stripe");
     expect(html).toContain("sub_… or cus_…");

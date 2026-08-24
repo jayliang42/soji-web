@@ -326,6 +326,12 @@ export default async function ContentDetailPage({
                     </Link>
                     <Link
                       className="inline-flex min-h-11 items-center text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
+                      href="/products"
+                    >
+                      浏览实用工具
+                    </Link>
+                    <Link
+                      className="inline-flex min-h-11 items-center text-clay underline decoration-clay/35 underline-offset-4 hover:decoration-clay"
                       href="/office-hours"
                     >
                       查看线上答疑
