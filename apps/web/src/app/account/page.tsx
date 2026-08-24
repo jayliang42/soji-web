@@ -6,7 +6,11 @@ import { DataUnavailable } from "@/components/data-state";
 import { MembershipPlanGrid } from "@/components/membership-plan-grid";
 import { ProfileSetupRetry } from "@/components/profile-setup-retry";
 import { SectionShell } from "@/components/section-shell";
-import { getAccountPurchases } from "@/lib/account-purchases";
+import {
+  getAccountMembershipPurchases,
+  getAccountPurchases,
+  type AccountMembershipPurchase
+} from "@/lib/account-purchases";
 import {
   getAccountSubscriptions,
   getSubscriptionBillingPresentation,
@@ -106,6 +110,86 @@ interface PurchasePresentation {
   canDownload: boolean;
   primaryLabel: string;
   tone: "error" | "neutral" | "success" | "warning";
+}
+
+interface MembershipPurchasePresentation {
+  accessLabel: string;
+  primaryLabel: string;
+  tone: "error" | "neutral" | "success" | "warning";
+}
+
+const openMembershipDisputeStatuses = new Set([
+  "needs_response",
+  "under_review",
+  "warning_needs_response",
+  "warning_under_review"
+]);
+const resolvedMembershipDisputeStatuses = new Set([
+  "prevented",
+  "warning_closed",
+  "won"
+]);
+
+function getMembershipPurchasePresentation({
+  disputeStatus,
+  status
+}: Pick<AccountMembershipPurchase, "disputeStatus" | "status">): MembershipPurchasePresentation {
+  if (disputeStatus === "lost") {
+    return {
+      accessLabel: "Access ended",
+      primaryLabel: "Dispute lost",
+      tone: "error"
+    };
+  }
+  if (
+    disputeStatus &&
+    openMembershipDisputeStatuses.has(disputeStatus)
+  ) {
+    return {
+      accessLabel: "Access paused",
+      primaryLabel: "Payment disputed",
+      tone: "warning"
+    };
+  }
+  if (status === "refunded") {
+    return {
+      accessLabel: "Access ended",
+      primaryLabel: "Refunded",
+      tone: "error"
+    };
+  }
+  if (status === "partially_refunded") {
+    return {
+      accessLabel: "Full Access active",
+      primaryLabel: "Partially refunded",
+      tone: "success"
+    };
+  }
+  if (status === "paid" || status === "no_payment_required") {
+    const paymentLabel =
+      status === "paid" ? "Payment confirmed" : "No payment required";
+    return {
+      accessLabel: "Full Access active",
+      primaryLabel:
+        disputeStatus && resolvedMembershipDisputeStatuses.has(disputeStatus)
+          ? `${paymentLabel} · Dispute resolved`
+          : paymentLabel,
+      tone: "success"
+    };
+  }
+  return {
+    accessLabel: "Access unavailable",
+    primaryLabel: "Status unavailable",
+    tone: "neutral"
+  };
+}
+
+function getBillingProviderLabel(provider: AccountMembershipPurchase["provider"]) {
+  return {
+    app_store: "App Store",
+    play_store: "Google Play",
+    stripe: "Stripe"
+  }[provider];
 }
 
 function getPurchasePresentation({
@@ -259,12 +343,18 @@ export default async function AccountPage({
     ? null
     : getPlanByTier(user?.tier ?? "free");
   const entitlements = snapshot.entitlements;
-  const [checkoutReturn, purchases, subscriptions] = await Promise.all([
+  const [
+    checkoutReturn,
+    membershipPurchases,
+    purchases,
+    subscriptions
+  ] = await Promise.all([
     getCheckoutReturnStatus({
       kind: getReturnKind(params),
       sessionId: params.session_id,
       userId: user?.id
     }),
+    getAccountMembershipPurchases(user?.id, snapshot.source),
     getAccountPurchases(user?.id, snapshot.source),
     getAccountSubscriptions(user?.id, snapshot.source)
   ]);
@@ -642,12 +732,12 @@ export default async function AccountPage({
               <div>
                 <p className="text-sm font-bold uppercase text-cocoa/70">Billing record</p>
                 <h2 id="purchases-heading" className="mt-2 font-display text-2xl font-semibold text-cocoa">
-                  Standalone purchases
+                  Purchase history
                 </h2>
               </div>
             </div>
 
-            {accountTruthUnavailable || purchases.error ? (
+            {accountTruthUnavailable || membershipPurchases.error || purchases.error ? (
               <div className="mt-4">
                 <DataUnavailable
                   title={
@@ -657,13 +747,51 @@ export default async function AccountPage({
                   }
                   description={
                     accountTruthUnavailable
-                      ? "Purchase status and downloads are unavailable until Account services recover. Refresh before relying on delivery or purchasing again."
+                      ? "Payment status and downloads are unavailable until Account services recover. Refresh before relying on delivery or purchasing again."
                       : "Payment status is being shown conservatively. Try again before purchasing the same item."
                   }
                 />
               </div>
-            ) : purchases.items.length > 0 ? (
+            ) : membershipPurchases.items.length > 0 || purchases.items.length > 0 ? (
               <div className="mt-4 divide-y divide-dune border-y border-dune">
+                {membershipPurchases.items.map((purchase) => {
+                  const presentation =
+                    getMembershipPurchasePresentation(purchase);
+                  return (
+                    <article
+                      className="grid gap-4 py-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:gap-6"
+                      key={`membership-${purchase.id}`}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/55">
+                          One-time membership
+                        </p>
+                        <h3 className="mt-2 break-words font-semibold text-cocoa">
+                          {purchase.planName}
+                        </h3>
+                        <p
+                          className={`mt-2 text-sm font-semibold ${billingToneClass(presentation.tone)}`}
+                        >
+                          {presentation.primaryLabel}
+                        </p>
+                        <p
+                          className={`mt-1 text-sm ${billingToneClass(presentation.tone)}`}
+                        >
+                          {presentation.accessLabel}
+                        </p>
+                        <p className="mt-2 text-sm text-cocoa/65">
+                          {getBillingProviderLabel(purchase.provider)} · One-time purchase
+                        </p>
+                        <p className="mt-1 text-sm text-cocoa/65">
+                          Purchased{" "}
+                          <time dateTime={purchase.createdAt}>
+                            {formatAccountDate(purchase.createdAt)}
+                          </time>
+                        </p>
+                      </div>
+                    </article>
+                  );
+                })}
                 {purchases.items.map((purchase) => {
                   const presentation = getPurchasePresentation(purchase);
                   return (
@@ -708,11 +836,11 @@ export default async function AccountPage({
             ) : (
               <div className="mt-4 rounded-lg bg-cream p-5">
                 <p className="font-semibold text-cocoa">
-                  No standalone purchases yet
+                  No purchases yet
                 </p>
                 <p className="mt-2 max-w-[62ch] text-sm leading-6 text-cocoa/70">
-                  Practical workbooks and conversation tools you purchase will
-                  appear here with their download status.
+                  Full Access and standalone digital products will appear here
+                  after payment is confirmed.
                 </p>
               </div>
             )}

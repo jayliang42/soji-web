@@ -1,3 +1,5 @@
+import { getPlanByTier } from "@soji/domain";
+import type { BillingProvider, MembershipTier } from "@soji/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/supabase/database.types";
 import { isPurchaseDownloadAllowed } from "@/lib/purchase-status";
@@ -18,6 +20,21 @@ export interface AccountPurchaseSnapshot {
   items: AccountPurchase[];
 }
 
+export interface AccountMembershipPurchase {
+  createdAt: string;
+  disputeStatus: string | null;
+  id: string;
+  planId: MembershipTier;
+  planName: string;
+  provider: BillingProvider;
+  status: string;
+}
+
+export interface AccountMembershipPurchaseSnapshot {
+  error?: string;
+  items: AccountMembershipPurchase[];
+}
+
 type ProductRow = Pick<Tables<"products">, "slug" | "title"> & {
   product_assets: Pick<Tables<"product_assets">, "id"> | null;
 };
@@ -28,6 +45,16 @@ type PurchaseRow = Pick<
 > & {
   products: ProductRow | null;
 };
+
+type MembershipPurchaseRow = Pick<
+  Tables<"membership_purchases">,
+  | "created_at"
+  | "dispute_status"
+  | "id"
+  | "plan_id"
+  | "provider"
+  | "status"
+>;
 
 function getProduct(row: PurchaseRow) {
   return row.products;
@@ -84,5 +111,44 @@ export async function getAccountPurchases(
         status: row.status
       };
     })
+  };
+}
+
+export async function getAccountMembershipPurchases(
+  userId: string | undefined,
+  source: "demo" | "supabase"
+): Promise<AccountMembershipPurchaseSnapshot> {
+  if (!userId || source === "demo") {
+    return { items: [] };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    return { error: "membership_purchase_service_not_configured", items: [] };
+  }
+
+  const { data, error } = await supabase
+    .from("membership_purchases")
+    .select("id, plan_id, provider, status, dispute_status, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
+    return {
+      error: error?.message ?? "membership_purchase_query_failed",
+      items: []
+    };
+  }
+
+  return {
+    items: data.map((row: MembershipPurchaseRow) => ({
+      createdAt: row.created_at,
+      disputeStatus: row.dispute_status,
+      id: row.id,
+      planId: row.plan_id,
+      planName: getPlanByTier(row.plan_id)?.name ?? row.plan_id,
+      provider: row.provider,
+      status: row.status
+    }))
   };
 }

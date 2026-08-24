@@ -12,7 +12,10 @@ vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: purchaseMocks.createSupabaseServerClient
 }));
 
-import { getAccountPurchases } from "@/lib/account-purchases";
+import {
+  getAccountMembershipPurchases,
+  getAccountPurchases
+} from "@/lib/account-purchases";
 
 describe("account purchase history", () => {
   beforeEach(() => {
@@ -31,9 +34,15 @@ describe("account purchase history", () => {
     await expect(getAccountPurchases(undefined, "supabase")).resolves.toEqual({
       items: []
     });
+    await expect(
+      getAccountMembershipPurchases(undefined, "supabase")
+    ).resolves.toEqual({ items: [] });
     await expect(getAccountPurchases("demo-user", "demo")).resolves.toEqual({
       items: []
     });
+    await expect(
+      getAccountMembershipPurchases("demo-user", "demo")
+    ).resolves.toEqual({ items: [] });
     expect(purchaseMocks.createSupabaseServerClient).not.toHaveBeenCalled();
   });
 
@@ -79,6 +88,46 @@ describe("account purchase history", () => {
     expect(purchaseMocks.order).toHaveBeenCalledWith("created_at", {
       ascending: false
     });
+  });
+
+  it("returns the signed-in user's one-time membership purchase records", async () => {
+    purchaseMocks.order.mockResolvedValue({
+      data: [
+        {
+          created_at: "2026-08-24T19:09:48Z",
+          dispute_status: null,
+          id: "membership-purchase-1",
+          plan_id: "tier_1",
+          provider: "stripe",
+          status: "paid"
+        }
+      ],
+      error: null
+    });
+
+    await expect(
+      getAccountMembershipPurchases(
+        "00000000-0000-4000-8000-000000000101",
+        "supabase"
+      )
+    ).resolves.toEqual({
+      items: [
+        {
+          createdAt: "2026-08-24T19:09:48Z",
+          disputeStatus: null,
+          id: "membership-purchase-1",
+          planId: "tier_1",
+          planName: "Full Access",
+          provider: "stripe",
+          status: "paid"
+        }
+      ]
+    });
+    expect(purchaseMocks.from).toHaveBeenCalledWith("membership_purchases");
+    expect(purchaseMocks.eq).toHaveBeenCalledWith(
+      "user_id",
+      "00000000-0000-4000-8000-000000000101"
+    );
   });
 
   it("fails closed when purchase history cannot be loaded", async () => {

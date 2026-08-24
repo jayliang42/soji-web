@@ -91,7 +91,7 @@ export default function AccountLoading() {
             className="mt-2 font-display text-2xl font-semibold text-cocoa"
             id="loading-purchases-heading"
           >
-            Standalone purchases
+            Purchase history
           </h2>
           <div
             aria-hidden="true"

@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const pageMocks = vi.hoisted(() => ({
+  getAccountMembershipPurchases: vi.fn(),
   getAccountPurchases: vi.fn(),
   getAccountSubscriptions: vi.fn(),
   getBillingDeliveryReadiness: vi.fn(),
@@ -10,6 +11,7 @@ const pageMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/account-purchases", () => ({
+  getAccountMembershipPurchases: pageMocks.getAccountMembershipPurchases,
   getAccountPurchases: pageMocks.getAccountPurchases
 }));
 vi.mock("@/lib/account-subscriptions", async () => {
@@ -106,6 +108,7 @@ describe("account billing management readiness", () => {
       }
     });
     pageMocks.getAccountPurchases.mockResolvedValue({ items: [] });
+    pageMocks.getAccountMembershipPurchases.mockResolvedValue({ items: [] });
     pageMocks.getAccountSubscriptions.mockResolvedValue({
       items: [subscription]
     });
@@ -247,6 +250,86 @@ describe("account billing management readiness", () => {
     expect(html).toContain("Compare access and support without leaving your account.");
     expect(html).toContain("Full Access");
     expect(html).toContain("$99");
+  });
+
+  it("shows a one-time Full Access payment in billing history", async () => {
+    pageMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
+    pageMocks.getSessionSnapshot.mockResolvedValue({
+      entitlements: ["content.all"],
+      source: "supabase",
+      user: {
+        avatarUrl: null,
+        email: "member@example.com",
+        fullName: "Member",
+        id: "user-id",
+        providers: ["google"],
+        roles: ["member"],
+        tier: "tier_1"
+      }
+    });
+    pageMocks.getAccountMembershipPurchases.mockResolvedValue({
+      items: [
+        {
+          createdAt: "2026-08-24T19:09:48Z",
+          disputeStatus: null,
+          id: "membership-purchase-1",
+          planId: "tier_1",
+          planName: "Full Access",
+          provider: "stripe",
+          status: "paid"
+        }
+      ]
+    });
+
+    const html = await renderAccount();
+
+    expect(html).toContain("Purchase history");
+    expect(html).toContain("One-time membership");
+    expect(html).toContain("Full Access");
+    expect(html).toContain("Payment confirmed");
+    expect(html).toContain("Full Access active");
+    expect(html).toContain("Stripe");
+    expect(html).toContain("Aug 24, 2026");
+    expect(html).not.toContain("No standalone purchases yet");
+  });
+
+  it.each([
+    {
+      disputeStatus: null,
+      expected: ["Refunded", "Access ended"],
+      name: "full refund",
+      status: "refunded"
+    },
+    {
+      disputeStatus: "needs_response",
+      expected: ["Payment disputed", "Access paused"],
+      name: "open dispute",
+      status: "paid"
+    }
+  ])("shows conservative membership billing truth for $name", async ({
+    disputeStatus,
+    expected,
+    status
+  }) => {
+    pageMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
+    pageMocks.getAccountMembershipPurchases.mockResolvedValue({
+      items: [
+        {
+          createdAt: "2026-08-24T19:09:48Z",
+          disputeStatus,
+          id: "membership-purchase-1",
+          planId: "tier_1",
+          planName: "Full Access",
+          provider: "stripe",
+          status
+        }
+      ]
+    });
+
+    const html = await renderAccount();
+
+    for (const copy of expected) expect(html).toContain(copy);
+    expect(html).not.toContain("Full Access active");
   });
 
   it("locks Portal controls when secure billing updates cannot be received", async () => {

@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const pageMocks = vi.hoisted(() => ({
+  getAccountMembershipPurchases: vi.fn(),
   getAccountPurchases: vi.fn(),
   getAccountSubscriptions: vi.fn(),
   getCheckoutReturnStatus: vi.fn(),
@@ -12,6 +13,7 @@ const pageMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/account-purchases", () => ({
+  getAccountMembershipPurchases: pageMocks.getAccountMembershipPurchases,
   getAccountPurchases: pageMocks.getAccountPurchases
 }));
 vi.mock("@/lib/account-subscriptions", () => ({
@@ -77,6 +79,7 @@ describe("session failure pages", () => {
       mock.mockReset();
     }
     pageMocks.getSessionSnapshot.mockResolvedValue(degradedSession);
+    pageMocks.getAccountMembershipPurchases.mockResolvedValue({ items: [] });
     pageMocks.getAccountPurchases.mockResolvedValue({ items: [] });
     pageMocks.getAccountSubscriptions.mockResolvedValue({ items: [] });
     pageMocks.getCheckoutReturnStatus.mockResolvedValue({ state: "none" });
