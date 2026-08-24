@@ -64,6 +64,11 @@ async function createGuestMembershipCheckout({
       { status: 503 }
     );
   }
+  const respond = (body: Record<string, unknown>, init?: ResponseInit) => {
+    const response = NextResponse.json(body, init);
+    setGuestCheckoutBrowserCookie(response, browser.browserId);
+    return response;
+  };
 
   const rateLimit = await consumeGuestMembershipCheckoutRateLimit(
     browser.browserHmac
@@ -74,13 +79,13 @@ async function createGuestMembershipCheckout({
       new Error(rateLimit.reason),
       { checkoutMode: "guest_membership" }
     );
-    return NextResponse.json(
+    return respond(
       { error: "Checkout protection is temporarily unavailable." },
       { status: 503 }
     );
   }
   if (!rateLimit.allowed) {
-    return NextResponse.json(
+    return respond(
       { error: "Too many checkout attempts. Try again later." },
       {
         headers: {
@@ -99,13 +104,13 @@ async function createGuestMembershipCheckout({
       checkoutMode: "guest_membership",
       planId: plan.id
     });
-    return NextResponse.json(
+    return respond(
       { error: "Checkout could not be started." },
       { status: 502 }
     );
   }
   if (!priceId) {
-    return NextResponse.json(
+    return respond(
       { error: "Membership checkout is temporarily unavailable." },
       { status: 503 }
     );
@@ -122,7 +127,7 @@ async function createGuestMembershipCheckout({
       new Error(reservation.reason),
       { checkoutMode: "guest_membership", planId: plan.id }
     );
-    return NextResponse.json(
+    return respond(
       { error: "Checkout protection is temporarily unavailable." },
       { status: 503 }
     );
@@ -137,7 +142,7 @@ async function createGuestMembershipCheckout({
       new Error("guest_checkout_expiry_invalid"),
       { checkoutMode: "guest_membership", planId: plan.id }
     );
-    return NextResponse.json(
+    return respond(
       { error: "Checkout protection is temporarily unavailable." },
       { status: 503 }
     );
@@ -180,7 +185,7 @@ async function createGuestMembershipCheckout({
       checkoutMode: "guest_membership",
       planId: plan.id
     });
-    return NextResponse.json(
+    return respond(
       { error: "Checkout could not be started." },
       { status: 502 }
     );
@@ -192,7 +197,7 @@ async function createGuestMembershipCheckout({
       new Error("stripe_checkout_session_url_missing"),
       { checkoutMode: "guest_membership", planId: plan.id }
     );
-    return NextResponse.json(
+    return respond(
       { error: "Checkout could not be started." },
       { status: 502 }
     );
@@ -212,15 +217,13 @@ async function createGuestMembershipCheckout({
       new Error(attachment.reason),
       { checkoutMode: "guest_membership", planId: plan.id }
     );
-    return NextResponse.json(
+    return respond(
       { error: "Checkout protection is temporarily unavailable." },
       { status: 503 }
     );
   }
 
-  const response = NextResponse.json({ sessionId: session.id, url: session.url });
-  setGuestCheckoutBrowserCookie(response, browser.browserId);
-  return response;
+  return respond({ sessionId: session.id, url: session.url });
 }
 
 export async function POST(request: NextRequest) {
