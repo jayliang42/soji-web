@@ -64,7 +64,7 @@ export function getSiteUrl() {
   return process.env.NODE_ENV === "production" ? null : "http://localhost:3000";
 }
 
-const trustedCheckoutReturnOrigins = new Set([
+const trustedProductionSiteOrigins = new Set([
   "https://gr8tfuture.com",
   "https://www.gr8tfuture.com",
   "https://soji-web.vercel.app"
@@ -105,7 +105,7 @@ export function getCheckoutReturnSiteUrl(
 
   if (
     requestOrigin.origin === configuredOrigin ||
-    trustedCheckoutReturnOrigins.has(requestOrigin.origin) ||
+    trustedProductionSiteOrigins.has(requestOrigin.origin) ||
     isTrustedSojiVercelCheckoutOrigin(requestOrigin)
   ) {
     return requestOrigin.origin;
@@ -119,18 +119,46 @@ export function getClientSiteUrl(
   configuredValue = env.NEXT_PUBLIC_SITE_URL,
   nodeEnv = process.env.NODE_ENV
 ) {
-  if (isValidSiteUrl(configuredValue, nodeEnv)) {
-    return new URL(configuredValue).origin;
-  }
-
   if (
-    nodeEnv !== "production" &&
-    isValidSiteUrl(currentOrigin, "development")
+    isValidSiteUrl(currentOrigin, nodeEnv) &&
+    (nodeEnv !== "production" ||
+      trustedProductionSiteOrigins.has(new URL(currentOrigin).origin))
   ) {
     return new URL(currentOrigin).origin;
   }
 
+  if (isValidSiteUrl(configuredValue, nodeEnv)) {
+    return new URL(configuredValue).origin;
+  }
+
   return null;
+}
+
+export function getAuthReturnSiteUrl(
+  requestUrl: string,
+  configuredValue = env.NEXT_PUBLIC_SITE_URL,
+  nodeEnv = process.env.NODE_ENV
+) {
+  const configuredOrigin = isValidSiteUrl(configuredValue, nodeEnv)
+    ? new URL(configuredValue).origin
+    : null;
+
+  let requestOrigin: string;
+  try {
+    requestOrigin = new URL(requestUrl).origin;
+  } catch {
+    return configuredOrigin;
+  }
+
+  if (
+    isValidSiteUrl(requestOrigin, nodeEnv) &&
+    (nodeEnv !== "production" ||
+      trustedProductionSiteOrigins.has(requestOrigin))
+  ) {
+    return requestOrigin;
+  }
+
+  return configuredOrigin;
 }
 
 export function hasSupabaseConfig() {

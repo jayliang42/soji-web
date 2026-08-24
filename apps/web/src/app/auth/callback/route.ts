@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSiteUrl } from "@/lib/env";
+import { getAuthReturnSiteUrl } from "@/lib/env";
 import { getSafeNextPath } from "@/lib/navigation";
 import { reportOperationalError } from "@/lib/observability";
 import { bootstrapUserProfile } from "@/lib/supabase/profile";
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code");
   const redirectTo = getSafeNextPath(requestUrl.searchParams.get("next"));
   const recoveryFlow = requestUrl.searchParams.get("flow") === "recovery";
-  const siteUrl = getSiteUrl();
+  const siteUrl = getAuthReturnSiteUrl(request.url);
 
   if (!siteUrl) {
     await reportOperationalError(

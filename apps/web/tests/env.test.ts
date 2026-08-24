@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getAuthReturnSiteUrl,
   getCheckoutReturnSiteUrl,
   getClientSiteUrl,
   getOpsAlertConfigState,
@@ -70,6 +71,36 @@ describe("site URL policy", () => {
         "production"
       )
     ).toBe("https://soji.example");
+  });
+
+  it.each([
+    "https://gr8tfuture.com",
+    "https://www.gr8tfuture.com",
+    "https://soji-web.vercel.app"
+  ])("keeps browser auth redirects on the trusted current origin %s", (origin) => {
+    expect(
+      getClientSiteUrl(origin, "https://gr8tfuture.com", "production")
+    ).toBe(origin);
+  });
+
+  it("keeps OAuth callback completion on the trusted request origin", () => {
+    expect(
+      getAuthReturnSiteUrl(
+        "https://www.gr8tfuture.com/auth/callback?code=test",
+        "https://gr8tfuture.com",
+        "production"
+      )
+    ).toBe("https://www.gr8tfuture.com");
+  });
+
+  it("falls back to the configured auth origin for an untrusted callback host", () => {
+    expect(
+      getAuthReturnSiteUrl(
+        "https://attacker.example/auth/callback?code=test",
+        "https://gr8tfuture.com",
+        "production"
+      )
+    ).toBe("https://gr8tfuture.com");
   });
 
   it("allows the current browser origin only outside production", () => {

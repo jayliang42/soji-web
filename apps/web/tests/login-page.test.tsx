@@ -18,7 +18,7 @@ describe("login page", () => {
       })
     );
 
-    expect(html).toContain("Sign in to your Soji account");
+    expect(html).toContain("Sign in to your GS学院 account");
     expect(html).toContain("Open your account");
     expect(html).toContain("Continue to your account.");
     expect(html).toContain("Browse public guides instead");

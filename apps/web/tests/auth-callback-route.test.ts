@@ -5,7 +5,7 @@ const callbackMocks = vi.hoisted(() => ({
   bootstrapUserProfile: vi.fn(),
   createSupabaseServerClient: vi.fn(),
   exchangeCodeForSession: vi.fn(),
-  getSiteUrl: vi.fn(),
+  getAuthReturnSiteUrl: vi.fn(),
   getUser: vi.fn(),
   reportOperationalError: vi.fn()
 }));
@@ -14,7 +14,7 @@ vi.mock("@/lib/observability", () => ({
   reportOperationalError: callbackMocks.reportOperationalError
 }));
 vi.mock("@/lib/env", () => ({
-  getSiteUrl: callbackMocks.getSiteUrl
+  getAuthReturnSiteUrl: callbackMocks.getAuthReturnSiteUrl
 }));
 vi.mock("@/lib/supabase/profile", () => ({
   bootstrapUserProfile: callbackMocks.bootstrapUserProfile
@@ -37,7 +37,7 @@ describe("OAuth callback", () => {
   beforeEach(() => {
     for (const mock of Object.values(callbackMocks)) mock.mockReset();
     callbackMocks.createSupabaseServerClient.mockResolvedValue(client);
-    callbackMocks.getSiteUrl.mockReturnValue("http://localhost:3000");
+    callbackMocks.getAuthReturnSiteUrl.mockReturnValue("http://localhost:3000");
     callbackMocks.exchangeCodeForSession.mockResolvedValue({ error: null });
     callbackMocks.getUser.mockResolvedValue({ data: { user }, error: null });
     callbackMocks.bootstrapUserProfile.mockResolvedValue({ ok: true });
@@ -123,7 +123,7 @@ describe("OAuth callback", () => {
   });
 
   it("uses the canonical site origin instead of the incoming proxy Host", async () => {
-    callbackMocks.getSiteUrl.mockReturnValue("https://soji.example");
+    callbackMocks.getAuthReturnSiteUrl.mockReturnValue("https://soji.example");
     const response = await GET(
       new NextRequest(
         "https://untrusted-proxy.example/auth/callback?code=valid&next=%2Flibrary"
@@ -133,8 +133,22 @@ describe("OAuth callback", () => {
     expect(response.headers.get("location")).toBe("https://soji.example/library");
   });
 
+  it("keeps a trusted custom-domain callback and session redirect on one origin", async () => {
+    callbackMocks.getAuthReturnSiteUrl.mockReturnValue(
+      "https://www.gr8tfuture.com"
+    );
+    const requestUrl =
+      "https://www.gr8tfuture.com/auth/callback?code=valid&next=%2Flibrary";
+    const response = await GET(new NextRequest(requestUrl));
+
+    expect(callbackMocks.getAuthReturnSiteUrl).toHaveBeenCalledWith(requestUrl);
+    expect(response.headers.get("location")).toBe(
+      "https://www.gr8tfuture.com/library"
+    );
+  });
+
   it("fails closed before code exchange when the canonical origin is unavailable", async () => {
-    callbackMocks.getSiteUrl.mockReturnValue(null);
+    callbackMocks.getAuthReturnSiteUrl.mockReturnValue(null);
     const response = await GET(request("code=valid&next=%2Flibrary"));
 
     expect(response.status).toBe(503);
