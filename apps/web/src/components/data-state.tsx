@@ -38,7 +38,7 @@ function CollectionStateArtwork({
               isUnavailable ? "text-white/55" : "text-cocoa/55"
             }`}
           >
-            GS学院 collection
+            GS学院 内容库
           </span>
           <span
             className={`h-2.5 w-2.5 rounded-full ${
@@ -69,7 +69,7 @@ function CollectionStateArtwork({
               isUnavailable ? "bg-white/35" : "bg-clay"
             }`}
           />
-          {isUnavailable ? "Ready to reconnect" : "Ready for the first entry"}
+          {isUnavailable ? "等待重新连接" : "等待第一篇内容"}
         </div>
       </div>
     </div>
@@ -82,8 +82,8 @@ export function DataUnavailable({
   description,
   note,
   retryHref,
-  retryLabel = "Try loading again",
-  title = "Temporarily unavailable",
+  retryLabel = "重新加载",
+  title = "暂时无法使用",
   variant = "notice"
 }: {
   alternativeHref?: Route;
@@ -104,7 +104,7 @@ export function DataUnavailable({
         <div className="grid md:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)]">
           <div className="p-6 sm:p-8 lg:p-10">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">
-              Connection paused
+              连接暂时中断
             </p>
             <h2 className="mt-3 max-w-xl font-display text-3xl font-bold leading-[1.05] text-cocoa sm:text-4xl">
               {title}
@@ -189,7 +189,7 @@ export function DataEmpty({
         <div className="grid md:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)]">
           <div className="p-6 sm:p-8 lg:p-10">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">
-              A quiet beginning
+              从这里开始
             </p>
             <h2 className="mt-3 max-w-xl font-display text-3xl font-bold leading-[1.05] text-cocoa sm:text-4xl">
               {title}

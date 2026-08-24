@@ -82,7 +82,7 @@ export default async function HomePage() {
       <section className="relative h-[calc(100svh-216px)] min-h-[420px] max-h-[628px] overflow-hidden bg-white md:h-[calc(100svh-184px)] md:min-h-[520px] md:max-h-[680px]">
         <Image
           src="/bayarea-coral-sea-hero.jpg"
-          alt="Snowy mountains above a blue bay with a fishing boat and rocky shoreline"
+          alt="蓝色海湾上方的雪山、渔船与岩石海岸"
           fill
           priority
           sizes="100vw"
@@ -91,7 +91,7 @@ export default async function HomePage() {
         <div className="relative z-10 mx-auto flex h-full max-w-6xl items-center px-6">
           <div className="max-w-2xl py-6 md:max-w-xl md:py-12">
             <p className="text-xs font-bold uppercase text-[#102536]/75">
-              GS学院 presents
+              GS学院 出品
             </p>
             <h1 className="mt-3 font-display text-5xl font-black leading-[0.92] text-[#102536] sm:text-6xl md:mt-4 md:text-7xl">
               BayArea珊瑚海
@@ -104,13 +104,13 @@ export default async function HomePage() {
                 href="/library"
                 className="rounded-md bg-[#102536] px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-[#172B3A]"
               >
-                Read a preview
+                先看免费案例
               </Link>
               <Link
                 href="/pricing"
                 className="rounded-md border-2 border-[#102536] bg-white/80 px-6 py-3.5 text-sm font-bold text-[#102536] transition-colors hover:bg-[#102536] hover:text-white"
               >
-                Explore membership
+                查看解锁方式
               </Link>
             </div>
           </div>
@@ -290,7 +290,7 @@ export default async function HomePage() {
         <div className="relative aspect-[2.1/1] min-h-[280px] overflow-hidden sm:min-h-[360px] md:min-h-[470px]">
           <Image
             src="/new-york-editorial-hero-v2.png"
-            alt="Rainy West Village street with warm cafe windows, brownstones, and a yellow taxi"
+            alt="雨中的纽约西村街道、暖色咖啡馆橱窗、褐砂石建筑与黄色出租车"
             fill
             sizes="100vw"
             className="object-cover object-center"

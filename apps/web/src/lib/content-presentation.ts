@@ -1,4 +1,4 @@
-const publishedDateFormatter = new Intl.DateTimeFormat("en-US", {
+const publishedDateFormatter = new Intl.DateTimeFormat("zh-CN", {
   day: "numeric",
   month: "short",
   timeZone: "UTC",
@@ -6,9 +6,18 @@ const publishedDateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 export function formatContentType(value: string): string {
-  const label = value.replaceAll("_", " ").replace(/\s+/g, " ").trim();
+  const normalized = value.replaceAll("_", " ").replace(/\s+/g, " ").trim();
+  const labels: Record<string, string> = {
+    article: "文章",
+    case_study: "案例",
+    guide: "指南",
+    monthly_update: "每月更新",
+    template: "模板",
+    video: "视频",
+    workbook: "练习册"
+  };
 
-  return label ? `${label.charAt(0).toUpperCase()}${label.slice(1)}` : "Content";
+  return labels[value.toLowerCase()] ?? (normalized || "内容");
 }
 
 export function formatPublishedDate(value: string): string | null {

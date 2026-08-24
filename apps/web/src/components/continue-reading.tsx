@@ -60,7 +60,7 @@ export function ContinueReading({
       <div className="mx-auto grid max-w-6xl gap-6 px-6 py-8 md:grid-cols-[minmax(0,1fr)_minmax(18rem,0.55fr)] md:items-center md:gap-10 md:py-10">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-            Continue reading
+            继续阅读
           </p>
           <h2
             className="mt-3 max-w-3xl font-display text-3xl font-bold leading-tight text-cocoa md:text-4xl"
@@ -76,14 +76,14 @@ export function ContinueReading({
         <div className="rounded-xl border border-dune bg-cream p-5 shadow-[0_14px_36px_rgba(32,31,28,0.06)]">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
             <span className="text-cocoa">
-              {progress.progress}% complete
+              已完成 {progress.progress}%
             </span>
             <span className="text-cocoa/58">
-              {formatContentType(guide.type)} · This device
+              {formatContentType(guide.type)} · 当前设备
             </span>
           </div>
           <progress
-            aria-label={`Reading progress for ${guide.title}`}
+            aria-label={`${guide.title} 的阅读进度`}
             className="reading-progress mt-3 block h-2 w-full overflow-hidden rounded-full"
             max={100}
             value={progress.progress}
@@ -94,7 +94,7 @@ export function ContinueReading({
             className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-cocoa px-5 text-sm font-bold text-white transition-colors hover:bg-charcoal"
             href={resumeHref}
           >
-            Resume guide
+            继续阅读
           </Link>
         </div>
       </div>

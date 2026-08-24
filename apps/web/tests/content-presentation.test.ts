@@ -7,13 +7,13 @@ import {
 
 describe("content presentation", () => {
   it("turns storage enum values into reader-facing labels", () => {
-    expect(formatContentType("monthly_update")).toBe("Monthly update");
-    expect(formatContentType("case_study")).toBe("Case study");
-    expect(formatContentType("")).toBe("Content");
+    expect(formatContentType("monthly_update")).toBe("每月更新");
+    expect(formatContentType("case_study")).toBe("案例");
+    expect(formatContentType("")).toBe("内容");
   });
 
   it("uses a deterministic short date and hides malformed metadata", () => {
-    expect(formatPublishedDate("2026-07-19T21:47:56.62735+00:00")).toBe("Jul 19, 2026");
+    expect(formatPublishedDate("2026-07-19T21:47:56.62735+00:00")).toBe("2026年7月19日");
     expect(formatPublishedDate("not-a-date")).toBeNull();
   });
 

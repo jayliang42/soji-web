@@ -9,7 +9,7 @@ export function ContentSourceBadge({
 
   return (
     <div className="inline-flex rounded-full border border-dune bg-shell px-4 py-2 text-sm text-cocoa/70">
-      Preview catalog
+      预览内容库
     </div>
   );
 }

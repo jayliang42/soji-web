@@ -31,8 +31,8 @@ describe("home page decision paths", () => {
     const html = renderToStaticMarkup(await HomePage());
 
     for (const [label, href] of [
-      ["Read a preview", "/library"],
-      ["Explore membership", "/pricing"],
+      ["先看免费案例", "/library"],
+      ["查看解锁方式", "/pricing"],
       ["查看解锁方式", "/pricing#case-study-offers"],
       ["先看案例目录", "/library"]
     ]) {
@@ -63,7 +63,6 @@ describe("home page decision paths", () => {
     const html = renderToStaticMarkup(await HomePage());
 
     expect(homeMocks.getContentSnapshot).toHaveBeenCalledOnce();
-    expect(html).not.toContain("Continue reading");
-    expect(html).not.toContain("Resume guide");
+    expect(html).not.toContain("继续阅读");
   });
 });

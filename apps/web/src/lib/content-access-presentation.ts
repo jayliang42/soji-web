@@ -9,7 +9,7 @@ type AccessContentItem = Pick<
 >;
 
 export interface ContentAccessPresentation {
-  action: "Read article" | "Read preview" | "View access";
+  action: "阅读全文" | "阅读预览" | "查看权限";
   label: string;
   membershipName: string | null;
   membershipPlanId: MembershipPlan["id"] | null;
@@ -39,8 +39,8 @@ export function getContentAccessPresentation(
 
   if (accessMode === "unavailable") {
     return {
-      action: "View access",
-      label: "Access temporarily unavailable",
+      action: "查看权限",
+      label: "暂时无法确认访问权限",
       membershipName,
       membershipPlanId,
       tone: "neutral"
@@ -49,11 +49,11 @@ export function getContentAccessPresentation(
 
   if (accessMode === "full") {
     return {
-      action: "Read article",
+      action: "阅读全文",
       label:
         item.visibility === "public"
-          ? "Public · Full article"
-          : "Included in your membership",
+          ? "公开内容 · 可阅读全文"
+          : "已包含在你的会员权益中",
       membershipName,
       membershipPlanId,
       tone: "success"
@@ -62,8 +62,8 @@ export function getContentAccessPresentation(
 
   if (accessMode === "preview" && !isAuthenticated) {
     return {
-      action: "Read preview",
-      label: "Public preview",
+      action: "阅读预览",
+      label: "公开预览",
       membershipName,
       membershipPlanId,
       tone: "accent"
@@ -71,10 +71,10 @@ export function getContentAccessPresentation(
   }
 
   return {
-    action: "View access",
+    action: "查看权限",
     label: membershipName
-      ? `Included with ${membershipName} membership`
-      : "Additional access required",
+      ? `${membershipName} 会员权益可读`
+      : "需要额外权限",
     membershipName,
     membershipPlanId,
     tone: "neutral"

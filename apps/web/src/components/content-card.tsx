@@ -89,13 +89,13 @@ export function ContentCard({
         <p className="mt-4 leading-7 text-cocoa/75">{item.summary}</p>
         {visibleTags.length > 0 ? (
           <ul
-            aria-label="Topics"
+            aria-label="主题"
             className="mt-5 flex list-none flex-wrap gap-2 p-0"
           >
             {visibleTags.map((tag) => (
               <li key={tag}>
                 <Link
-                  aria-label={`Browse guides about ${tag}`}
+                  aria-label={`浏览与${tag}相关的内容`}
                   className="inline-flex min-h-11 items-center rounded-full border border-transparent bg-sand px-3 py-1 text-xs font-semibold text-cocoa/75 transition-colors hover:border-clay/35 hover:bg-accent-muted hover:text-clay"
                   href={`/library?q=${encodeURIComponent(tag)}`}
                 >

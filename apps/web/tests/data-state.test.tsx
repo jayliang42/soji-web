@@ -17,14 +17,14 @@ describe("collection data states", () => {
     );
 
     expect(html).toContain('role="alert"');
-    expect(html).toContain("Connection paused");
+    expect(html).toContain("连接暂时中断");
     expect(html).toContain(">Products could not be loaded</h2>");
     expect(html).toContain('href="/products"');
-    expect(html).toContain(">Try loading again</a>");
+    expect(html).toContain(">重新加载</a>");
     expect(html).toContain('href="/library"');
     expect(html).toContain(">Read a public guide</a>");
     expect(html).toContain("Checkout stays paused; no purchase is started.");
-    expect(html).toContain("Ready to reconnect");
+    expect(html).toContain("等待重新连接");
     expect(html).toContain("min-h-11");
   });
 
@@ -39,11 +39,11 @@ describe("collection data states", () => {
       />
     );
 
-    expect(html).toContain("A quiet beginning");
+    expect(html).toContain("从这里开始");
     expect(html).toContain(">No products are available</h2>");
     expect(html).toContain('href="/pricing"');
     expect(html).toContain(">Compare membership</a>");
-    expect(html).toContain("Ready for the first entry");
+    expect(html).toContain("等待第一篇内容");
     expect(html).not.toContain('role="alert"');
   });
 
@@ -58,6 +58,6 @@ describe("collection data states", () => {
 
     expect(html).toContain('<form method="get">');
     expect(html).toContain('type="submit"');
-    expect(html).toContain(">Try loading again</button>");
+    expect(html).toContain(">重新加载</button>");
   });
 });

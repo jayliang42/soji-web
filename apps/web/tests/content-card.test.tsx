@@ -26,7 +26,7 @@ describe("content card", () => {
     );
 
     expect(html).toContain(
-      '<time dateTime="2026-07-19T21:47:56.62735+00:00">Jul 19, 2026</time>'
+      '<time dateTime="2026-07-19T21:47:56.62735+00:00">2026年7月19日</time>'
     );
     expect(html).toContain('src="/covers/wealth-without-drift.webp"');
     expect(html).toContain('alt="Paper decision map beside a pencil and linen ledger."');
@@ -44,32 +44,32 @@ describe("content card", () => {
   it.each([
     {
       accessMode: "full" as const,
-      expectedAction: "Read article",
-      expectedLabel: "Included in your membership",
+      expectedAction: "阅读全文",
+      expectedLabel: "已包含在你的会员权益中",
       isAuthenticated: true
     },
     {
       accessMode: "preview" as const,
-      expectedAction: "Read preview",
-      expectedLabel: "Public preview",
+      expectedAction: "阅读预览",
+      expectedLabel: "公开预览",
       isAuthenticated: false
     },
     {
       accessMode: "preview" as const,
-      expectedAction: "View access",
-      expectedLabel: "Included with Full Access membership",
+      expectedAction: "查看权限",
+      expectedLabel: "Full Access 会员权益可读",
       isAuthenticated: true
     },
     {
       accessMode: "locked" as const,
-      expectedAction: "View access",
-      expectedLabel: "Included with Full Access membership",
+      expectedAction: "查看权限",
+      expectedLabel: "Full Access 会员权益可读",
       isAuthenticated: true
     },
     {
       accessMode: "unavailable" as const,
-      expectedAction: "View access",
-      expectedLabel: "Access temporarily unavailable",
+      expectedAction: "查看权限",
+      expectedLabel: "暂时无法确认访问权限",
       isAuthenticated: true
     }
   ])(
@@ -85,7 +85,7 @@ describe("content card", () => {
 
       expect(html).toContain(expectedLabel);
       expect(html).toContain(`>${expectedAction}</a>`);
-      expect(html).not.toContain(">Read</a>");
+      expect(html).not.toContain(">阅读</a>");
       expect(html).not.toContain("content.basic");
       expect(html).not.toContain("members_only");
     }
@@ -99,9 +99,9 @@ describe("content card", () => {
       />
     );
 
-    expect(html).toContain("Public · Full article");
-    expect(html).toContain(">Read article</a>");
-    expect(html).not.toContain("Included in your membership");
+    expect(html).toContain("公开内容 · 可阅读全文");
+    expect(html).toContain(">阅读全文</a>");
+    expect(html).not.toContain("已包含在你的会员权益中");
   });
 
   it("does not present internal demo taxonomy as reader-facing topics", () => {
@@ -123,7 +123,7 @@ describe("content card", () => {
     );
 
     expect(html).toContain('href="/library?q=planning"');
-    expect(html).toContain('aria-label="Browse guides about planning"');
+    expect(html).toContain('aria-label="浏览与planning相关的内容"');
     expect(html).toContain("min-h-11");
     expect(html).toContain('aria-label="Save March 2026 Update Pack for later"');
   });

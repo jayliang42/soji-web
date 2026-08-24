@@ -9,11 +9,11 @@ import "./globals.css";
 
 const siteUrl = getSiteUrl() ?? "http://localhost:3000";
 const supportPolicyLinks: ReadonlyArray<readonly [string, Route]> = [
-  ["Support", "/support" as Route],
-  ["Privacy", "/privacy" as Route],
-  ["Terms", "/terms" as Route],
-  ["Refund policy", "/refund-policy" as Route],
-  ["Financial disclaimer", "/financial-disclaimer" as Route]
+  ["支持中心", "/support" as Route],
+  ["隐私政策", "/privacy" as Route],
+  ["使用条款", "/terms" as Route],
+  ["退款政策", "/refund-policy" as Route],
+  ["财务信息免责声明", "/financial-disclaimer" as Route]
 ] as const;
 
 export const metadata: Metadata = {
@@ -24,16 +24,16 @@ export const metadata: Metadata = {
     template: "%s | GS学院"
   },
   description:
-    "Practical guidance for strategic spending, family financial foundations, and wealth that lasts beyond one generation.",
+    "通过真实案例、申请定位和文书思路，帮助你把复杂经历讲清楚。",
   openGraph: {
     type: "website",
     siteName: "GS学院",
     title: "BayArea珊瑚海 by GS学院",
     description:
-      "Practical guidance for strategic spending, family financial foundations, and lasting wealth.",
+      "通过真实案例、申请定位和文书思路，帮助你把复杂经历讲清楚。",
     images: [
       {
-        alt: "Snowy mountains above a blue bay with a fishing boat and rocky shoreline",
+        alt: "蓝色海湾上方的雪山、渔船与岩石海岸",
         height: 2240,
         url: "/bayarea-coral-sea-hero.jpg",
         width: 3360
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BayArea珊瑚海 by GS学院",
     description:
-      "Practical guidance for strategic spending, family financial foundations, and lasting wealth.",
+      "通过真实案例、申请定位和文书思路，帮助你把复杂经历讲清楚。",
     images: ["/bayarea-coral-sea-hero.jpg"]
   }
 };
@@ -55,11 +55,11 @@ export default async function RootLayout({
   const snapshot = await getSessionSnapshot();
 
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <body>
         <CheckoutReturnCleanup />
         <a href="#main-content" className="skip-link">
-          Skip to main content
+          跳到主要内容
         </a>
         <header className="sticky top-0 z-20 border-b border-dune/70 bg-shell shadow-[0_1px_12px_rgba(32,31,28,0.035)]">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3.5 md:py-4">
@@ -92,20 +92,20 @@ export default async function RootLayout({
         </div>
         <footer className="border-t border-dune bg-shell px-6 py-12 md:py-16">
           <div className="mx-auto grid max-w-6xl gap-10 text-sm text-cocoa/70 md:grid-cols-[0.75fr_1.25fr] md:gap-16">
-            <nav aria-label="Office Hours">
+            <nav aria-label="咨询时间">
               <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
-                Office Hours
+                咨询时间
               </h2>
               <Link
                 href="/office-hours"
                 className="mt-2 inline-flex min-h-11 items-center font-semibold transition-colors hover:text-clay"
               >
-                Office Hours
+                查看咨询时间
               </Link>
             </nav>
-            <nav aria-label="Support and policies">
+            <nav aria-label="支持与政策">
               <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-cocoa/62">
-                Support &amp; policies
+                支持与政策
               </h2>
               <ul className="mt-2 grid font-semibold">
                 {supportPolicyLinks.map(([label, href]) => (

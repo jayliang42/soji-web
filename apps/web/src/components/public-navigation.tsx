@@ -20,49 +20,49 @@ interface NavigationItem {
 
 const guestNavigation: ReadonlyArray<NavigationItem> = [
   {
-    description: "Unlock the complete membership",
+    description: "查看单篇与完整合集解锁方式",
     href: "/pricing" as Route,
-    label: "Pricing"
+    label: "价格"
   },
   {
-    description: "Read guides and member editions",
+    description: "浏览真实案例与会员内容",
     href: "/library" as Route,
-    label: "Library"
+    label: "案例库"
   },
   {
-    description: "Bring a decision to live support",
+    description: "带着具体问题来咨询",
     href: "/office-hours" as Route,
-    label: "Office hours"
+    label: "咨询时间"
   },
   {
-    description: "Access your benefits and purchases",
+    description: "查看权益、购买记录与下载",
     href: "/login" as Route,
     kind: "account",
-    label: "Sign in"
+    label: "登录"
   }
 ];
 
 const memberNavigation: ReadonlyArray<NavigationItem> = [
   {
-    description: "Review plans and billing",
+    description: "查看权益与付款记录",
     href: "/account?view=subscriptions" as Route,
-    label: "Subscriptions"
+    label: "会员权益"
   },
   {
-    description: "Read guides and member editions",
+    description: "浏览真实案例与会员内容",
     href: "/library" as Route,
-    label: "Library"
+    label: "案例库"
   },
   {
-    description: "Reserve sessions and watch replays",
+    description: "预约咨询并查看回放",
     href: "/office-hours" as Route,
-    label: "Office hours"
+    label: "咨询时间"
   },
   {
-    description: "See benefits, purchases, and profile",
+    description: "查看权益、购买记录与个人资料",
     href: "/account" as Route,
     kind: "account",
-    label: "Account"
+    label: "账户"
   }
 ];
 
@@ -160,7 +160,7 @@ export function PublicNavigation({ signedIn = false }: { signedIn?: boolean }) {
             }`}
           />
         </span>
-        {isOpen ? "Close" : "Menu"}
+        {isOpen ? "关闭" : "菜单"}
       </button>
 
       {isOpen ? (
@@ -174,7 +174,7 @@ export function PublicNavigation({ signedIn = false }: { signedIn?: boolean }) {
       ) : null}
 
       <nav
-        aria-label="Primary"
+        aria-label="主导航"
         className={`fixed inset-x-3 top-[5.25rem] z-30 max-h-[calc(100dvh-6.25rem)] overflow-y-auto rounded-2xl border border-dune bg-shell p-3 text-cocoa shadow-2xl sm:left-auto sm:right-6 sm:w-[24rem] md:static md:block md:max-h-none md:w-auto md:overflow-visible md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none ${
           isOpen ? "block" : "hidden md:block"
         }`}
@@ -183,12 +183,12 @@ export function PublicNavigation({ signedIn = false }: { signedIn?: boolean }) {
       >
         <div className="px-3 pb-3 pt-2 md:hidden">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">
-            Explore GS学院
+            浏览 GS学院
           </p>
           <p className="mt-2 max-w-[30ch] text-sm leading-6 text-cocoa/68">
             {signedIn
-              ? "Return to your reading, tools, support, or account."
-              : "Choose a way to read, apply, join, or ask for support."}
+              ? "继续阅读、查看工具、获取支持或管理账户。"
+              : "选择浏览案例、了解解锁方式或获取申请支持。"}
           </p>
         </div>
 
